@@ -1,0 +1,6 @@
+demo*
+video*
+test*
+*.mp4
+*.jpg
+build/demo.avi

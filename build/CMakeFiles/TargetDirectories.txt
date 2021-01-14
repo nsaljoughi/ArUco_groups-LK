@@ -1,0 +1,3 @@
+/home/nicola/Desktop/pama_ar/build/CMakeFiles/rebuild_cache.dir
+/home/nicola/Desktop/pama_ar/build/CMakeFiles/PamaAR.dir
+/home/nicola/Desktop/pama_ar/build/CMakeFiles/edit_cache.dir
