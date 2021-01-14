@@ -267,7 +267,24 @@ int main(int argc, char *argv[]) {
     int lost_id = 0;
 
     // save to video
-    VideoWriter cap("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+    VideoWriter cap("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
+		    inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+    // save results to file
+    ofstream resultfile;
+    if (stabilFilt) {
+	    resultfile.open("results_filt.txt");
+	    if (resultfile.is_open()) {
+		    resultfile << "Filtered resulting transformations \n";
+	    }
+	    else cout << "Unable to open result file" << endl;
+    }
+    else {
+	    resultfile.open("results_unfilt.txt");
+	    if (resultfile.is_open()) {
+		    resultfile << "Unfiltered resulting transformations \n";
+	    }
+	    else cout << "Unable to open result file" << endl;
+    }
 
     while(inputVideo.grab()) {
         Mat image, imageCopy;
@@ -299,7 +316,7 @@ int main(int argc, char *argv[]) {
 
 	// parameters for transformation weighting
 	double alpha = 0.5;
-	double alpha2 = 0.5;
+	double alpha2 = 0.7;
 
         // draw results
         image.copyTo(imageCopy);
@@ -330,6 +347,10 @@ int main(int argc, char *argv[]) {
 		    float diff_mag = sqrt( diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2] );
 		    float diff_rot_mag = sqrt( diff_rot[0]*diff_rot[0] + diff_rot[1]*diff_rot[1] + 
 				    diff_rot[2]*diff_rot[2] + diff_rot[3]*diff_rot[3] );
+
+		    if (!stabilFilt && resultfile.is_open()) {
+			    resultfile << frame_id << "," << diff_rot_mag << "," << diff_mag << "\n";
+		    }
 		  
 		    cout << "x(t-1) = " << tvec_store << endl;
 		    cout << "x(t) = " << tvecs[i] << endl;
@@ -340,30 +361,26 @@ int main(int argc, char *argv[]) {
 		    cout << "||x(t-1) - x(t)|| = " << diff_mag << endl;
 		    cout << "||q(t-1) - q(t)|| = " << diff_rot_mag << endl;
 
-		    if (diff_rot_mag > 1.5) {
-			    alpha = 0.7;
-			    alpha2 = 0.95;
+		    if (stabilFilt) {
+			    if (diff_mag > 0.1 || diff_mag < 0.0001 || diff_rot_mag > 1.5) {
+				    rvecs[i] = rvec_store;
+				    tvecs[i] = tvec_store;
+			    }
+			    
+			    // Use quaternions to make a weighted average of rotations
+			    Vec4d quat1, quat2, quat_avg;
+			    quat1 = vec2quat(rvecs[i]);
+			    quat2 = vec2quat(rvec_store);
+			    quat_avg = avgQuat(quat1, quat2, (1-alpha2), alpha2);
+			    rvecs[i] = quat2vec(quat_avg);
+			    
+			    for (int j=0; j<3; j++) {
+				    tvecs[i][j] = (1.0f - alpha)*tvecs[i][j] + alpha*tvec_store[j];
+			    } 
+			    
+			    cout << "(1-alpha)*x(t-1) + alpha*x(t) = " << tvecs[i] << endl;
+			    cout << "(1-alpha)*r(t-1) + alpha*r(t) = " << rvecs[i] << endl;
 		    }
-
-		    // Use quaternions to make a weighted average of rotations
-		    Vec4d quat1, quat2, quat_avg;
-		    quat1 = vec2quat(rvecs[i]);
-		    quat2 = vec2quat(rvec_store);
-		    quat_avg = avgQuat(quat1, quat2, (1-alpha2), alpha2);
-		    rvecs[i] = quat2vec(quat_avg);
-
-		    for (int j=0; j<3; j++) {
-			    tvecs[i][j] = (1.0f - alpha)*tvecs[i][j] + alpha*tvec_store[j];
-		    }
-		    
-		    if (diff_mag > 0.4 || diff_mag < 0.0001) {
-			    rvecs[i] = rvec_store;
-			    tvecs[i] = tvec_store;
-		    }
-
-		    cout << "(1-alpha)*x(t-1) + alpha*x(t) = " << tvecs[i] << endl;
-		    cout << "(1-alpha)*r(t-1) + alpha*r(t) = " << rvecs[i] << endl;
-
 		    
 		    aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
                                     markerLength * 0.5f);
@@ -388,7 +405,19 @@ int main(int argc, char *argv[]) {
                         circle(imageCopy, rectangle2D3[j], 1 , Scalar(0,0,255), -1);
 
                     cout << "R: " << rvecs[i] << "; T: " << tvecs[i] << "\n" << endl; // the translation is with respect to the principal point
-
+		    if (stabilFilt) {
+			    q1 = vec2quat(rvecs[i]);
+			    q2 = vec2quat(rvec_store);
+			    diff = tvec_store - tvecs[i];
+			    diff_rot = q2 - q1;
+			    diff_mag = sqrt( diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2] );
+			    diff_rot_mag = sqrt( diff_rot[0]*diff_rot[0] + diff_rot[1]*diff_rot[1] + 
+					    diff_rot[2]*diff_rot[2] + diff_rot[3]*diff_rot[3] );
+			    
+			    if (resultfile.is_open()) {
+				    resultfile << frame_id << "," << diff_rot_mag << "," << diff_mag << "\n";
+			    }
+		    }
 
 		    // Display some infos on video frame
 		    string txt0, txt1, txt2, txt3;
@@ -415,12 +444,12 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-/*
+
 	else if (ids.size() == 0) {
-		if (lost_id > 5) {
-			break;
-		}
-		else {
+		//if (lost_id > 5) {
+		//	break;
+		//}
+		//else {
 			lost_id += 1;
 			cout << "Lost since " << lost_id << endl;
 			
@@ -428,15 +457,22 @@ int main(int argc, char *argv[]) {
 			projectPoints(bunny_cloud, rvec_store, tvec2_store, camMatrix, distCoeffs, rectangle2D2);
 			projectPoints(bunny_cloud, rvec_store, tvec3_store, camMatrix, distCoeffs, rectangle2D3);
 			
+			if (stabilFilt && resultfile.is_open()) {
+				resultfile << frame_id << "," << float(0.0) << "," << float(0.0) << "\n";
+			}
+			if (!stabilFilt && resultfile.is_open()) {
+				resultfile << frame_id << "," << float(0.0) << "," << float(0.0) << "\n";
+			}
+
 			for (unsigned int j = 0; j < rectangle2D.size(); j++)
 				circle(imageCopy, rectangle2D[j], 1, Scalar(255,0,0), -1);
 			for (unsigned int j = 0; j < rectangle2D2.size(); j++)
 				circle(imageCopy, rectangle2D2[j], 1, Scalar(0,255,0), -1);
 			for (unsigned int j = 0; j < rectangle2D3.size(); j++)
 				circle(imageCopy, rectangle2D3[j], 1 , Scalar(0,0,255), -1);
-		}
+		//}
 	}
-*/
+
 	frame_id += 1;
 
         if(showRejected && rejected.size() > 0)
@@ -454,6 +490,8 @@ int main(int argc, char *argv[]) {
     }
     inputVideo.release();
     cap.release();
+    
+    resultfile.close();
 
     return 0;
 }
