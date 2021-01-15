@@ -274,14 +274,14 @@ int main(int argc, char *argv[]) {
     if (stabilFilt) {
 	    resultfile.open("results_filt.txt");
 	    if (resultfile.is_open()) {
-		    resultfile << "Filtered resulting transformations \n";
+		    cout << "Filtered resulting transformations" << endl;
 	    }
 	    else cout << "Unable to open result file" << endl;
     }
     else {
 	    resultfile.open("results_unfilt.txt");
 	    if (resultfile.is_open()) {
-		    resultfile << "Unfiltered resulting transformations \n";
+		   cout << "Unfiltered resulting transformations" << endl;
 	    }
 	    else cout << "Unable to open result file" << endl;
     }
@@ -349,7 +349,9 @@ int main(int argc, char *argv[]) {
 				    diff_rot[2]*diff_rot[2] + diff_rot[3]*diff_rot[3] );
 
 		    if (!stabilFilt && resultfile.is_open()) {
-			    resultfile << frame_id << "," << diff_rot_mag << "," << diff_mag << "\n";
+			    resultfile << "Frame " << frame_id     << ", " <<
+				   "Rot "     << diff_rot_mag << ", " << 
+				   "Dist "         << diff_mag     << "; " << "\n";
 		    }
 		  
 		    cout << "x(t-1) = " << tvec_store << endl;
@@ -415,7 +417,9 @@ int main(int argc, char *argv[]) {
 					    diff_rot[2]*diff_rot[2] + diff_rot[3]*diff_rot[3] );
 			    
 			    if (resultfile.is_open()) {
-				    resultfile << frame_id << "," << diff_rot_mag << "," << diff_mag << "\n";
+				    resultfile << "Frame " << frame_id     << ", " <<
+					    "Rot "    << diff_rot_mag << ", " << 
+					    "Dist "        << diff_mag     << "; " << "\n";
 			    }
 		    }
 
@@ -458,10 +462,14 @@ int main(int argc, char *argv[]) {
 			projectPoints(bunny_cloud, rvec_store, tvec3_store, camMatrix, distCoeffs, rectangle2D3);
 			
 			if (stabilFilt && resultfile.is_open()) {
-				resultfile << frame_id << "," << float(0.0) << "," << float(0.0) << "\n";
+				resultfile << "Frame " << frame_id   << ", " << 
+					"Rot "    << float(0.0) << ", " << 
+					"Dist "        << float(0.0) << "; " << "\n";
 			}
 			if (!stabilFilt && resultfile.is_open()) {
-				resultfile << frame_id << "," << float(0.0) << "," << float(0.0) << "\n";
+				resultfile << "Frame " << frame_id   << ", " << 
+					"Rot "    << float(0.0) << ", " << 
+					"Dist"         << float(0.0) << "; " << "\n";
 			}
 
 			for (unsigned int j = 0; j < rectangle2D.size(); j++)
