@@ -59,7 +59,8 @@ const char* keys  =
         "{l        | 0.1   | Marker side lenght (in meters). Needed for correct scale in camera pose }"
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }"
-	"{f        |       | Use stabilization filtering (=1) or not (=0) }";
+	"{f        |       | Use stabilization filtering}"
+	"{s        |       | Save results}";
 }
 
 /**
@@ -160,11 +161,10 @@ Vec4d avgQuat(Vec4d q1, Vec4d q2, double w1 = 1, double w2 = 1) {
 void generateMarkers() {
     Mat marker1, marker2, marker3, marker4;
     Ptr<aruco::Dictionary> dict1 = aruco::getPredefinedDictionary(aruco::DICT_6X6_250);
-    Ptr<aruco::Dictionary> dict2 = aruco::getPredefinedDictionary(aruco::DICT_7X7_250);
-    aruco::drawMarker(dict1, 1, 300,  marker1, 1);
-    aruco::drawMarker(dict1, 1, 400, marker2, 1);
-    aruco::drawMarker(dict2, 1, 300, marker3, 1);
-    aruco::drawMarker(dict2, 1, 400, marker4, 1);
+    aruco::drawMarker(dict1, 1, 200, marker1, 1);
+    aruco::drawMarker(dict1, 1, 200, marker2, 2);
+    aruco::drawMarker(dict1, 1, 200, marker3, 3);
+    aruco::drawMarker(dict1, 1, 200, marker4, 4);
     imwrite("marker1.png", marker1);
     imwrite("marker2.png", marker2);
     imwrite("marker3.png", marker3);
@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
     }
     
     Mat bunny_cloud = cvcloud_load();
-
+   
     bunny_cloud = 0.1 * bunny_cloud;
 
     int dictionaryId = parser.get<int>("d");
@@ -191,6 +191,7 @@ int main(int argc, char *argv[]) {
     bool estimatePose = parser.has("c");
     float markerLength = parser.get<float>("l");
     bool stabilFilt = parser.has("f");
+    bool saveResults = parser.has("s");
 
     Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
     if(parser.has("dp")) {
@@ -216,7 +217,15 @@ int main(int argc, char *argv[]) {
 
     Ptr<aruco::Dictionary> dictionary =
         aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-
+    
+    Ptr<aruco::GridBoard> board = aruco::GridBoard::create(2, 2, float(400), float(10), dictionary);
+    Mat boardImage;
+    Size imageSize;
+    imageSize.width = 1000;
+    imageSize.height = 1000;
+    board->draw(imageSize, boardImage, 4, 1);
+    imwrite("board.png", boardImage);
+    
     Mat camMatrix, distCoeffs;
     
     
@@ -266,19 +275,22 @@ int main(int argc, char *argv[]) {
     int frame_id = 0;
     int lost_id = 0;
 
+    VideoWriter cap;
+
     // save to video
-    VideoWriter cap("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
+    if (saveResults) cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
 		    inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+
     // save results to file
     ofstream resultfile;
-    if (stabilFilt) {
+    if (stabilFilt && saveResults) {
 	    resultfile.open("results_filt.txt");
 	    if (resultfile.is_open()) {
 		    cout << "Filtered resulting transformations" << endl;
 	    }
 	    else cout << "Unable to open result file" << endl;
     }
-    else {
+    else if (!stabilFilt && saveResults) {
 	    resultfile.open("results_unfilt.txt");
 	    if (resultfile.is_open()) {
 		   cout << "Unfiltered resulting transformations" << endl;
@@ -486,7 +498,7 @@ int main(int argc, char *argv[]) {
         if(showRejected && rejected.size() > 0)
             aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
 	
-	cap.write(imageCopy);
+	if (saveResults) cap.write(imageCopy);
 
         imshow("out", imageCopy);
 
@@ -497,7 +509,7 @@ int main(int argc, char *argv[]) {
         
     }
     inputVideo.release();
-    cap.release();
+    if (saveResults) cap.release();
     
     resultfile.close();
 
