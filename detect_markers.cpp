@@ -218,13 +218,15 @@ int main(int argc, char *argv[]) {
     Ptr<aruco::Dictionary> dictionary =
         aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
     
-    Ptr<aruco::GridBoard> board = aruco::GridBoard::create(2, 2, float(400), float(10), dictionary);
+    Ptr<aruco::GridBoard> gridboard = aruco::GridBoard::create(2, 2, float(400), float(10), dictionary);
     Mat boardImage;
     Size imageSize;
     imageSize.width = 1000;
     imageSize.height = 1000;
-    board->draw(imageSize, boardImage, 4, 1);
+    gridboard->draw(imageSize, boardImage, 4, 1);
     imwrite("board.png", boardImage);
+
+    Ptr<aruco::Board> board = gridboard.staticCast<aruco::Board>();
     
     Mat camMatrix, distCoeffs;
     
@@ -244,11 +246,11 @@ int main(int argc, char *argv[]) {
     if(!video.empty()) {
         inputVideo.open(video);
         waitTime = 0;
-        // cout << "success" << endl;
+        cout << "success" << endl;
     } else {
         inputVideo.open(0);
         waitTime = 10;
-        // cout << "failed" << endl;
+        cout << "failed" << endl;
     }
 
 
@@ -317,6 +319,7 @@ int main(int argc, char *argv[]) {
         if(estimatePose && ids.size() > 0)
             aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
                                              tvecs);
+//            aruco::estimatePoseBoard(corners, ids, board, camMatrix, distCoeffs, rvecs, tvecs);
 
         double currentTime = ((double)getTickCount() - tick) / getTickFrequency();
         totalTime += currentTime;
@@ -334,6 +337,7 @@ int main(int argc, char *argv[]) {
         image.copyTo(imageCopy);
  
         if(ids.size() > 0) {
+
 	    lost_id = 0; // after a while, let go of history
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
@@ -459,7 +463,9 @@ int main(int argc, char *argv[]) {
 		    tvec3_store = tvecs3;
                 }
             }
+	
         }
+
 
 	else if (ids.size() == 0) {
 		//if (lost_id > 5) {
@@ -468,6 +474,7 @@ int main(int argc, char *argv[]) {
 		//else {
 			lost_id += 1;
 			cout << "Lost since " << lost_id << endl;
+			
 			
 			projectPoints(bunny_cloud, rvec_store, tvec_store, camMatrix, distCoeffs, rectangle2D);
 			projectPoints(bunny_cloud, rvec_store, tvec2_store, camMatrix, distCoeffs, rectangle2D2);
@@ -491,7 +498,9 @@ int main(int argc, char *argv[]) {
 			for (unsigned int j = 0; j < rectangle2D3.size(); j++)
 				circle(imageCopy, rectangle2D3[j], 1 , Scalar(0,0,255), -1);
 		//}
+	
 	}
+
 
 	frame_id += 1;
 
