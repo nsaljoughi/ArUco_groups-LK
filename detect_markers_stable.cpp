@@ -434,9 +434,10 @@ int main(int argc, char *argv[]) {
                 for(unsigned int i = 0; i < ids.size(); i++)
                 {
 		    // If the video just started, no previous data...	
-		    if (frame_id == 0) {
+		    if (frame_id == 0 || lost_id[i] > 20) {
 			    rvecs_store[i] = rvecs_ord[i];
 			    tvecs_store[i] = tvecs_ord[i];
+			    lsot_id[i] = 0;
 		    }
 		    
 
@@ -495,26 +496,6 @@ int main(int argc, char *argv[]) {
 		    aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i],
                                     markerLength * 0.5f);
 
-/*
-		    // Display two more arrows to test offset
-		    tvecs2[0] = tvecs[i][0] + 0.3;
-		    tvecs2[1] = tvecs[i][1];
-		    tvecs2[2] = tvecs[i][2];
-		    tvecs3[0] = tvecs[i][0] - 0.35;
-		    tvecs3[1] = tvecs[i][1];
-		    tvecs3[2] = tvecs[i][2];
-
-                    projectPoints(bunny_cloud, rvecs[i], tvecs[i], camMatrix, distCoeffs, rectangle2D);
-		    projectPoints(bunny_cloud, rvecs[i], tvecs2, camMatrix, distCoeffs, rectangle2D2);
-		    projectPoints(bunny_cloud, rvecs[i], tvecs3, camMatrix, distCoeffs, rectangle2D3);
-
-                    for (unsigned int j = 0; j < rectangle2D.size(); j++)
-                        circle(imageCopy, rectangle2D[j], 1, Scalar(255,0,0), -1);
-		    for (unsigned int j = 0; j < rectangle2D2.size(); j++)
-                        circle(imageCopy, rectangle2D2[j], 1, Scalar(0,255,0), -1);
-		    for (unsigned int j = 0; j < rectangle2D3.size(); j++)
-                        circle(imageCopy, rectangle2D3[j], 1 , Scalar(0,0,255), -1);
-*/
                     cout << "R: " << rvecs_ord[i] << "; T: " << tvecs_ord[i] << "\n" << endl; // the translation is with respect to the principal point
 		    if (stabilFilt) {
 			    q1 = vec2quat(rvecs_ord[i]);
@@ -531,24 +512,6 @@ int main(int argc, char *argv[]) {
 					          "Dist "  << diff_mag     << "; " << "\n";
 			    }
 		    }
-
-/*
-		    // Display some infos on video frame
-		    string txt0, txt1, txt2, txt3;
-		    float dist1, dist2, dist3;
-		    // Compute distances of objects from camera
-		    dist1 = sqrt( tvecs[i][0]*tvecs[i][0] + tvecs[i][1]*tvecs[i][1] + tvecs[i][2]*tvecs[i][2] );
-		    dist2 = sqrt( tvecs2[0]*tvecs2[0] + tvecs2[1]*tvecs2[1] + tvecs2[2]*tvecs2[2] );
-		    dist3 = sqrt( tvecs3[0]*tvecs3[0] + tvecs3[1]*tvecs3[1] + tvecs3[2]*tvecs3[2] );
-		    txt0 = "Marker distance: " + to_string(dist1) + " m";
-		    txt1 = "First arrow: " + to_string(dist1) + " m";
-		    txt2 = "Second arrow: " +  to_string(dist2) + " m";
-		    txt3 = "Third arrow: " +  to_string(dist3) + " m";
-		    putText(imageCopy, txt0, Point2f(50, 60), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 0, 0), 2, 8, false);
-		    putText(imageCopy, txt1, Point2f(50, 100), FONT_HERSHEY_SIMPLEX, 1, Scalar(255, 0, 0), 2, 8, false);
-		    putText(imageCopy, txt2, Point2f(50, 140), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 255, 0), 2, 8, false);
-		    putText(imageCopy, txt3, Point2f(50, 180), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 255), 2, 8, false);
-*/
 
 		    // Save the computed estimation for the next frame
 		    rvecs_store[i] = rvecs_ord[i];
