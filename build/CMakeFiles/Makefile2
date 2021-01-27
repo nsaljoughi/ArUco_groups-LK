@@ -72,7 +72,10 @@ CMAKE_BINARY_DIR = /home/nicola/Desktop/pama_ar/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/PamaAR.dir/all
+all: CMakeFiles/detect_stable.dir/all
+all: CMakeFiles/detect_markers.dir/all
+all: CMakeFiles/create_board.dir/all
+all: CMakeFiles/calibrate_camera.dir/all
 
 .PHONY : all
 
@@ -82,36 +85,120 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/PamaAR.dir/clean
+clean: CMakeFiles/detect_stable.dir/clean
+clean: CMakeFiles/detect_markers.dir/clean
+clean: CMakeFiles/create_board.dir/clean
+clean: CMakeFiles/calibrate_camera.dir/clean
 
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/PamaAR.dir
+# Target rules for target CMakeFiles/detect_stable.dir
 
 # All Build rule for target.
-CMakeFiles/PamaAR.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nicola/Desktop/pama_ar/build/CMakeFiles --progress-num=1,2 "Built target PamaAR"
-.PHONY : CMakeFiles/PamaAR.dir/all
+CMakeFiles/detect_stable.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nicola/Desktop/pama_ar/build/CMakeFiles --progress-num=7,8 "Built target detect_stable"
+.PHONY : CMakeFiles/detect_stable.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/PamaAR.dir/rule: cmake_check_build_system
+CMakeFiles/detect_stable.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/PamaAR.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/detect_stable.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 0
-.PHONY : CMakeFiles/PamaAR.dir/rule
+.PHONY : CMakeFiles/detect_stable.dir/rule
 
 # Convenience name for target.
-PamaAR: CMakeFiles/PamaAR.dir/rule
+detect_stable: CMakeFiles/detect_stable.dir/rule
 
-.PHONY : PamaAR
+.PHONY : detect_stable
 
 # clean rule for target.
-CMakeFiles/PamaAR.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/clean
-.PHONY : CMakeFiles/PamaAR.dir/clean
+CMakeFiles/detect_stable.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/clean
+.PHONY : CMakeFiles/detect_stable.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/detect_markers.dir
+
+# All Build rule for target.
+CMakeFiles/detect_markers.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nicola/Desktop/pama_ar/build/CMakeFiles --progress-num=5,6 "Built target detect_markers"
+.PHONY : CMakeFiles/detect_markers.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/detect_markers.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/detect_markers.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 0
+.PHONY : CMakeFiles/detect_markers.dir/rule
+
+# Convenience name for target.
+detect_markers: CMakeFiles/detect_markers.dir/rule
+
+.PHONY : detect_markers
+
+# clean rule for target.
+CMakeFiles/detect_markers.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/clean
+.PHONY : CMakeFiles/detect_markers.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/create_board.dir
+
+# All Build rule for target.
+CMakeFiles/create_board.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nicola/Desktop/pama_ar/build/CMakeFiles --progress-num=3,4 "Built target create_board"
+.PHONY : CMakeFiles/create_board.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/create_board.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/create_board.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 0
+.PHONY : CMakeFiles/create_board.dir/rule
+
+# Convenience name for target.
+create_board: CMakeFiles/create_board.dir/rule
+
+.PHONY : create_board
+
+# clean rule for target.
+CMakeFiles/create_board.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/clean
+.PHONY : CMakeFiles/create_board.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/calibrate_camera.dir
+
+# All Build rule for target.
+CMakeFiles/calibrate_camera.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nicola/Desktop/pama_ar/build/CMakeFiles --progress-num=1,2 "Built target calibrate_camera"
+.PHONY : CMakeFiles/calibrate_camera.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/calibrate_camera.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/calibrate_camera.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nicola/Desktop/pama_ar/build/CMakeFiles 0
+.PHONY : CMakeFiles/calibrate_camera.dir/rule
+
+# Convenience name for target.
+calibrate_camera: CMakeFiles/calibrate_camera.dir/rule
+
+.PHONY : calibrate_camera
+
+# clean rule for target.
+CMakeFiles/calibrate_camera.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/clean
+.PHONY : CMakeFiles/calibrate_camera.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

@@ -75,17 +75,6 @@ CMAKE_BINARY_DIR = /home/nicola/Desktop/pama_ar/build
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/local/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -96,6 +85,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/local/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -130,17 +130,110 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named PamaAR
+# Target rules for targets named detect_stable
 
 # Build rule for target.
-PamaAR: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 PamaAR
-.PHONY : PamaAR
+detect_stable: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 detect_stable
+.PHONY : detect_stable
 
 # fast build rule for target.
-PamaAR/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/build
-.PHONY : PamaAR/fast
+detect_stable/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/build
+.PHONY : detect_stable/fast
+
+#=============================================================================
+# Target rules for targets named detect_markers
+
+# Build rule for target.
+detect_markers: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 detect_markers
+.PHONY : detect_markers
+
+# fast build rule for target.
+detect_markers/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/build
+.PHONY : detect_markers/fast
+
+#=============================================================================
+# Target rules for targets named create_board
+
+# Build rule for target.
+create_board: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 create_board
+.PHONY : create_board
+
+# fast build rule for target.
+create_board/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/build
+.PHONY : create_board/fast
+
+#=============================================================================
+# Target rules for targets named calibrate_camera
+
+# Build rule for target.
+calibrate_camera: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 calibrate_camera
+.PHONY : calibrate_camera
+
+# fast build rule for target.
+calibrate_camera/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/build
+.PHONY : calibrate_camera/fast
+
+calibrate_camera.o: calibrate_camera.cpp.o
+
+.PHONY : calibrate_camera.o
+
+# target to build an object file
+calibrate_camera.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.o
+.PHONY : calibrate_camera.cpp.o
+
+calibrate_camera.i: calibrate_camera.cpp.i
+
+.PHONY : calibrate_camera.i
+
+# target to preprocess a source file
+calibrate_camera.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.i
+.PHONY : calibrate_camera.cpp.i
+
+calibrate_camera.s: calibrate_camera.cpp.s
+
+.PHONY : calibrate_camera.s
+
+# target to generate assembly for a file
+calibrate_camera.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.s
+.PHONY : calibrate_camera.cpp.s
+
+create_board.o: create_board.cpp.o
+
+.PHONY : create_board.o
+
+# target to build an object file
+create_board.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/create_board.cpp.o
+.PHONY : create_board.cpp.o
+
+create_board.i: create_board.cpp.i
+
+.PHONY : create_board.i
+
+# target to preprocess a source file
+create_board.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/create_board.cpp.i
+.PHONY : create_board.cpp.i
+
+create_board.s: create_board.cpp.s
+
+.PHONY : create_board.s
+
+# target to generate assembly for a file
+create_board.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/create_board.cpp.s
+.PHONY : create_board.cpp.s
 
 detect_markers.o: detect_markers.cpp.o
 
@@ -148,7 +241,7 @@ detect_markers.o: detect_markers.cpp.o
 
 # target to build an object file
 detect_markers.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/detect_markers.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.o
 .PHONY : detect_markers.cpp.o
 
 detect_markers.i: detect_markers.cpp.i
@@ -157,7 +250,7 @@ detect_markers.i: detect_markers.cpp.i
 
 # target to preprocess a source file
 detect_markers.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/detect_markers.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.i
 .PHONY : detect_markers.cpp.i
 
 detect_markers.s: detect_markers.cpp.s
@@ -166,8 +259,35 @@ detect_markers.s: detect_markers.cpp.s
 
 # target to generate assembly for a file
 detect_markers.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/PamaAR.dir/build.make CMakeFiles/PamaAR.dir/detect_markers.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.s
 .PHONY : detect_markers.cpp.s
+
+detect_markers_stable.o: detect_markers_stable.cpp.o
+
+.PHONY : detect_markers_stable.o
+
+# target to build an object file
+detect_markers_stable.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.o
+.PHONY : detect_markers_stable.cpp.o
+
+detect_markers_stable.i: detect_markers_stable.cpp.i
+
+.PHONY : detect_markers_stable.i
+
+# target to preprocess a source file
+detect_markers_stable.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.i
+.PHONY : detect_markers_stable.cpp.i
+
+detect_markers_stable.s: detect_markers_stable.cpp.s
+
+.PHONY : detect_markers_stable.s
+
+# target to generate assembly for a file
+detect_markers_stable.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.s
+.PHONY : detect_markers_stable.cpp.s
 
 # Help Target
 help:
@@ -177,10 +297,22 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... PamaAR"
+	@echo "... calibrate_camera"
+	@echo "... create_board"
+	@echo "... detect_markers"
+	@echo "... detect_stable"
+	@echo "... calibrate_camera.o"
+	@echo "... calibrate_camera.i"
+	@echo "... calibrate_camera.s"
+	@echo "... create_board.o"
+	@echo "... create_board.i"
+	@echo "... create_board.s"
 	@echo "... detect_markers.o"
 	@echo "... detect_markers.i"
 	@echo "... detect_markers.s"
+	@echo "... detect_markers_stable.o"
+	@echo "... detect_markers_stable.i"
+	@echo "... detect_markers_stable.s"
 .PHONY : help
 
 

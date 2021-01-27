@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
     imageSize.width = 1000;
     imageSize.height = 1000;
     gridboard->draw(imageSize, boardImage, 4, 1);
-    imwrite("board.png", boardImage);
+    //imwrite("board.png", boardImage);
 
     Ptr<aruco::Board> board = gridboard.staticCast<aruco::Board>();
     
@@ -437,7 +437,7 @@ int main(int argc, char *argv[]) {
 		    if (frame_id == 0 || lost_id[i] > 20) {
 			    rvecs_store[i] = rvecs_ord[i];
 			    tvecs_store[i] = tvecs_ord[i];
-			    lsot_id[i] = 0;
+			    lost_id[i] = 0;
 		    }
 		    
 

@@ -4,12 +4,13 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/nicola/Desktop/pama_ar/detect_markers.cpp" "/home/nicola/Desktop/pama_ar/build/CMakeFiles/PamaAR.dir/detect_markers.cpp.o"
+  "/home/nicola/Desktop/pama_ar/detect_markers_stable.cpp" "/home/nicola/Desktop/pama_ar/build/CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "/usr/include/eigen3"
   "/home/nicola/opencv/build"
   "/home/nicola/opencv/opencv-master/include"
   "/home/nicola/opencv/opencv-master/modules/core/include"

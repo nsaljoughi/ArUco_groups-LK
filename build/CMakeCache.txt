@@ -209,8 +209,8 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
-//The directory containing a CMake configuration file for FREEGLUT.
-FREEGLUT_DIR:PATH=FREEGLUT_DIR-NOTFOUND
+//The directory containing a CMake configuration file for Eigen3.
+Eigen3_DIR:PATH=/usr/lib/cmake/eigen3
 
 //Path to a file.
 GLUT_INCLUDE_DIR:PATH=/usr/include
