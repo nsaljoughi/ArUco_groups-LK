@@ -336,6 +336,7 @@ int main(int argc, char *argv[]) {
     vector< Vec4d > quats_store(4);
 
     unsigned int frame_id = 0;
+    unsigned int lost_since;
     std::vector< unsigned int > lost_id(4,0);
 
     VideoWriter cap;
@@ -428,6 +429,7 @@ int main(int argc, char *argv[]) {
         if(ids.size() > 0) {
 
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
+	    lost_since = 0;
 
             if(estimatePose) {
                 
@@ -437,6 +439,7 @@ int main(int argc, char *argv[]) {
 		    if (frame_id == 0 || lost_id[i] > 20) {
 			    rvecs_store[i] = rvecs_ord[i];
 			    tvecs_store[i] = tvecs_ord[i];
+			    quats_store[i] = vec2quat(rvecs_ord[i]);
 			    lost_id[i] = 0;
 		    }
 		    
@@ -471,6 +474,7 @@ int main(int argc, char *argv[]) {
 				    rvecs_ord[i] = rvecs_store[i];
 				    tvecs_ord[i] = tvecs_store[i];
 				    lost_id[i] += 1;
+				    if (frame_id == 0) lost_id[i] = 0;
 			    }
 			    else {
 				    lost_id[i] = 0;
@@ -490,6 +494,7 @@ int main(int argc, char *argv[]) {
 			    
 			    cout << "(1-alpha)*x(t-1) + alpha*x(t) = " << tvecs_ord[i] << endl;
 			    cout << "(1-alpha)*r(t-1) + alpha*r(t) = " << rvecs_ord[i] << endl;
+			    cout << "quats_store" << quats_store[i] << endl;
 		    }
 
 		    
@@ -516,6 +521,7 @@ int main(int argc, char *argv[]) {
 		    // Save the computed estimation for the next frame
 		    rvecs_store[i] = rvecs_ord[i];
 		    tvecs_store[i] = tvecs_ord[i];
+		    quats_store[i] = vec2quat(rvecs_ord[i]);
                 }
 	    }
 	    std::vector< Eigen::Vector4f > quat_eig;
@@ -524,12 +530,23 @@ int main(int argc, char *argv[]) {
 	    for (unsigned int i=0; i<quats_store.size(); i++) {
 		    if (lost_id[i] == 0) {
 			    Eigen::Vector4f quat_row;
-			    for (int j=0;j<4;j++) {
+			    for (int j=0; j<4; j++) {
 				    quat_row[j] = quats_store[i][j];
 			    }
 			    quat_eig.push_back(quat_row);
 		    }
 	    }
+	    /*
+	    if (lost_id[0]==0 && lost_id[1]==0 && lost_id[2]==0 && lost_id[3]==0) {
+		    for (unsigned int i=0; i<quats_store.size(); i++) {
+			    Eigen::Vector4f quat_row;
+			    for (int j=0; j<4; j++) {
+				    quat_row[j] = quats_store[i][j];
+			    }
+			    quat_eig.push_back(quat_row);
+		    }
+	    }
+	    */
 	    quat_eig_avg = quaternionAverage(quat_eig);
 	    for (int i=0; i<4; i++) {
 		    quat_avg[i] = quat_eig_avg[i];
@@ -562,7 +579,6 @@ int main(int argc, char *argv[]) {
 	    for (unsigned int j = 0; j < rectangle2D.size(); j++)
 		    circle(imageCopy, rectangle2D[j], 1, Scalar(255,0,0), -1);
 	}
-
 
 	frame_id += 1;
 
