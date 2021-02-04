@@ -556,6 +556,8 @@ int main(int argc, char *argv[]) {
 	    for (int i=0; i<4; i++) {
 		    tvecs_store_centered[i] = tvecs_store[i];
 	    }
+/*
+	    // Markers in a square
 	    tvecs_store_centered[0][0] += markerLength / 2 + markerOffset / 2;
 	    tvecs_store_centered[0][1] += markerLength / 2 + markerOffset / 2;
 	    tvecs_store_centered[1][0] += markerLength / 2 + markerOffset / 2;
@@ -564,6 +566,13 @@ int main(int argc, char *argv[]) {
 	    tvecs_store_centered[2][1] += markerLength / 2 + markerOffset / 2;
 	    tvecs_store_centered[3][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
 	    tvecs_store_centered[3][1] += -1.0 * (markerLength / 2 + markerOffset / 2);
+*/	    
+	    // Markers in line
+	    tvecs_store_centered[0][0] += 1.5*markerLength + 1.5*markerOffset;
+	    tvecs_store_centered[1][0] += markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[2][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[3][0] += -1.0 * (1.5*markerLength + 1.5*markerOffset);
+
 
 	    for (int i=0; i<3; i++) {
 		    tvecs2[i] = 0.0;
