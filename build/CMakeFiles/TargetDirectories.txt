@@ -1,6 +1,6 @@
-/home/nicola/Desktop/pama_ar/build/CMakeFiles/detect_stable.dir
-/home/nicola/Desktop/pama_ar/build/CMakeFiles/detect_markers.dir
-/home/nicola/Desktop/pama_ar/build/CMakeFiles/edit_cache.dir
-/home/nicola/Desktop/pama_ar/build/CMakeFiles/rebuild_cache.dir
-/home/nicola/Desktop/pama_ar/build/CMakeFiles/create_board.dir
-/home/nicola/Desktop/pama_ar/build/CMakeFiles/calibrate_camera.dir
+/home/nico/pama_marker/build/CMakeFiles/rebuild_cache.dir
+/home/nico/pama_marker/build/CMakeFiles/edit_cache.dir
+/home/nico/pama_marker/build/CMakeFiles/calibrate_camera.dir
+/home/nico/pama_marker/build/CMakeFiles/create_board.dir
+/home/nico/pama_marker/build/CMakeFiles/detect_stable.dir
+/home/nico/pama_marker/build/CMakeFiles/detect_markers.dir
