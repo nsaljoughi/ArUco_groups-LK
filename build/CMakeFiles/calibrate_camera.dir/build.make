@@ -81,6 +81,7 @@ calibrate_camera: CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.o
 calibrate_camera: CMakeFiles/calibrate_camera.dir/build.make
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_gapi.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_stitching.so.4.5.1
+calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_alphamat.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_aruco.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_bgsegm.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_bioinspired.so.4.5.1
@@ -107,6 +108,7 @@ calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_s
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_surface_matching.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_tracking.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_videostab.so.4.5.1
+calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_viz.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_wechat_qrcode.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_xfeatures2d.so.4.5.1
 calibrate_camera: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_xobjdetect.so.4.5.1

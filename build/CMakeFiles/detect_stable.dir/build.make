@@ -81,6 +81,7 @@ detect_stable: CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.o
 detect_stable: CMakeFiles/detect_stable.dir/build.make
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_gapi.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_stitching.so.4.5.1
+detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_alphamat.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_aruco.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_bgsegm.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_bioinspired.so.4.5.1
@@ -107,6 +108,7 @@ detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_supe
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_surface_matching.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_tracking.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_videostab.so.4.5.1
+detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_viz.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_wechat_qrcode.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_xfeatures2d.so.4.5.1
 detect_stable: /home/nico/packages/opencv/opencv-master/build/lib/libopencv_xobjdetect.so.4.5.1

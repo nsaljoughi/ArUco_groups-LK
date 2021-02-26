@@ -36,14 +36,13 @@ or tort (including negligence or otherwise) arising in any way out of
 the use of this software, even if advised of the possibility of such damage.
 */
 
-#include </home/nico/packages/eigen/Eigen/SVD>
+#include <Eigen3/SVD>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/plot.hpp>
 #include <iostream>
 #include <fstream>
-#include <ctime>
 
 using namespace std;
 using namespace cv;
@@ -241,14 +240,10 @@ int main(int argc, char *argv[]) {
         parser.printMessage();
         return 0;
     }
-
-    // Messing with time a bit
-    time_t now = time(0);
-    cout << "Now we are at: " << now << endl;
     
     Mat bunny_cloud = cvcloud_load();
    
-    //bunny_cloud = 0.5 * bunny_cloud;
+    bunny_cloud = 0.1 * bunny_cloud;
 
     int dictionaryId = parser.get<int>("d");
     bool showRejected = parser.has("r");
@@ -380,7 +375,7 @@ int main(int argc, char *argv[]) {
         vector< Vec3d > rvecs, tvecs;
 	vector< Vec3d > rvecs_ord(4);
 	vector< Vec3d > tvecs_ord(4);
-	Vec3d tvecs2, tvecs3, tvecs4; 
+	Vec3d tvecs2, tvecs3; 
 
         // detect markers and estimate pose
         aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
@@ -558,12 +553,10 @@ int main(int argc, char *argv[]) {
 	    }
 	    
 	    vector< Vec3d > tvecs_store_centered(4);
-	    Vec3d tvecs_store_centered_2, tvecs_store_centered_3;
-
 	    for (int i=0; i<4; i++) {
 		    tvecs_store_centered[i] = tvecs_store[i];
 	    }
-
+/*
 	    // Markers in a square
 	    tvecs_store_centered[0][0] += markerLength / 2 + markerOffset / 2;
 	    tvecs_store_centered[0][1] += markerLength / 2 + markerOffset / 2;
@@ -573,14 +566,14 @@ int main(int argc, char *argv[]) {
 	    tvecs_store_centered[2][1] += markerLength / 2 + markerOffset / 2;
 	    tvecs_store_centered[3][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
 	    tvecs_store_centered[3][1] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	  
-/* 
+*/	    
 	    // Markers in line
 	    tvecs_store_centered[0][0] += 1.5*markerLength + 1.5*markerOffset;
-	    tvecs_store_centered[2][0] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[1][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[1][0] += markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[2][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
 	    tvecs_store_centered[3][0] += -1.0 * (1.5*markerLength + 1.5*markerOffset);
-*/
+
+
 	    for (int i=0; i<3; i++) {
 		    tvecs2[i] = 0.0;
 		    for (int j=0; j<4; j++) {
@@ -589,21 +582,11 @@ int main(int argc, char *argv[]) {
 			    }
 		    }
 		    tvecs2[i] /= quat_eig.size();
-		    tvecs3[i] = tvecs2[i];
-		    tvecs4[i] = tvecs2[i];
 	    }
-	    tvecs3[0] += 2;
-	    tvecs4[0] += -2;
 
 	    projectPoints(bunny_cloud, quat2vec(quat_avg), tvecs2, camMatrix, distCoeffs, rectangle2D);
-	    projectPoints(bunny_cloud, quat2vec(quat_avg), tvecs3, camMatrix, distCoeffs, rectangle2D2);
-	    projectPoints(bunny_cloud, quat2vec(quat_avg), tvecs4, camMatrix, distCoeffs, rectangle2D3);
 	    for (unsigned int j = 0; j < rectangle2D.size(); j++)
-	    {
 		    circle(imageCopy, rectangle2D[j], 1, Scalar(255,0,0), -1);
-	            circle(imageCopy, rectangle2D2[j], 1, Scalar(0,255,0), -1);
-		    circle(imageCopy, rectangle2D3[j], 1, Scalar(0,0,255), -1);
-	    }
 	}
 
 	frame_id += 1;
@@ -613,10 +596,7 @@ int main(int argc, char *argv[]) {
 	
 	if (saveResults) cap.write(imageCopy);
 
-        //imshow("out", imageCopy);
-	Mat imageResize;
-	cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
-	imshow("resize", imageResize);
+        imshow("out", imageCopy);
 
 
         char key = (char)waitKey(waitTime);
