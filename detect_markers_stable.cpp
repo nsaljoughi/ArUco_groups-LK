@@ -250,7 +250,7 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
 
 // Generate markers used
 void generateMarkers() {
-    Mat marker1, marker2, marker3, marker4, marker5, marker6, marker7, marker8, marker9, marker10, marker11, marker12;
+    Mat marker1, marker2, marker3, marker4, marker5, marker6, marker7, marker8, marker9, marker10, marker11, marker12, marker13, marker14, marker15, marker16;
     Ptr<aruco::Dictionary> dict1 = aruco::getPredefinedDictionary(aruco::DICT_6X6_250);
     aruco::drawMarker(dict1, 1, 200, marker1, 1);
     aruco::drawMarker(dict1, 2, 200, marker2, 1);
@@ -263,8 +263,12 @@ void generateMarkers() {
     aruco::drawMarker(dict1, 9, 200, marker9, 1);
     aruco::drawMarker(dict1, 10, 200, marker10, 1);
     aruco::drawMarker(dict1, 11, 200, marker11, 1);
-    aruco::drawMarker(dict1, 12, 200, marker12, 1);
-    
+    aruco::drawMarker(dict1, 12, 200, marker12, 1);	
+    aruco::drawMarker(dict1, 13, 200, marker13, 1);
+    aruco::drawMarker(dict1, 14, 200, marker14, 1);
+    aruco::drawMarker(dict1, 15, 200, marker15, 1);
+    aruco::drawMarker(dict1, 16, 200, marker16, 1);	
+
     imwrite("marker1.png", marker1);
     imwrite("marker2.png", marker2);
     imwrite("marker3.png", marker3);
@@ -277,12 +281,16 @@ void generateMarkers() {
     imwrite("marker10.png", marker10);
     imwrite("marker11.png", marker11);
     imwrite("marker12.png", marker12);
+    imwrite("marker13.png", marker13);
+    imwrite("marker14.png", marker14);
+    imwrite("marker15.png", marker15);
+    imwrite("marker16.png", marker16);
 }
 
 /**
  */
 int main(int argc, char *argv[]) {
-    //generateMarkers();
+    generateMarkers();
     CommandLineParser parser(argc, argv, keys);
     parser.about(about);
 
@@ -357,7 +365,7 @@ int main(int argc, char *argv[]) {
     int waitTime;
     if(!video.empty()) {
         inputVideo.open(video);
-        waitTime = 1000 * 1.0 /inputVideo.get(CAP_PROP_FPS);
+        waitTime = 0;// 1000 * 1.0 /inputVideo.get(CAP_PROP_FPS);
         cout << "success" << endl;
     } else {
         inputVideo.open(0);
@@ -420,6 +428,7 @@ int main(int argc, char *argv[]) {
     while(inputVideo.grab()) {
         Mat image, imageCopy;
         inputVideo.retrieve(image);
+	//cv::resize(image, image, Size(image.cols/2,image.rows/2));
         
 	cout << "Frame " << frame_id << endl;
 
@@ -448,7 +457,7 @@ int main(int argc, char *argv[]) {
         }
 
 	// parameters for transformation weighting
-	double alpha = 0.5;
+	double alpha = 0.7;
 	double alpha2 = 0.7;
 
         // draw results
@@ -493,15 +502,17 @@ int main(int argc, char *argv[]) {
                 
                 for(unsigned int i = 0; i < 12; i++)//ids.size(); i++)
                 {
-		    if (rvecs_ord[i][0] == 0.0) continue;
+		    if (rvecs_ord[i][0] == 0.0) {
+			    lost_id[i] +=1;
+			    continue;
+		    }
 		    // If the video just started, no previous data...	
-		    if (frame_id == 0 || lost_id[i] > 20) {
+		    else if (frame_id == 0 || lost_id[i] !=0) {
 			    rvecs_store[i] = rvecs_ord[i];
 			    tvecs_store[i] = tvecs_ord[i];
 			    quats_store[i] = vec2quat(rvecs_ord[i]);
 			    lost_id[i] = 0;
 		    }
-		    
 
 		    // Display some infos
 		    Vec4d q1 = vec2quat(rvecs_ord[i]);
@@ -528,41 +539,45 @@ int main(int argc, char *argv[]) {
 		    cout << "||x(t-1) - x(t)|| = " << diff_mag << endl;
 		    cout << "||q(t-1) - q(t)|| = " << diff_rot_mag << endl;
 
-		    if (stabilFilt) {
-			    /*
-			    if (diff_mag > 0.1 || diff_mag < 0.0001 || diff_rot_mag > 1) {
-				    rvecs_ord[i] = rvecs_store[i];
-				    tvecs_ord[i] = tvecs_store[i];
-				    lost_id[i] += 1;
-				    if (frame_id == 0) lost_id[i] = 0;
-			    }
+		    //if (stabilFilt) {
+			    
+			    if (diff_mag > 1 || diff_rot_mag > 1) {
+				    rvecs_ord[i][0] = rvecs_ord[i][1] = rvecs_ord[i][2] = 0.0;
+				    cout << "Limit for" << i << endl;
+				    continue;
+				    //rvecs_ord[i] = rvecs_store[i];
+				    //tvecs_ord[i] = tvecs_store[i];
+				    //lost_id[i] += 1;
+				    //if (frame_id == 0) lost_id[i] = 0;
+			    }/*
 			    else {
 				    lost_id[i] = 0;
 			    }
-			    */
+			    
 			    // Use quaternions to make a weighted average of rotations
 			    Vec4d quat1, quat2, quat_avg;
 			    quat1 = vec2quat(rvecs_ord[i]);
 			    quat2 = vec2quat(rvecs_store[i]);
-			    quat_avg = avgQuat(quat1, quat2, (1-alpha2), alpha2);
+			    quat_avg = avgQuat(quat1, quat2, alpha2, (1-alpha2));
 			    quats_store[i] = quat_avg;
 			    rvecs_ord[i] = quat2vec(quat_avg);
-			    /*
-			    for (int j=0; j<3; j++) {
-				    tvecs_ord[i][j] = (1.0f - alpha)*tvecs_ord[i][j] + alpha*tvecs_store[i][j];
-			    } 
-			    */
+			    
+			    //for (int j=0; j<3; j++) {
+			//	    tvecs_ord[i][j] = (1.0f - alpha)*tvecs_ord[i][j] + alpha*tvecs_store[i][j];
+			  //  } 
+			    
 			    cout << "(1-alpha)*x(t-1) + alpha*x(t) = " << tvecs_ord[i] << endl;
 			    cout << "(1-alpha)*r(t-1) + alpha*r(t) = " << rvecs_ord[i] << endl;
 			    cout << "quats_store" << quats_store[i] << endl;
-		    }
+			    */
+		   // }
 
 		    
 		    aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i],
                                     markerLength * 0.5f);
 
                     cout << "R: " << rvecs_ord[i] << "; T: " << tvecs_ord[i] << "\n" << endl; // the translation is with respect to the principal point
-		    if (stabilFilt) {
+/*		    if (stabilFilt) {
 			    q1 = vec2quat(rvecs_ord[i]);
 			    q2 = vec2quat(rvecs_store[i]);
 			    diff = tvecs_store[i] - tvecs_ord[i];
@@ -577,7 +592,7 @@ int main(int argc, char *argv[]) {
 					          "Dist "  << diff_mag     << "; " << "\n";
 			    }
 		    }
-
+*/
 		    // Save the computed estimation for the next frame
 		    rvecs_store[i] = rvecs_ord[i];
 		    tvecs_store[i] = tvecs_ord[i];
@@ -636,35 +651,48 @@ int main(int argc, char *argv[]) {
 
 	    //Average translation of markers
 	    vector< Vec3d > tvecs_store_centered(12);
-
+	    
 	    for (int i=0; i<12; i++) {
-		    tvecs_store_centered[i] = tvecs_store[i];
+		    tvecs_store_centered[i] = 0.0;//tvecs_store[i];
 	    }
 
 	    // Markers in a square
-	    tvecs_store_centered[0][0] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[0][1] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[1][0] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[1][1] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[2][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[2][1] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[3][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[3][1] += -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[1][0] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[1][1] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[0][0] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[0][1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[3][0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[3][1] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[2][0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[2][1] = -1.0 * (markerLength / 2 + markerOffset / 2);
 	  
-            tvecs_store_centered[4][0] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[4][1] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[5][0] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[5][1] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[6][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[6][1] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[7][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[7][1] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	  
+
+            tvecs_store_centered[5][0] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[5][1] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[4][0] = markerLength / 2 + markerOffset / 2 ;
+	    tvecs_store_centered[4][1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[7][0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[7][1] = markerLength / 2 + markerOffset / 2 + 0.5;
+	    tvecs_store_centered[6][0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[6][1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+
 	    // Markers in line
-	    tvecs_store_centered[0+8][0] += 1.5*markerLength + 1.5*markerOffset;
-	    tvecs_store_centered[1+8][0] += markerLength / 2 + markerOffset / 2;
-	    tvecs_store_centered[2+8][0] += -1.0 * (markerLength / 2 + markerOffset / 2);
-	    tvecs_store_centered[3+8][0] += -1.0 * (1.5*markerLength + 1.5*markerOffset);
+	    tvecs_store_centered[0+8][0] = 1.5*markerLength + 1.5*markerOffset;
+	    tvecs_store_centered[1+8][0] = markerLength / 2 + markerOffset / 2;
+	    tvecs_store_centered[2+8][0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+	    tvecs_store_centered[3+8][0] = -1.0 * (1.5*markerLength + 1.5*markerOffset);
+
+	    
+	    for (int i=0; i<4; i++) {
+		    tvecs_store_centered[i] = transformVec(tvecs_store_centered[i], quat2vec(quats_store[i]), tvecs_store[i]);
+	    }
+	    for (int i=4; i<8; i++) {
+		    tvecs_store_centered[i] = transformVec(tvecs_store_centered[i], quat2vec(quats_store[i]), tvecs_store[i]);
+	    }
+	    for (int i=8; i<12; i++) {
+		    tvecs_store_centered[i] = transformVec(tvecs_store_centered[i], quat2vec(quats_store[i]), tvecs_store[i]);
+	    }
+	    
 
 	    for (int i=0; i<3; i++) {
 		    tvecs2[i] = tvecs2b[i] = tvecs2c[i] = 0.0;

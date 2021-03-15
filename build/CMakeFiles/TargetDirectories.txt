@@ -3,4 +3,5 @@
 /home/nico/pama_marker/build/CMakeFiles/calibrate_camera.dir
 /home/nico/pama_marker/build/CMakeFiles/create_board.dir
 /home/nico/pama_marker/build/CMakeFiles/detect_stable.dir
+/home/nico/pama_marker/build/CMakeFiles/detect_final.dir
 /home/nico/pama_marker/build/CMakeFiles/detect_markers.dir

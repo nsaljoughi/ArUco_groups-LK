@@ -150,6 +150,19 @@ detect_stable/fast:
 .PHONY : detect_stable/fast
 
 #=============================================================================
+# Target rules for targets named detect_final
+
+# Build rule for target.
+detect_final: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 detect_final
+.PHONY : detect_final
+
+# fast build rule for target.
+detect_final/fast:
+	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/build
+.PHONY : detect_final/fast
+
+#=============================================================================
 # Target rules for targets named detect_markers
 
 # Build rule for target.
@@ -243,6 +256,33 @@ detect_markers.cpp.s:
 	$(MAKE) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.s
 .PHONY : detect_markers.cpp.s
 
+detect_markers_final.o: detect_markers_final.cpp.o
+
+.PHONY : detect_markers_final.o
+
+# target to build an object file
+detect_markers_final.cpp.o:
+	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/detect_markers_final.cpp.o
+.PHONY : detect_markers_final.cpp.o
+
+detect_markers_final.i: detect_markers_final.cpp.i
+
+.PHONY : detect_markers_final.i
+
+# target to preprocess a source file
+detect_markers_final.cpp.i:
+	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/detect_markers_final.cpp.i
+.PHONY : detect_markers_final.cpp.i
+
+detect_markers_final.s: detect_markers_final.cpp.s
+
+.PHONY : detect_markers_final.s
+
+# target to generate assembly for a file
+detect_markers_final.cpp.s:
+	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/detect_markers_final.cpp.s
+.PHONY : detect_markers_final.cpp.s
+
 detect_markers_stable.o: detect_markers_stable.cpp.o
 
 .PHONY : detect_markers_stable.o
@@ -281,6 +321,7 @@ help:
 	@echo "... calibrate_camera"
 	@echo "... create_board"
 	@echo "... detect_stable"
+	@echo "... detect_final"
 	@echo "... detect_markers"
 	@echo "... calibrate_camera.o"
 	@echo "... calibrate_camera.i"
@@ -291,6 +332,9 @@ help:
 	@echo "... detect_markers.o"
 	@echo "... detect_markers.i"
 	@echo "... detect_markers.s"
+	@echo "... detect_markers_final.o"
+	@echo "... detect_markers_final.i"
+	@echo "... detect_markers_final.s"
 	@echo "... detect_markers_stable.o"
 	@echo "... detect_markers_stable.i"
 	@echo "... detect_markers_stable.s"
