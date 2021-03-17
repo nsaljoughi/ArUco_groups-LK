@@ -97,10 +97,29 @@ Vec4d vec2quat(Vec3d vec) {
 
     return q;
 }
+Eigen::Vector4f vec2quat_eigen(Vec3d vec) {
+    Eigen::Vector4f q;
+    double ang = sqrt( vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2] );
+    q[0] = vec[0] / ang * sin(ang / 2);
+    q[1] = vec[1] / ang * sin(ang / 2);
+    q[2] = vec[2] / ang * sin(ang / 2);
+    q[3] = cos(ang / 2);
+
+    return q;
+}
 
 
 // Transform quaternion into a Rodrigues rotation vector
 Vec3d quat2vec(Vec4d quat) {
+    Vec3d v;
+    double ang = 2*acos(quat[3]);
+    v[0] = quat[0] / sqrt(1 - quat[3]*quat[3]) * ang;
+    v[1] = quat[1] / sqrt(1 - quat[3]*quat[3]) * ang;
+    v[2] = quat[2] / sqrt(1 - quat[3]*quat[3]) * ang;
+    
+    return v;
+}
+Vec3d quat_eigen2vec(Eigen::Vector4f quat) {
     Vec3d v;
     double ang = 2*acos(quat[3]);
     v[0] = quat[0] / sqrt(1 - quat[3]*quat[3]) * ang;
@@ -210,6 +229,106 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
 
     return vectrans;
 }
+
+
+// Compute combination pose at center of marker group
+Vec3d computeAvgRot(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, int group) {
+    std::vector<Eigen::Vector4f> quat_avg;
+    Vec3d rvec_avg;
+    for(unsigned int i=0; i<4; i++) {
+        Eigen::Vector4f quat;
+        if(detect_id[group*4+i]) {
+            quat = vec2quat_eigen(rvecs_ord[group*4+i]);
+            quat_avg.push_back(quat);
+        }
+    }
+    rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
+
+    return rvec_avg;
+}
+
+Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_ord, 
+                      std::vector<bool> detect_id, int group, float markerLength, float markerOffset) {
+    std::vector<Vec3d> tvecs_centered;
+    Vec3d tvec_avg;
+
+    if(group==0 || group==1) { // markers in a square
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+    else { // markers in line
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = 1.5*markerLength + 1.5*markerOffset;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (1.5*markerLength + 1.5*markerOffset);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+
+    for (int i=0; i<3; i++) {
+        tvecs[i] = 0.0;
+        for (int j=0; j<tvecs_centered.size(); j++) {
+            tvec_avg[i] += tvecs_centered[j][i];
+        }
+        tvec_avg[i] /= tvecs_centered.size();
+    }
+
+    return tvec_avg;
+} 
 
 
 
