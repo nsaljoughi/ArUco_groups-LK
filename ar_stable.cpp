@@ -395,23 +395,23 @@ int main(int argc, char argv*[]) {
             // Loop over markers
             for(unsigned int i=0; i<12; i++) {
 
-            	// check if marker was detected
-            	if(rvecs_ord[i][0] == 0.0) { 
-            		detect_id[i] = false;
-            		continue;
-            	}
+                // check if marker was detected
+                if(rvecs_ord[i][0] == 0.0) { 
+                    detect_id[i] = false;
+                    continue;
+                }
 
-            	// if not initialized, go on with other markers
-            	if(!init_id) {
-            		continue;
-            	}
+                // if not initialized, go on with other markers
+                if(!init_id) {
+                    continue;
+                }
 
-            	if(diff between marker pose and PoseMaster > thr) {
-            		detect_id[i] = false;
-            		continue;
-            	}
+                if(diff between marker pose and PoseMaster > thr) {
+                    detect_id[i] = false;
+                    continue;
+                }
 
-            	aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
+                aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
             // Loop over groups
