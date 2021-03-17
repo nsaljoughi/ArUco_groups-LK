@@ -330,17 +330,13 @@ int main(int argc, char argv*[]) {
     vector<Point2d> arrow; // vec to print arrow on image plane
 
     // We have 12 markers
-    vector<Vec3d> rvecs_store(12); // store markers' Euler rotation vectors
-    vector<Vec3d> tvecs_store(12); // store markers' translation vectors
-    vector<Vec4d> quats_store(12); // store markers' quaternions
+    vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
+    vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
 
     // We have three big markers
-    std::vector<bool> seen_id(3, false); // check if marker has been seen before
-    std::vector<int>  lost_id(3, 0); // count frames from last time marker was seen
-
-    vector<Vec3d> rvecs_avg_store(3); // store avg Euler rotation vectors
-    vector<Vec3d> tvecs_avg_store(3); // store avg translation vectors
-    vector<Vec4d> quats_avg_store(3); // store avg quaternions
+    std::vector<bool> init_id(3, false); // check if marker has been seen before
+    std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
+    std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
@@ -361,14 +357,13 @@ int main(int argc, char argv*[]) {
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
         vector<Vec3d> rvecs, tvecs; 
-        vector<Vec3d> rvecs_ord(12); // MAYBE OUTSIDE THE LOOP??
-        vector<Vec3d> tvecs_ord(12);
 
         // detect markers and estimate pose
         aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
 
         if(estimatePose && ids.size() > 0)
             aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs, tvecs);
+
 
         // Compute detection time
         double currentTime = ((double)getTickCount() - tick) / getTickFrequency();
@@ -392,18 +387,7 @@ int main(int argc, char argv*[]) {
         if(ids.size() > 0) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
-            if(estimatePose) {
-                for(unsigned int i=0; i<12; i++) {
-                    if(rvecs_ord[i][0] == 0.0) {
-                        continue;
-                    }
-                }
-                aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
-
-                // Save the computed estimation for the next frame
-                rvecs_store[i] = rvecs_ord[i];
-                tvecs_store[i] = tvecs_ord[i];
-                quats_store[i] = vec2quat(rvecs_ord[i]);
+            aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
         }
     }
