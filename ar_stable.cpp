@@ -333,6 +333,8 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_or
 
 
 
+
+
 ///**///
 int main(int argc, char argv*[]) {
     CommandLineParser parser(argc, argv, keys);
@@ -545,7 +547,8 @@ int main(int argc, char argv*[]) {
                         t_stable[i] += delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
-                            rMaster, tMaster = computeAvgPose();
+                            rMaster = computeAvgRot( rvecs_ord, detect_id, i);
+                            tMaster = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
@@ -563,7 +566,9 @@ int main(int argc, char argv*[]) {
                         }
                     }
                     else{
-                        rMaster, tMaster = avgPose(rMaster, tMaster, computeAvgPose());
+                        rMaster = computeAvgRot( rvecs_ord, detect_id, i);
+                        tMaster = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
+                        rMaster, tMaster = avgPose(rMaster, tMaster, computeAvgPose()); // TODO
                     }
                 }
             }
