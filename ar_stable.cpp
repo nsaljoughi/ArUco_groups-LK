@@ -416,12 +416,13 @@ int main(int argc, char argv*[]) {
 
             // Loop over groups
             for(unsigned int i=0; i<3; i++) {
-
-            }
-
             // INIT Check pose consistency
             // // check t_stable
             // // // PoseMaster <- computeAvgPose
+
+            // NORM check num markers
+            // // // PoseMaster <- computeAvgPose
+            }
         }
     }
 }
