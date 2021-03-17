@@ -392,6 +392,7 @@ int main(int argc, char argv*[]) {
         if(ids.size() > 0) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
+            // Loop over markers
             for(unsigned int i=0; i<12; i++) {
 
             	// check if marker was detected
@@ -412,6 +413,15 @@ int main(int argc, char argv*[]) {
 
             	aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
+
+            // Loop over groups
+            for(unsigned int i=0; i<3; i++) {
+
+            }
+
+            // INIT Check pose consistency
+            // // check t_stable
+            // // // PoseMaster <- computeAvgPose
         }
     }
 }
