@@ -336,6 +336,7 @@ int main(int argc, char argv*[]) {
     // We have 12 markers
     vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
     vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
+    std::vector<bool> detect_id(12, true); // check if marker was detected or not
 
     // We have three big markers
     std::vector<bool> init_id(3, false); // check if marker has been seen before
@@ -391,7 +392,26 @@ int main(int argc, char argv*[]) {
         if(ids.size() > 0) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
-            aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
+            for(unsigned int i=0; i<12; i++) {
+
+            	// check if marker was detected
+            	if(rvecs_ord[i][0] == 0.0) { 
+            		detect_id[i] = false;
+            		continue;
+            	}
+
+            	// if not initialized, go on with other markers
+            	if(!init_id) {
+            		continue;
+            	}
+
+            	if(diff between marker pose and PoseMaster > thr) {
+            		detect_id[i] = false;
+            		continue;
+            	}
+
+            	aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
+            }
         }
     }
 }
