@@ -326,6 +326,7 @@ int main(int argc, char argv*[]) {
     Mat arrow_cloud = cvcloud_load();
 
 
+
     // Define variables
     double totalTime = 0;
     int totalIterations = 0;
@@ -346,6 +347,7 @@ int main(int argc, char argv*[]) {
     // Weights for averaging final poses
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
+
 
 
     //////* ---KEY PART--- *//////
@@ -402,7 +404,7 @@ int main(int argc, char argv*[]) {
                 }
 
                 // if not initialized, go on with other markers
-                if(!init_id) {
+                if(!init_id[i]) {
                     continue;
                 }
 
@@ -416,6 +418,22 @@ int main(int argc, char argv*[]) {
 
             // Loop over groups
             for(unsigned int i=0; i<3; i++) {
+
+                if(!init_id[i*4]) { // if group needs init
+                    if(checkPoseConsistent(i, rvecs_ord, 4)) { // if markers are consistent
+                        t_stable[i] += delta_t;
+                        if(t_stable[i] >= thres) {
+                            init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
+                            rMaster, tMaster = computeAvgPose();
+                        }
+                        else {
+                            init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
+                        }
+                    }
+                    else {
+                        t_stable[i] = 0;
+                    }
+                }
             // INIT Check pose consistency
             // // check t_stable
             // // // PoseMaster <- computeAvgPose
