@@ -392,7 +392,6 @@ int main(int argc, char argv*[]) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
             aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
-            }
         }
     }
 }
