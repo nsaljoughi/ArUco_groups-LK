@@ -338,11 +338,13 @@ int main(int argc, char argv*[]) {
     vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
     vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
     std::vector<bool> detect_id(12, true); // check if marker was detected or not
+    std::vector<bool> init_id(3, false); // check if marker has been seen before
 
     // We have three big markers
-    std::vector<bool> init_id(3, false); // check if marker has been seen before
     std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
+    int thr_lost = 0; // TODO threshold in seconds for going into init
+    int thr_stable = 0; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
@@ -408,7 +410,7 @@ int main(int argc, char argv*[]) {
                     continue;
                 }
 
-                if(diff between marker pose and PoseMaster > thr) {
+                if(diff(marker_pose, PoseMaster) > thr) {
                     detect_id[i] = false;
                     continue;
                 }
@@ -422,7 +424,7 @@ int main(int argc, char argv*[]) {
                 if(!init_id[i*4]) { // if group needs init
                     if(checkPoseConsistent(i, rvecs_ord, 4)) { // if markers are consistent
                         t_stable[i] += delta_t;
-                        if(t_stable[i] >= thres) {
+                        if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster, tMaster = computeAvgPose();
                         }
@@ -433,13 +435,18 @@ int main(int argc, char argv*[]) {
                     else {
                         t_stable[i] = 0;
                     }
+                } // if already init
+                else {
+                    if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
+                        t_lost[i] += delta_t;
+                        if(t_lost[i] >= thr_lost) {
+                            init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
+                        }
+                    }
+                    else{
+                        rMaster, tMaster = avgPose(rMaster, tMaster, computeAvgPose());
+                    }
                 }
-            // INIT Check pose consistency
-            // // check t_stable
-            // // // PoseMaster <- computeAvgPose
-
-            // NORM check num markers
-            // // // PoseMaster <- computeAvgPose
             }
         }
     }
