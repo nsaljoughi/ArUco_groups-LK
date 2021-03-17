@@ -211,6 +211,10 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
     return vectrans;
 }
 
+
+
+
+///**///
 int main(int argc, char argv*[]) {
     CommandLineParser parser(argc, argv, keys);
     parser.about(about);
