@@ -516,7 +516,7 @@ int main(int argc, char *argv[]) {
     int totalIterations = 0;
 
     double abs_tick = (double)getTickCount();
-    double delta;
+    double delta_t;
     double delta_tot;
 
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
@@ -556,8 +556,7 @@ int main(int argc, char *argv[]) {
         cout << "abs_tick" << ((double)getTickCount() - abs_tick) / getTickFrequency() << endl;
 
         double tick = (double)getTickCount();
-        int delta_t = ((double)getTickCount() - abs_tick) / getTickFrequency(); 
-        delta = 0;
+        delta_t = 0;
 
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
@@ -578,8 +577,6 @@ int main(int argc, char *argv[]) {
             cout << "Detection Time = " << currentTime * 1000 << " ms "
                  << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
         }
-        delta_t = (int)(1000 * totalTime / double(totalIterations)); // time in seconds
-        cout << "delta_t " << delta_t << endl;
 
         // draw results
         image.copyTo(imageCopy);
@@ -672,9 +669,9 @@ int main(int argc, char *argv[]) {
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
         imshow("resize", imageResize);
 
-        delta = ((double)getTickCount() - tickk) / getTickFrequency();
+        delta_t = ((double)getTickCount() - tickk) / getTickFrequency();
         delta_tot += delta;
-        cout << "Delta" << delta << endl;
+        cout << "Delta" << delta_t << endl;
         cout << "Delta tot" << delta_tot << endl;
         cout << (delta_tot - abs_tick) / getTickFrequency() << endl;
 
