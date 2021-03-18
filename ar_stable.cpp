@@ -525,8 +525,8 @@ int main(int argc, char argv*[]) {
     // We have three big markers
     std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
-    int thr_lost = 0; // TODO threshold in seconds for going into init
-    int thr_stable = 0; // TODO threshold in seconds for acquiring master pose
+    int thr_lost = 1; // TODO threshold in seconds for going into init
+    int thr_stable = 1; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
@@ -545,6 +545,7 @@ int main(int argc, char argv*[]) {
         cout << "Frame " << frame_id << endl;
 
         double tick = (double)getTickCount();
+        int delta_t = 0; 
 
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
@@ -565,6 +566,8 @@ int main(int argc, char argv*[]) {
             cout << "Detection Time = " << currentTime * 1000 << " ms "
                  << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
         }
+        delta_t = (int)(1000 * 1000 * totalTime / double(totalIterations)); // time in seconds
+        cout << "delta_t" << delta_t << endl;
 
         // draw results
         image.copyTo(imageCopy);
