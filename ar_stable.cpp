@@ -599,6 +599,7 @@ int main(int argc, char *argv[]) {
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
                     detect_id[i] = false;
+                    cout << "Not detected" << endl;
                     continue;
                 }
 
