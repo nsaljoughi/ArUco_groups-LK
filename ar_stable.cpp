@@ -672,7 +672,7 @@ int main(int argc, char *argv[]) {
         delta = ((double)getTickCount() - tickk) / getTickFrequency();
         delta_t = delta;
 
-        cout << t_stable[0] << endl;
+        cout << "Stable time " << t_stable[0] << endl;
         cout << t_stable[1] << endl;
         cout << t_stable[2] << endl;
 
