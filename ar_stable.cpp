@@ -550,7 +550,7 @@ int main(int argc, char *argv[]) {
 
         cout << "Frame " << frame_id << endl;
         cout << totalIterations << endl;
-        cout << "abs_tick" << abs_tick << endl;
+        cout << "abs_tick" << ((double)getTickCount() - abs_tick) / getTickFrequency() << endl;
 
         double tick = (double)getTickCount();
         int delta_t = 0; 
