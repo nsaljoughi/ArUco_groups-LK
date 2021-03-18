@@ -536,6 +536,8 @@ int main(int argc, char *argv[]) {
     ////// ---KEY PART--- //////
     while(inputVideo.grab()) {
 
+        double tickk = (double)getTickCount();
+
         Mat image, imageCopy;
         inputVideo.retrieve(image);
         //cv::resize(image, image, Size(image.cols/2, image.rows/2)); // lower video resolution
@@ -668,10 +670,11 @@ int main(int argc, char *argv[]) {
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
         imshow("resize", imageResize);
 
-        delta = ((double)getTickCount() - tick) / getTickFrequency();
+        delta = ((double)getTickCount() - tickk) / getTickFrequency();
         delta_tot += delta;
         cout << "Delta" << delta << endl;
         cout << "Delta tot" << delta_tot << endl;
+        cout << delta_tot - abs_tick << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
