@@ -515,6 +515,8 @@ int main(int argc, char *argv[]) {
     int totalIterations = 0;
     int frame_id = 0;
 
+    double abs_tick = (double)getTickCount();
+
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
     // We have three big markers
@@ -547,6 +549,8 @@ int main(int argc, char *argv[]) {
 
 
         cout << "Frame " << frame_id << endl;
+        cout << totalIterations << endl;
+        cout << "abs_tick" << abs_tick << endl;
 
         double tick = (double)getTickCount();
         int delta_t = 0; 
