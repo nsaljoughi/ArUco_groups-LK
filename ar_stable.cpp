@@ -256,7 +256,7 @@ bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     for(int i=0; i<3; i++) {
         if(std::abs(rvec1[i]-rvec2[i]) > thr[i]) {
             return false;
-	}
+    }
     }
     return true;
 }
@@ -513,17 +513,17 @@ int main(int argc, char *argv[]) {
     // Define variables
     double totalTime = 0;
     int totalIterations = 0;
-    int frame_id = 0;
 
     double abs_tick = (double)getTickCount();
+    double delta;
 
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
     // We have three big markers
     std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
-    int thr_lost = 5000; // TODO threshold in seconds for going into init
-    int thr_stable = 1000; // TODO threshold in seconds for acquiring master pose
+    int thr_lost = 2; // TODO threshold in seconds for going into init
+    int thr_stable = 1; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
@@ -538,22 +538,22 @@ int main(int argc, char *argv[]) {
         Mat image, imageCopy;
         inputVideo.retrieve(image);
         //cv::resize(image, image, Size(image.cols/2, image.rows/2)); // lower video resolution
-	
-	// We have 12 markers
-	vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
-	vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
-	vector<Vec3d> rMaster(3);
-	vector<Vec3d> tMaster(3);
-	std::vector<bool> detect_id(12, true); // check if marker was detected or not
-	std::vector<bool> init_id(3, false); // check if marker has been seen before
+    
+        // We have 12 markers
+        vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
+        vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
+        vector<Vec3d> rMaster(3);
+        vector<Vec3d> tMaster(3);
+        std::vector<bool> detect_id(12, true); // check if marker was detected or not
+        std::vector<bool> init_id(3, false); // check if marker has been seen before
 
 
-        cout << "Frame " << frame_id << endl;
-        cout << totalIterations << endl;
+        cout << "Frame " << totalIterations << endl;
         cout << "abs_tick" << ((double)getTickCount() - abs_tick) / getTickFrequency() << endl;
 
         double tick = (double)getTickCount();
-        int delta_t = 0; 
+        int delta_t = ((double)getTickCount() - abs_tick) / getTickFrequency(); 
+        delta = 0;
 
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
@@ -656,7 +656,6 @@ int main(int argc, char *argv[]) {
                 if(init_id[8]) circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
             }
         }
-        frame_id += 1;
 
         if(showRejected && rejected.size() > 0)
             aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
@@ -667,6 +666,9 @@ int main(int argc, char *argv[]) {
         Mat imageResize;
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
         imshow("resize", imageResize);
+
+        delta = ((double)getTickCount() - abs_tick) / getTickFrequency();
+        cout << delta << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
