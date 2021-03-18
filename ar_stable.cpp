@@ -382,6 +382,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
             for(int k=0; k<3; k++) {
+                cout << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
                 if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
                     unconsistent += 1;
                     break;
@@ -597,7 +598,6 @@ int main(int argc, char *argv[]) {
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
                     detect_id[i] = false;
-                    cout << "Not detected" << endl;
                     continue;
                 }
 
@@ -672,11 +672,9 @@ int main(int argc, char *argv[]) {
         delta = ((double)getTickCount() - tickk) / getTickFrequency();
         delta_t = delta;
 
-        cout << delta << endl;
-        cout << delta_t << endl;
-        cout << t_lost[0] << endl;
-        cout << t_lost[1] << endl;
-        cout << t_lost[2] << endl;
+        cout << t_stable[0] << endl;
+        cout << t_stable[1] << endl;
+        cout << t_stable[2] << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
