@@ -241,9 +241,9 @@ Vec3d avgRot(Vec3d rvec1, Vec3d rvec2, double weight1, double weight2) {
     return quat2vec(quat_avg);
 }
 
-Vec3d avgTrasl(Vec3d tvec1, vec3d tvec2, double weight1, double weight2) {
+Vec3d avgTrasl(Vec3d tvec1, Vec3d tvec2, double weight1, double weight2) {
     Vec3d tvec_avg;
-    for (int j=0; j<3; j++) {
+    for (int i=0; i<3; i++) {
         tvec_avg[i] = weight1*tvec1[i] + weight2*tvec2[i];
     }
 
@@ -254,8 +254,9 @@ Vec3d avgTrasl(Vec3d tvec1, vec3d tvec2, double weight1, double weight2) {
 // Check diff between two rotations in Euler notation
 bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     for(int i=0; i<3; i++) {
-        if(std::abs(rvec1[i]-rvecs2[i]) > thr[i]) {
+        if(std::abs(rvec1[i]-rvec2[i]) > thr[i]) {
             return false;
+	}
     }
     return true;
 }
@@ -277,7 +278,7 @@ Vec3d computeAvgRot(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, i
     return rvec_avg;
 }
 
-Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_ord, 
+Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord, 
                       std::vector<bool> detect_id, int group, float markerLength, float markerOffset) {
     std::vector<Vec3d> tvecs_centered;
     Vec3d tvec_avg;
@@ -350,8 +351,8 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_or
     }
 
     for (int i=0; i<3; i++) {
-        tvecs[i] = 0.0;
-        for (int j=0; j<tvecs_centered.size(); j++) {
+        tvec_avg[i] = 0.0;
+        for (unsigned int j=0; j<tvecs_centered.size(); j++) {
             tvec_avg[i] += tvecs_centered[j][i];
         }
         tvec_avg[i] /= tvecs_centered.size();
@@ -362,7 +363,7 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_or
 
 
 // Check if num markers' poses are consistent
-bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, int num, 
+bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
     std::vector<Vec3d> rvecs;
     unsigned int unconsistent = 0;
@@ -396,8 +397,8 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
 }
 
 
-///**///
-int main(int argc, char argv*[]) {
+//////
+int main(int argc, char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
     parser.about(about);
 
@@ -516,31 +517,34 @@ int main(int argc, char argv*[]) {
 
     vector<Point2d> arrow; // vec to print arrow on image plane
 
-    // We have 12 markers
-    vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
-    vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
-    std::vector<bool> detect_id(12, true); // check if marker was detected or not
-    std::vector<bool> init_id(3, false); // check if marker has been seen before
-
     // We have three big markers
     std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
-    int thr_lost = 1; // TODO threshold in seconds for going into init
-    int thr_stable = 1; // TODO threshold in seconds for acquiring master pose
+    int thr_lost = 1000; // TODO threshold in seconds for going into init
+    int thr_stable = 1000; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
+    thr_init[0] = thr_init[1] = thr_init[2] = 0.0;
 
 
-
-    //////* ---KEY PART--- *//////
+    ////// ---KEY PART--- //////
     while(inputVideo.grab()) {
 
         Mat image, imageCopy;
         inputVideo.retrieve(image);
         //cv::resize(image, image, Size(image.cols/2, image.rows/2)); // lower video resolution
+	
+	// We have 12 markers
+	vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
+	vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
+	Vec3d rMaster;
+	Vec3d tMaster;
+	std::vector<bool> detect_id(12, true); // check if marker was detected or not
+	std::vector<bool> init_id(3, false); // check if marker has been seen before
+
 
         cout << "Frame " << frame_id << endl;
 
@@ -566,8 +570,8 @@ int main(int argc, char argv*[]) {
             cout << "Detection Time = " << currentTime * 1000 << " ms "
                  << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
         }
-        delta_t = (int)(1000 * 1000 * totalTime / double(totalIterations)); // time in seconds
-        cout << "delta_t" << delta_t << endl;
+        delta_t = (int)(1000 * totalTime / double(totalIterations)); // time in seconds
+        cout << "delta_t " << delta_t << endl;
 
         // draw results
         image.copyTo(imageCopy);

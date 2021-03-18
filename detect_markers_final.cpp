@@ -391,6 +391,7 @@ int main(int argc, char *argv[]) {
     unsigned int frame_id = 0;
     unsigned int lost_since;
     std::vector< unsigned int > lost_id(12,0);
+    std::vector< unsigned int > seen_id(12,0);
 
     VideoWriter cap;
 
@@ -474,16 +475,20 @@ int main(int argc, char *argv[]) {
                 for(unsigned int i = 0; i < 12; i++)//ids.size(); i++)
                 {
 		    if (rvecs_ord[i][0] == 0.0) {
-			    lost_id[i] += 1;
+			    if (seen_id[i] != 0) {
+				    lost_id[i] += 1;
+			    }
+			    //lost_id[i] += 1;
 			    continue;
 		    }
 		    // If the video just started, no previous data...	
-		    else if (frame_id == 0/* || lost_id[i] > 8*/){
+		    else if (frame_id == 0 || seen_id[i] == 0 || lost_id[i] > 8){
 			    rvecs_store[i] = rvecs_ord[i];
 			    tvecs_store[i] = tvecs_ord[i];
 			    quats_store[i] = vec2quat(rvecs_ord[i]);
 			    lost_id[i] = 0;
 		    }
+		    seen_id[i] = 1;
 		    
 
 		    // Display some infos
@@ -511,9 +516,14 @@ int main(int argc, char *argv[]) {
 		    cout << "||x(t-1) - x(t)|| = " << diff_mag << endl;
 		    cout << "||q(t-1) - q(t)|| = " << diff_rot_mag << endl;
 
-		    if (diff_mag > 6 || diff_rot_mag > 1) {
+		    if (diff_mag > 0.5 || diff_rot_mag > 0.99) {
+			    //tvecs_ord[i][0] = tvecs_ord[i][1] = tvecs_ord[i][2] = 0.0;
 			    rvecs_ord[i][0] = rvecs_ord[i][1] = rvecs_ord[i][2] = 0.0;
 			    cout << "Limit for" << i << endl;
+			    //rvecs_store[i] = rvecs_ord[i];
+			    //tvecs_store[i] = tvecs_ord[i];
+			    //quats_store[i] = vec2quat(rvecs_ord[i]);
+
 			    lost_id[i] += 1;
 			    continue;
 		    }

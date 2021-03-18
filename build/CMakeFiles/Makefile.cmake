@@ -54,9 +54,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/calibrate_camera.dir/DependInfo.cmake"
-  "CMakeFiles/create_board.dir/DependInfo.cmake"
-  "CMakeFiles/detect_stable.dir/DependInfo.cmake"
-  "CMakeFiles/detect_final.dir/DependInfo.cmake"
-  "CMakeFiles/detect_markers.dir/DependInfo.cmake"
+  "CMakeFiles/ar_stable.dir/DependInfo.cmake"
   )

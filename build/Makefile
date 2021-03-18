@@ -111,204 +111,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named calibrate_camera
+# Target rules for targets named ar_stable
 
 # Build rule for target.
-calibrate_camera: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 calibrate_camera
-.PHONY : calibrate_camera
+ar_stable: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ar_stable
+.PHONY : ar_stable
 
 # fast build rule for target.
-calibrate_camera/fast:
-	$(MAKE) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/build
-.PHONY : calibrate_camera/fast
+ar_stable/fast:
+	$(MAKE) -f CMakeFiles/ar_stable.dir/build.make CMakeFiles/ar_stable.dir/build
+.PHONY : ar_stable/fast
 
-#=============================================================================
-# Target rules for targets named create_board
+ar_stable.o: ar_stable.cpp.o
 
-# Build rule for target.
-create_board: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 create_board
-.PHONY : create_board
-
-# fast build rule for target.
-create_board/fast:
-	$(MAKE) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/build
-.PHONY : create_board/fast
-
-#=============================================================================
-# Target rules for targets named detect_stable
-
-# Build rule for target.
-detect_stable: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 detect_stable
-.PHONY : detect_stable
-
-# fast build rule for target.
-detect_stable/fast:
-	$(MAKE) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/build
-.PHONY : detect_stable/fast
-
-#=============================================================================
-# Target rules for targets named detect_final
-
-# Build rule for target.
-detect_final: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 detect_final
-.PHONY : detect_final
-
-# fast build rule for target.
-detect_final/fast:
-	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/build
-.PHONY : detect_final/fast
-
-#=============================================================================
-# Target rules for targets named detect_markers
-
-# Build rule for target.
-detect_markers: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 detect_markers
-.PHONY : detect_markers
-
-# fast build rule for target.
-detect_markers/fast:
-	$(MAKE) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/build
-.PHONY : detect_markers/fast
-
-calibrate_camera.o: calibrate_camera.cpp.o
-
-.PHONY : calibrate_camera.o
+.PHONY : ar_stable.o
 
 # target to build an object file
-calibrate_camera.cpp.o:
-	$(MAKE) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.o
-.PHONY : calibrate_camera.cpp.o
+ar_stable.cpp.o:
+	$(MAKE) -f CMakeFiles/ar_stable.dir/build.make CMakeFiles/ar_stable.dir/ar_stable.cpp.o
+.PHONY : ar_stable.cpp.o
 
-calibrate_camera.i: calibrate_camera.cpp.i
+ar_stable.i: ar_stable.cpp.i
 
-.PHONY : calibrate_camera.i
-
-# target to preprocess a source file
-calibrate_camera.cpp.i:
-	$(MAKE) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.i
-.PHONY : calibrate_camera.cpp.i
-
-calibrate_camera.s: calibrate_camera.cpp.s
-
-.PHONY : calibrate_camera.s
-
-# target to generate assembly for a file
-calibrate_camera.cpp.s:
-	$(MAKE) -f CMakeFiles/calibrate_camera.dir/build.make CMakeFiles/calibrate_camera.dir/calibrate_camera.cpp.s
-.PHONY : calibrate_camera.cpp.s
-
-create_board.o: create_board.cpp.o
-
-.PHONY : create_board.o
-
-# target to build an object file
-create_board.cpp.o:
-	$(MAKE) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/create_board.cpp.o
-.PHONY : create_board.cpp.o
-
-create_board.i: create_board.cpp.i
-
-.PHONY : create_board.i
+.PHONY : ar_stable.i
 
 # target to preprocess a source file
-create_board.cpp.i:
-	$(MAKE) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/create_board.cpp.i
-.PHONY : create_board.cpp.i
+ar_stable.cpp.i:
+	$(MAKE) -f CMakeFiles/ar_stable.dir/build.make CMakeFiles/ar_stable.dir/ar_stable.cpp.i
+.PHONY : ar_stable.cpp.i
 
-create_board.s: create_board.cpp.s
+ar_stable.s: ar_stable.cpp.s
 
-.PHONY : create_board.s
-
-# target to generate assembly for a file
-create_board.cpp.s:
-	$(MAKE) -f CMakeFiles/create_board.dir/build.make CMakeFiles/create_board.dir/create_board.cpp.s
-.PHONY : create_board.cpp.s
-
-detect_markers.o: detect_markers.cpp.o
-
-.PHONY : detect_markers.o
-
-# target to build an object file
-detect_markers.cpp.o:
-	$(MAKE) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.o
-.PHONY : detect_markers.cpp.o
-
-detect_markers.i: detect_markers.cpp.i
-
-.PHONY : detect_markers.i
-
-# target to preprocess a source file
-detect_markers.cpp.i:
-	$(MAKE) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.i
-.PHONY : detect_markers.cpp.i
-
-detect_markers.s: detect_markers.cpp.s
-
-.PHONY : detect_markers.s
+.PHONY : ar_stable.s
 
 # target to generate assembly for a file
-detect_markers.cpp.s:
-	$(MAKE) -f CMakeFiles/detect_markers.dir/build.make CMakeFiles/detect_markers.dir/detect_markers.cpp.s
-.PHONY : detect_markers.cpp.s
-
-detect_markers_final.o: detect_markers_final.cpp.o
-
-.PHONY : detect_markers_final.o
-
-# target to build an object file
-detect_markers_final.cpp.o:
-	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/detect_markers_final.cpp.o
-.PHONY : detect_markers_final.cpp.o
-
-detect_markers_final.i: detect_markers_final.cpp.i
-
-.PHONY : detect_markers_final.i
-
-# target to preprocess a source file
-detect_markers_final.cpp.i:
-	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/detect_markers_final.cpp.i
-.PHONY : detect_markers_final.cpp.i
-
-detect_markers_final.s: detect_markers_final.cpp.s
-
-.PHONY : detect_markers_final.s
-
-# target to generate assembly for a file
-detect_markers_final.cpp.s:
-	$(MAKE) -f CMakeFiles/detect_final.dir/build.make CMakeFiles/detect_final.dir/detect_markers_final.cpp.s
-.PHONY : detect_markers_final.cpp.s
-
-detect_markers_stable.o: detect_markers_stable.cpp.o
-
-.PHONY : detect_markers_stable.o
-
-# target to build an object file
-detect_markers_stable.cpp.o:
-	$(MAKE) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.o
-.PHONY : detect_markers_stable.cpp.o
-
-detect_markers_stable.i: detect_markers_stable.cpp.i
-
-.PHONY : detect_markers_stable.i
-
-# target to preprocess a source file
-detect_markers_stable.cpp.i:
-	$(MAKE) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.i
-.PHONY : detect_markers_stable.cpp.i
-
-detect_markers_stable.s: detect_markers_stable.cpp.s
-
-.PHONY : detect_markers_stable.s
-
-# target to generate assembly for a file
-detect_markers_stable.cpp.s:
-	$(MAKE) -f CMakeFiles/detect_stable.dir/build.make CMakeFiles/detect_stable.dir/detect_markers_stable.cpp.s
-.PHONY : detect_markers_stable.cpp.s
+ar_stable.cpp.s:
+	$(MAKE) -f CMakeFiles/ar_stable.dir/build.make CMakeFiles/ar_stable.dir/ar_stable.cpp.s
+.PHONY : ar_stable.cpp.s
 
 # Help Target
 help:
@@ -318,26 +158,10 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... calibrate_camera"
-	@echo "... create_board"
-	@echo "... detect_stable"
-	@echo "... detect_final"
-	@echo "... detect_markers"
-	@echo "... calibrate_camera.o"
-	@echo "... calibrate_camera.i"
-	@echo "... calibrate_camera.s"
-	@echo "... create_board.o"
-	@echo "... create_board.i"
-	@echo "... create_board.s"
-	@echo "... detect_markers.o"
-	@echo "... detect_markers.i"
-	@echo "... detect_markers.s"
-	@echo "... detect_markers_final.o"
-	@echo "... detect_markers_final.i"
-	@echo "... detect_markers_final.s"
-	@echo "... detect_markers_stable.o"
-	@echo "... detect_markers_stable.i"
-	@echo "... detect_markers_stable.s"
+	@echo "... ar_stable"
+	@echo "... ar_stable.o"
+	@echo "... ar_stable.i"
+	@echo "... ar_stable.s"
 .PHONY : help
 
 
