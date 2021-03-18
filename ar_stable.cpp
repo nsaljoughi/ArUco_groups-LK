@@ -515,7 +515,7 @@ int main(int argc, char *argv[]) {
     int totalIterations = 0;
     int frame_id = 0;
 
-    vector<Point2d> arrow; // vec to print arrow on image plane
+    vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
     // We have three big markers
     std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
@@ -540,8 +540,8 @@ int main(int argc, char *argv[]) {
 	// We have 12 markers
 	vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
 	vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
-	Vec3d rMaster;
-	Vec3d tMaster;
+	vector<Vec3d> rMaster(3);
+	vector<Vec3d> tMaster(3);
 	std::vector<bool> detect_id(12, true); // check if marker was detected or not
 	std::vector<bool> init_id(3, false); // check if marker has been seen before
 
@@ -617,8 +617,8 @@ int main(int argc, char *argv[]) {
                         t_stable[i] += delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
-                            rMaster = computeAvgRot( rvecs_ord, detect_id, i);
-                            tMaster = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
+                            rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
+                            tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
@@ -636,10 +636,20 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     else{
-                        rMaster = avgRot(computeAvgRot( rvecs_ord, detect_id, i), rMaster, alpha_rot, (1 - alpha_rot));
-                        tMaster = avgTrasl(computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset), tMaster, alpha_trasl, (1 - alpha_trasl));
+                        rMaster[i] = avgRot(computeAvgRot( rvecs_ord, detect_id, i), rMaster[i], alpha_rot, (1 - alpha_rot));
+                        tMaster[i] = avgTrasl(computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset), tMaster[i], alpha_trasl, (1 - alpha_trasl));
                     }
                 }
+            }
+            projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
+            projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
+            projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
+
+            for (unsigned int j = 0; j < rectangle2D.size(); j++)
+            {
+                circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
+                circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
+                circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
             }
         }
         frame_id += 1;
