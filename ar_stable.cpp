@@ -521,10 +521,10 @@ int main(int argc, char *argv[]) {
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
     // We have three big markers
-    std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
-    std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
-    int thr_lost = 2; // TODO threshold in seconds for going into init
-    int thr_stable = 1; // TODO threshold in seconds for acquiring master pose
+    std::vector<double>  t_lost(3, 0); // count seconds from last time marker was seen
+    std::vector<double>  t_stable(3, 0); // count seconds from moment markers are consistent
+    double thr_lost = 2; // TODO threshold in seconds for going into init
+    double thr_stable = 1; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
@@ -619,7 +619,7 @@ int main(int argc, char *argv[]) {
 
                 if(!init_id[i*4]) { // if group needs init
                     if(checkPoseConsistent(rvecs_ord, detect_id, 4, i, thr_init)) { // if markers are consistent
-                        t_stable[i] += (int)delta_t;
+                        t_stable[i] += delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
@@ -635,7 +635,7 @@ int main(int argc, char *argv[]) {
                 } // if already init
                 else {
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
-                        t_lost[i] += (int)delta_t;
+                        t_lost[i] += delta_t;
                         if(t_lost[i] >= thr_lost) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                         }
