@@ -667,7 +667,7 @@ int main(int argc, char *argv[]) {
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
         imshow("resize", imageResize);
 
-        delta = ((double)getTickCount() - abs_tick) / getTickFrequency();
+        delta = ((double)getTickCount() - tick) / getTickFrequency();
         cout << delta << endl;
 
         char key = (char)waitKey(waitTime); 
