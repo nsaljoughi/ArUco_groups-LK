@@ -548,7 +548,7 @@ int main(int argc, char *argv[]) {
         vector<Vec3d> rMaster(3);
         vector<Vec3d> tMaster(3);
         std::vector<bool> detect_id(12, true); // check if marker was detected or not
-        std::vector<bool> init_id(3, false); // check if marker has been seen before
+        std::vector<bool> init_id(12, false); // check if marker has been seen before
 
 
         cout << "Frame " << totalIterations << endl;
