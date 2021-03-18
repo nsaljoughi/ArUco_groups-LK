@@ -625,6 +625,7 @@ int main(int argc, char *argv[]) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
                             tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
+                            t_stable[i] = 0;
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
@@ -639,6 +640,7 @@ int main(int argc, char *argv[]) {
                         t_lost[i] += delta_t;
                         if(t_lost[i] >= thr_lost) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
+                            t_lost[i] = 0;
                         }
                     }
                     else{
