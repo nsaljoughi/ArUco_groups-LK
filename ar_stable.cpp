@@ -331,6 +331,39 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_or
 } 
 
 
+// Check if num markers' poses are consistent
+bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, int num, 
+						 int group, std::vector<double> thr) {
+	std::vector<Vec3d> rvecs;
+	unsigned int unconsistent = 0;
+
+	for(int i=0; i<4; i++) {
+		if(detect_id[group*4+i]) {
+			rvecs.push_back(rvecs_ord[group*4+i]);
+		}
+	}
+
+	if(rvecs.size() < num) {
+		return false;
+	}
+
+	for(unsigned int i=0; i<rvecs.size(); i++) {
+		for(unsigned int j=0; j<rvecs.size(); j++) {
+			for(int k=0; k<3; k++) {
+				if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
+					unconsistent += 1;
+					break;
+				}
+			}
+		}
+	}
+
+	if((rvecs.size()-unconsistent)<num) {
+		return false;
+	}
+
+	return true;
+}
 
 
 
@@ -470,6 +503,7 @@ int main(int argc, char argv*[]) {
     // Weights for averaging final poses
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
+    std::vector<double> thr_init(3); // angle threshold for markers consistency in INIT
 
 
 
@@ -539,11 +573,12 @@ int main(int argc, char argv*[]) {
                 aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
+
             // Loop over groups
             for(unsigned int i=0; i<3; i++) {
 
                 if(!init_id[i*4]) { // if group needs init
-                    if(checkPoseConsistent(i, rvecs_ord, 4)) { // if markers are consistent
+                    if(checkPoseConsistent(rvecs_ord, detect_id, 4, i, thr_init)) { // if markers are consistent
                         t_stable[i] += delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
