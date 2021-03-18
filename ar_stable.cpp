@@ -391,6 +391,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
             }
         }
     }
+    cout << rvecs.size()-unconsistent << endl;
 
     if((rvecs.size()-unconsistent)<num) {
         return false;
