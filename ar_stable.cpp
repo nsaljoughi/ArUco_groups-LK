@@ -670,7 +670,7 @@ int main(int argc, char *argv[]) {
         imshow("resize", imageResize);
 
         delta_t = ((double)getTickCount() - tickk) / getTickFrequency();
-        delta_tot += delta;
+        delta_tot += delta_t;
         cout << "Delta" << delta_t << endl;
         cout << "Delta tot" << delta_tot << endl;
         cout << (delta_tot - abs_tick) / getTickFrequency() << endl;
