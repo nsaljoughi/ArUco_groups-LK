@@ -516,6 +516,7 @@ int main(int argc, char *argv[]) {
 
     double abs_tick = (double)getTickCount();
     double delta;
+    double delta_tot;
 
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
@@ -668,7 +669,9 @@ int main(int argc, char *argv[]) {
         imshow("resize", imageResize);
 
         delta = ((double)getTickCount() - tick) / getTickFrequency();
-        cout << delta << endl;
+        delta_tot += delta;
+        cout << "Delta" << delta << endl;
+        cout << "Delta tot" << delta_tot << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
