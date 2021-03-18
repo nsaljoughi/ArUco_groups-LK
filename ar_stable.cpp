@@ -520,14 +520,14 @@ int main(int argc, char *argv[]) {
     // We have three big markers
     std::vector<int>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<int>  t_stable(3, 0); // count seconds from moment markers are consistent
-    int thr_lost = 1000; // TODO threshold in seconds for going into init
+    int thr_lost = 5000; // TODO threshold in seconds for going into init
     int thr_stable = 1000; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
-    thr_init[0] = thr_init[1] = thr_init[2] = 0.0;
+    thr_init[0] = thr_init[1] = thr_init[2] = 5.0;
 
 
     ////// ---KEY PART--- //////
@@ -600,7 +600,7 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
 
-                if(!checkDiffRot(rvecs_ord[i], rMaster, thr_init)) {
+                if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
                     detect_id[i] = false;
                     continue;
                 }
@@ -636,7 +636,7 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     else{
-                        rMaster[i] = avgRot(computeAvgRot( rvecs_ord, detect_id, i), rMaster[i], alpha_rot, (1 - alpha_rot));
+                        rMaster[i] = avgRot(computeAvgRot(rvecs_ord, detect_id, i), rMaster[i], alpha_rot, (1 - alpha_rot));
                         tMaster[i] = avgTrasl(computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset), tMaster[i], alpha_trasl, (1 - alpha_trasl));
                     }
                 }
@@ -645,11 +645,11 @@ int main(int argc, char *argv[]) {
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
 
-            for (unsigned int j = 0; j < rectangle2D.size(); j++)
+            for (unsigned int j = 0; j < arrow1.size(); j++)
             {
-                circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
-                circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
-                circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
+                if(init_id[0]) circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
+                if(init_id[4]) circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
+                if(init_id[8]) circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
             }
         }
         frame_id += 1;
