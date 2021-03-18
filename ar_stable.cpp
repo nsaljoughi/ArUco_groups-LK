@@ -537,6 +537,7 @@ int main(int argc, char *argv[]) {
     while(inputVideo.grab()) {
 
         double tickk = (double)getTickCount();
+        cout << delta_t << endl;
 
         Mat image, imageCopy;
         inputVideo.retrieve(image);
