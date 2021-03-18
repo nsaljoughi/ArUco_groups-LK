@@ -230,23 +230,34 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
     return vectrans;
 }
 
+
 // Avg two poses with weights associated
 
 Vec3d avgRot(Vec3d rvec1, Vec3d rvec2, double weight1, double weight2) {
-	Vec4d quat1 = vec2quat(rvec1);
-	Vec4d quat2 = vec2quat(rvec2);
-	Vec4d quat_avg = avgQuat(quat1, quat2, weight1, weight2);
+    Vec4d quat1 = vec2quat(rvec1);
+    Vec4d quat2 = vec2quat(rvec2);
+    Vec4d quat_avg = avgQuat(quat1, quat2, weight1, weight2);
 
-	return quat2vec(quat_avg);
+    return quat2vec(quat_avg);
 }
 
 Vec3d avgTrasl(Vec3d tvec1, vec3d tvec2, double weight1, double weight2) {
-	Vec3d tvec_avg;
-	for (int j=0; j<3; j++) {
-		tvec_avg[i] = weight1*tvec1[i] + weight2*tvec2[i];
-	}
+    Vec3d tvec_avg;
+    for (int j=0; j<3; j++) {
+        tvec_avg[i] = weight1*tvec1[i] + weight2*tvec2[i];
+    }
 
-	return tvec_avg; 
+    return tvec_avg; 
+}
+
+
+// Check diff between two rotations in Euler notation
+bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
+    for(int i=0; i<3; i++) {
+        if(std::abs(rvec1[i]-rvecs2[i]) > thr[i]) {
+            return false;
+    }
+    return true;
 }
 
 
@@ -352,36 +363,36 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3ds> rvecs_or
 
 // Check if num markers' poses are consistent
 bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, int num, 
-						 int group, std::vector<double> thr) {
-	std::vector<Vec3d> rvecs;
-	unsigned int unconsistent = 0;
+                         int group, std::vector<double> thr) {
+    std::vector<Vec3d> rvecs;
+    unsigned int unconsistent = 0;
 
-	for(int i=0; i<4; i++) {
-		if(detect_id[group*4+i]) {
-			rvecs.push_back(rvecs_ord[group*4+i]);
-		}
-	}
+    for(int i=0; i<4; i++) {
+        if(detect_id[group*4+i]) {
+            rvecs.push_back(rvecs_ord[group*4+i]);
+        }
+    }
 
-	if(rvecs.size() < num) {
-		return false;
-	}
+    if(rvecs.size() < num) {
+        return false;
+    }
 
-	for(unsigned int i=0; i<rvecs.size(); i++) {
-		for(unsigned int j=0; j<rvecs.size(); j++) {
-			for(int k=0; k<3; k++) {
-				if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
-					unconsistent += 1;
-					break;
-				}
-			}
-		}
-	}
+    for(unsigned int i=0; i<rvecs.size(); i++) {
+        for(unsigned int j=0; j<rvecs.size(); j++) {
+            for(int k=0; k<3; k++) {
+                if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
+                    unconsistent += 1;
+                    break;
+                }
+            }
+        }
+    }
 
-	if((rvecs.size()-unconsistent)<num) {
-		return false;
-	}
+    if((rvecs.size()-unconsistent)<num) {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 
@@ -582,7 +593,7 @@ int main(int argc, char argv*[]) {
                     continue;
                 }
 
-                if(diff(marker_pose, PoseMaster) > thr) { // TODO
+                if(!checkDiffRot(rvecs_ord[i], rMaster, thr_init)) {
                     detect_id[i] = false;
                     continue;
                 }
@@ -624,5 +635,26 @@ int main(int argc, char argv*[]) {
                 }
             }
         }
+        frame_id += 1;
+
+        if(showRejected && rejected.size() > 0)
+            aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
+
+        if (saveResults) cap.write(imageCopy);
+
+        //imshow("out", imageCopy);
+        Mat imageResize;
+        cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
+        imshow("resize", imageResize);
+
+        char key = (char)waitKey(waitTime); 
+        if(key == 27) break;
     }
+
+    inputVideo.release();
+    if (saveResults) cap.release();
+    
+    resultfile.close();
+
+    return 0;
 }
