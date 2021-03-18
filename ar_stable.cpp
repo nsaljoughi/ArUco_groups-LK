@@ -254,6 +254,7 @@ Vec3d avgTrasl(Vec3d tvec1, Vec3d tvec2, double weight1, double weight2) {
 // Check diff between two rotations in Euler notation
 bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     for(int i=0; i<3; i++) {
+        cout << std::abs(rvec1[i]-rvec2[i]) << endl;
         if(std::abs(rvec1[i]-rvec2[i]) > thr[i]) {
             return false;
     }
@@ -675,7 +676,7 @@ int main(int argc, char *argv[]) {
         delta_tot += delta;
         cout << "Delta" << delta << endl;
         cout << "Delta tot" << delta_tot << endl;
-        cout << delta_tot - abs_tick << endl;
+        cout << (delta_tot - abs_tick) / getTickFrequency() << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
