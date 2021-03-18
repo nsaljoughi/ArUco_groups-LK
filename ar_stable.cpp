@@ -230,6 +230,25 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
     return vectrans;
 }
 
+// Avg two poses with weights associated
+
+Vec3d avgRot(Vec3d rvec1, Vec3d rvec2, double weight1, double weight2) {
+	Vec4d quat1 = vec2quat(rvec1);
+	Vec4d quat2 = vec2quat(rvec2);
+	Vec4d quat_avg = avgQuat(quat1, quat2, weight1, weight2);
+
+	return quat2vec(quat_avg);
+}
+
+Vec3d avgTrasl(Vec3d tvec1, vec3d tvec2, double weight1, double weight2) {
+	Vec3d tvec_avg;
+	for (int j=0; j<3; j++) {
+		tvec_avg[i] = weight1*tvec1[i] + weight2*tvec2[i];
+	}
+
+	return tvec_avg; 
+}
+
 
 // Compute combination pose at center of marker group
 Vec3d computeAvgRot(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, int group) {
@@ -364,8 +383,6 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
 
 	return true;
 }
-
-
 
 
 ///**///
@@ -503,7 +520,7 @@ int main(int argc, char argv*[]) {
     // Weights for averaging final poses
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
-    std::vector<double> thr_init(3); // angle threshold for markers consistency in INIT
+    std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
 
 
 
@@ -565,7 +582,7 @@ int main(int argc, char argv*[]) {
                     continue;
                 }
 
-                if(diff(marker_pose, PoseMaster) > thr) {
+                if(diff(marker_pose, PoseMaster) > thr) { // TODO
                     detect_id[i] = false;
                     continue;
                 }
@@ -601,9 +618,8 @@ int main(int argc, char argv*[]) {
                         }
                     }
                     else{
-                        rMaster = computeAvgRot( rvecs_ord, detect_id, i);
-                        tMaster = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
-                        rMaster, tMaster = avgPose(rMaster, tMaster, computeAvgPose()); // TODO
+                        rMaster = avgRot(computeAvgRot( rvecs_ord, detect_id, i), rMaster, alpha_rot, (1 - alpha_rot));
+                        tMaster = avgTrasl(computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset), tMaster, alpha_trasl, (1 - alpha_trasl));
                     }
                 }
             }
