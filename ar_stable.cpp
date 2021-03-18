@@ -601,17 +601,19 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
 
-                // if not initialized, go on with other markers
-                if(!init_id[i]) {
-                    continue;
-                }
+                else {
+                    // if not initialized, go on with other markers
+                    if(!init_id[i]) {
+                        continue;
+                    }
+                    
+                    else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
+                        detect_id[i] = false;
+                        continue;
+                    }
 
-                if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
-                    detect_id[i] = false;
-                    continue;
+                    aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
                 }
-
-                aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
 
