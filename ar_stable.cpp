@@ -606,7 +606,7 @@ int main(int argc, char *argv[]) {
                     if(!init_id[i]) {
                         continue;
                     }
-                    
+
                     else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
                         detect_id[i] = false;
                         continue;
@@ -627,7 +627,7 @@ int main(int argc, char *argv[]) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
                             tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
-                            t_stable[i] = 0;
+                            //t_stable[i] = 0;
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
