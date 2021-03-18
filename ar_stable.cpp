@@ -517,7 +517,6 @@ int main(int argc, char *argv[]) {
 
     double abs_tick = (double)getTickCount();
     double delta_t;
-    double delta_tot;
 
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
@@ -556,7 +555,7 @@ int main(int argc, char *argv[]) {
         cout << "abs_tick" << ((double)getTickCount() - abs_tick) / getTickFrequency() << endl;
 
         double tick = (double)getTickCount();
-        delta_t = 0;
+        double delta = 0;
 
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
@@ -620,7 +619,7 @@ int main(int argc, char *argv[]) {
 
                 if(!init_id[i*4]) { // if group needs init
                     if(checkPoseConsistent(rvecs_ord, detect_id, 4, i, thr_init)) { // if markers are consistent
-                        t_stable[i] += delta_t;
+                        t_stable[i] += (int)delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
@@ -636,7 +635,7 @@ int main(int argc, char *argv[]) {
                 } // if already init
                 else {
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
-                        t_lost[i] += delta_t;
+                        t_lost[i] += (int)delta_t;
                         if(t_lost[i] >= thr_lost) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                         }
@@ -669,11 +668,14 @@ int main(int argc, char *argv[]) {
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
         imshow("resize", imageResize);
 
-        delta_t = ((double)getTickCount() - tickk) / getTickFrequency();
-        delta_tot += delta_t;
-        cout << "Delta" << delta_t << endl;
-        cout << "Delta tot" << delta_tot << endl;
-        cout << (delta_tot - abs_tick) / getTickFrequency() << endl;
+        delta = ((double)getTickCount() - tickk) / getTickFrequency();
+        delta_t = delta;
+
+        cout << delta << endl;
+        cout << delta_t << endl;
+        cout << t_lost[0] << endl;
+        cout << t_lost[1] << endl;
+        cout << t_lost[2] << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
