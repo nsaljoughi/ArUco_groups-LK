@@ -381,14 +381,17 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
+            bool fail=false;
             for(int k=0; k<3; k++) {
                 cout << thr[k] << endl;
                 cout << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
                 if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
                     unconsistent += 1;
+                    fail = true;
                     break;
                 }
             }
+            if(fail) break;
         }
     }
     cout << rvecs.size()<< endl;
