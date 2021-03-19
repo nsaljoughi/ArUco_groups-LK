@@ -432,7 +432,6 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                          int group, std::vector<double> thr) {
     std::vector<bool> checkVec = detect_id;
     std::vector<Vec3d> rvecs;
-    unsigned int unconsistent = 0;
 
     for(int i=0; i<4; i++) {
         if(detect_id[group*4+i]) {
@@ -749,6 +748,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
+                    cout << "Hello" << endl;
                     detect_id[i] = false;
                     continue;
                 }
@@ -784,7 +784,7 @@ int main(int argc, char *argv[]) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
                             tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
-                            //t_stable[i] = 0;
+                            t_stable[i] = 0;
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
