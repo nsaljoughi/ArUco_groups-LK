@@ -86,6 +86,14 @@ static Mat cvcloud_load()
 }
 
 
+// Get angle from Rodrigues vector
+double getAngle(Vec3d rvec) {
+    double theta = sqrt( rvec[0]*rvec[0] + rvec[1]*rvec[1] + rvec[2]*rvec[2] );
+
+    return theta;
+}
+
+
 // Transform Rodrigues rotation vector into a quaternion
 Vec4d vec2quat(Vec3d vec) {
     Vec4d q;
@@ -382,6 +390,9 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
             bool fail=false;
+            cout << getAngle(rvecs[i]) << endl;
+            cout << getAngle(rvecs[j]) << endl;
+            cout << std::abs(getAngle(rvecs[i]) - getAngle(rvecs[j])) << endl;
             for(int k=0; k<3; k++) {
                 //cout << thr[k] << endl;
                 //cout << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
