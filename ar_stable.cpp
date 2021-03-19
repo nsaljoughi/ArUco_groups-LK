@@ -451,7 +451,6 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
-            bool fail=false;
 
             for(int k=0; k<3; k++) {
 
@@ -463,25 +462,45 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) {
                     checker[i][j] = false;
-                    //unconsistent += 1;
                     fail = true;
                     break;
                 }
             }
-            if(fail) break;
         }
     }
 
-    for(unsigned int i=0; i<rvecs.size(); i++) {
-        unsigned int counter=0;
-        for(unsigned int j=0; j<rvecs.size(); j++) {
-            if(!checker[i][j]) counter += 1;
-        }
-        if(counter>=rvecs.size()-1) checkVec[group*4+i] = false;
-    }
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         cout << checker[i][0] << checker[i][1] << checker[i][2] << checker[i][3] << endl; 
+    }
+
+
+    for(unsigned int i=0; i<rvecs.size(); i++) {
+        unsigned int trues=0;
+        unsigned int falses=0;
+
+        for(unsigned int j=0; j<rvecs.size(); j++) {
+            if(!checker[i][j]) falses += 1;
+            else trues += 1;
+        }
+
+        if(trues==3) return checkVec;
+        else if (falses==1) {
+            for (int k=0; k<3; k++) { 
+                if(!checker[i][k]) checkVec[group*4+k] = false;
+                return checkVec;
+            }
+        }
+        else if (falses==2) {
+            continue;
+        }
+        else if (falses==3) {
+            continue;
+        }
+    }
+
+    for(int i=0; i<4; i++) {
+        checkVec[group*4+i] = false;
     }
 
     return checkVec;
