@@ -602,6 +602,9 @@ int main(int argc, char *argv[]) {
             // Loop over markers
             for(unsigned int i=0; i<12; i++) {
 
+                cout << rvecs_ord[i] << endl;
+                cout << quat2vec(vec2quat(rvecs_ord[i])) << endl;
+                
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
                     detect_id[i] = false;
@@ -617,8 +620,7 @@ int main(int argc, char *argv[]) {
                     detect_id[i] = false;
                     continue;
                 }
-                cout << rvecs_ord[i] << endl;
-                cout << quat2vec(vec2quat(rvecs_ord[i])) << endl;
+                
                 aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
@@ -685,6 +687,10 @@ int main(int argc, char *argv[]) {
         cout << "Stable time " << t_stable[0] << endl;
         cout << t_stable[1] << endl;
         cout << t_stable[2] << endl;
+
+        cout << "Lost time " << t_lost[0] << endl;
+        cout << t_lost[1] << endl;
+        cout << t_lost[2] << endl;
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
