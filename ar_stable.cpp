@@ -474,6 +474,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         unsigned int counter=0;
+        cout << checker[i] << endl;
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(!checker[i][j]) counter += 1;
         }
@@ -482,64 +483,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
     return checkVec;
 }
-/*
-bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
-                         int group, std::vector<double> thr) {
-    std::vector<Vec3d> rvecs;
-    unsigned int unconsistent = 0;
 
-    for(int i=0; i<4; i++) {
-        if(detect_id[group*4+i]) {
-            rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
-        }
-    }
-
-    if(rvecs.size() < num) {
-        return false;
-    }
-
-    std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
-
-    for(unsigned int i=0; i<rvecs.size(); i++) {
-        for(unsigned int j=0; j<rvecs.size(); j++) {
-            if(i==j) continue;
-            bool fail=false;
-
-            for(int k=0; k<3; k++) {
-
-                cout << rvecs[i][k] << endl;
-                cout << rvecs[j][k] << endl;
-                cout << "Angle diff " << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
-                cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) << endl;
-                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) << endl;
-
-                if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) {
-                    checker[i][j] = false;
-                    //unconsistent += 1;
-                    fail = true;
-                    break;
-                }
-            }
-            if(fail) break;
-        }
-    }
-
-    for(unsigned int i=0; i<rvecs.size(); i++) {
-        unsigned int counter=0;
-        for(unsigned int j=0; j<rvecs.size(); j++) {
-            if(!checker[i][j]) counter += 1;
-        }
-        if(counter>=rvecs.size()-1) unconsistent += 1;
-    }
-    cout << "Unconsistent: " << rvecs.size() << " - " << unconsistent << " = " << rvecs.size()-unconsistent << endl;
-
-    if((rvecs.size()-unconsistent)<num) {
-        return false;
-    }
-
-    return true;
-}
-*/
 
 //////
 int main(int argc, char *argv[]) {
@@ -737,7 +681,6 @@ int main(int argc, char *argv[]) {
 
             // Loop over markers
             for(unsigned int i=0; i<12; i++) {
-                cout << "Hello" << i << ceil(i/4) << endl;
 
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
@@ -767,12 +710,12 @@ int main(int argc, char *argv[]) {
                     cout << "GROUP " << i << endl;
                     cout << "INIT" << endl;
 
-                    cout << "Before: " << endl;
+                    cout << "Before check: " << endl;
                     for(int j=0; j<12; j++) {
                         cout << detect_id[j] << endl;; 
                     }
                     detect_id = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
-                    cout << "After: " << endl;
+                    cout << "After check: " << endl;
                     for(int j=0; j<12; j++) {
                         cout << detect_id[j] << endl;; 
                     }
@@ -840,6 +783,7 @@ int main(int argc, char *argv[]) {
         delta = ((double)getTickCount() - tickk) / getTickFrequency();
         delta_t = delta;
 
+
         cout << "Stable time " << t_stable[0] << endl;
         cout << t_stable[1] << endl;
         cout << t_stable[2] << endl;
@@ -847,6 +791,7 @@ int main(int argc, char *argv[]) {
         cout << "Lost time " << t_lost[0] << endl;
         cout << t_lost[1] << endl;
         cout << t_lost[2] << endl;
+
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
