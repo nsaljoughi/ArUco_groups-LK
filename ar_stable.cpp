@@ -737,6 +737,7 @@ int main(int argc, char *argv[]) {
 
             // Loop over markers
             for(unsigned int i=0; i<12; i++) {
+                cout << "Hello" << i << ceil(i/4)-1 << endl;
 
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
@@ -750,7 +751,6 @@ int main(int argc, char *argv[]) {
                 }
 
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
-                    cout << "Hello" << i << ceil(i/4)-1 << endl;
                     detect_id[i] = false;
                     continue;
                 }
