@@ -444,7 +444,6 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     }
 
     std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
-    cout << checker << endl; 
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
@@ -468,6 +467,14 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
             }
             if(fail) break;
         }
+    }
+
+    for(unsigned int i=0; i<rvecs.size(); i++) {
+        int counter=0;
+        for(unsigned int j=0; j<rvecs.size(); j++) {
+            if(!checker[i][j]) counter += 1;
+        }
+        if(counter>=rvecs.size()-1) unconsistent += 1;
     }
     cout << "Unconsistent: " << rvecs.size() << " - " << unconsistent << " = " << rvecs.size()-unconsistent << endl;
 
