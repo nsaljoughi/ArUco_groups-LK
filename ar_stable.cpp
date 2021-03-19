@@ -393,6 +393,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
             bool fail=false;
             cout << getAngle(rvecs[i])*(180.0/M_PI) << endl;
             cout << getAngle(rvecs[j])*(180.0/M_PI) << endl;
+            cout << getAngle(rvecs[i] / getAngle(rvecs[i])) << endl;
             cout << std::abs(getAngle(rvecs[i]) - getAngle(rvecs[j])) << endl;
             for(int k=0; k<3; k++) {
                 //cout << thr[k] << endl;
