@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <cmath>
 
 using namespace std;
 using namespace cv;
@@ -390,8 +391,8 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
             bool fail=false;
-            cout << getAngle(rvecs[i]) << endl;
-            cout << getAngle(rvecs[j]) << endl;
+            cout << getAngle(rvecs[i])*(180.0/M_PI) << endl;
+            cout << getAngle(rvecs[j])*(180.0/M_PI) << endl;
             cout << std::abs(getAngle(rvecs[i]) - getAngle(rvecs[j])) << endl;
             for(int k=0; k<3; k++) {
                 //cout << thr[k] << endl;
