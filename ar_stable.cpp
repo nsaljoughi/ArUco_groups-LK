@@ -602,9 +602,6 @@ int main(int argc, char *argv[]) {
             // Loop over markers
             for(unsigned int i=0; i<12; i++) {
 
-                cout << rvecs_ord[i] << endl;
-                cout << quat2vec(vec2quat(rvecs_ord[i])) << endl;
-                
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
                     detect_id[i] = false;
