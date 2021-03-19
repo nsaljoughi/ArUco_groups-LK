@@ -748,7 +748,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
-                    cout << "Hello" << endl;
+                    cout << "Hello" << i << ceil(i/4)-1 << endl;
                     detect_id[i] = false;
                     continue;
                 }
