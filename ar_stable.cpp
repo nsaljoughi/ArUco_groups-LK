@@ -432,25 +432,38 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                          int group, std::vector<double> thr) {
     std::vector<bool> checkVec = detect_id;
     std::vector<Vec3d> rvecs;
+    int items=0;
 
+    
     for(int i=0; i<4; i++) {
+        rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
+
         if(detect_id[group*4+i]) {
-            rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
+            items += 1;
         }
     }
 
-    if(rvecs.size() < num) {
+    if(items < num) {
         for(int i=0; i<4; i++) {
             checkVec[group*4+i] = false;
         }
         return checkVec;
     }
+    
 
     std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
+        if(!detect_id[group*4+i]) {
+            checker[i][0] = checker[i][1] = checker[i][2] = checker[i][3] = false;
+            continue;
+        }
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
+            if(!detect_id[group*4+j]) {
+                checker[i][j] = false;
+                continue;
+            }
 
             for(int k=0; k<3; k++) {
 
@@ -499,18 +512,18 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             }
         }
         else if(falses==2) {
-            continue;
+            for(int i=0; i<4; i++) {
+                checkVec[group*4+i] = false;
+            }
+            return checkVec;
         }
         else if(falses==3) {
-            continue;
+            for(int i=0; i<4; i++) {
+                checkVec[group*4+i] = false;
+            }
+            return checkVec;
         }
     }
-
-    for(int i=0; i<4; i++) {
-        checkVec[group*4+i] = false;
-    }
-
-    return checkVec;
 }
 
 
