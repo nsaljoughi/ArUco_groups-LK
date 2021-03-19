@@ -649,7 +649,7 @@ int main(int argc, char *argv[]) {
     int totalIterations = 0;
 
     double abs_tick = (double)getTickCount();
-    double delta_t;
+    double delta_t = 0;
 
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
