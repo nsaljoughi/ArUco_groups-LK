@@ -95,7 +95,7 @@ double getAngle(Vec3d rvec) {
     return theta;
 }
 
-Vec3d rodrigues2euler(Vec3d rvec) {
+Vec3d rodrigues2euler(Vec3d rvec, bool degrees=true) {
     Vec3d rvec_euler;
     double angle;
     double x, y, z;
@@ -118,6 +118,8 @@ Vec3d rodrigues2euler(Vec3d rvec) {
         rvec_euler[1] = attitude;
         rvec_euler[2] = bank;
 
+        if(degrees) rvec_euler*=(180.0/M_PI);
+
         return rvec_euler;
     }
     if ((x*y*t + z*s) < -0.998) { // south pole singularity detected
@@ -128,6 +130,8 @@ Vec3d rodrigues2euler(Vec3d rvec) {
         rvec_euler[1] = attitude;
         rvec_euler[2] = bank;
 
+        if(degrees) rvec_euler*=(180.0/M_PI);
+
         return rvec_euler;
     }
     heading = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
@@ -137,6 +141,8 @@ Vec3d rodrigues2euler(Vec3d rvec) {
     rvec_euler[0] = heading;
     rvec_euler[1] = attitude;
     rvec_euler[2] = bank;
+
+    if(degrees) rvec_euler*=(180.0/M_PI);
 
     return rvec_euler;
 }
