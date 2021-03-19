@@ -7,6 +7,7 @@
 #include <fstream>
 #include <ctime>
 #include <cmath>
+#include <math.h>
 
 using namespace std;
 using namespace cv;
@@ -93,6 +94,51 @@ double getAngle(Vec3d rvec) {
 
     return theta;
 }
+
+Vec3d rodrigues2euler(Vec3d rvec) {
+    Vec3d rvec_euler;
+    double angle;
+    double x, y, x;
+
+    angle = getAngle(rvec);
+    x = rvec[0] / angle;
+    y = rvec[1] / angle;
+    z = rvec[2] / angle; 
+
+    double s=Math.sin(angle);
+    double c=Math.cos(angle);
+    double t=1-c;
+    double heading, attitude, bank;
+
+    if ((x*y*t + z*s) > 0.998) { // north pole singularity detected
+        heading = 2*atan2(x*sin(angle/2), cos(angle/2));
+        attitude = M_PI/2;
+        bank = 0;
+        rvec_euler[0] = heading;
+        rvec_euler[1] = attitude;
+        rvec_euler[2] = bank;
+
+        return rvec_euler;
+    }
+    if ((x*y*t + z*s) < -0.998) { // south pole singularity detected
+        heading = -2*atan2(x*sin(angle/2), cos(angle/2));
+        attitude = -M_PI/2;
+        bank = 0;
+        rvec_euler[0] = heading;
+        rvec_euler[1] = attitude;
+        rvec_euler[2] = bank;
+
+        return rvec_euler;
+    }
+    heading = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
+    attitude = asin(x * y * t + z * s) ;
+    bank = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
+
+    rvec_euler[0] = heading;
+    rvec_euler[1] = attitude;
+    rvec_euler[2] = bank;
+
+    return rvec_euler;
 
 
 // Transform Rodrigues rotation vector into a quaternion
