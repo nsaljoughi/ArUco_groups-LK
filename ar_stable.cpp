@@ -481,6 +481,10 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                     cout << "False" << endl;
                     break;
                 }
+                else {
+                    checker[i][j] = true;
+                    cout << "True" << endl;
+                }
             }
         }
     }
