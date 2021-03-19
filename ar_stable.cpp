@@ -315,9 +315,12 @@ Vec3d avgTrasl(Vec3d tvec1, Vec3d tvec2, double weight1, double weight2) {
 
 // Check diff between two rotations in Euler notation
 bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
+    Vec3d rvec1_eul = rodrigues2euler(rvec1);
+    vec3d rvec2_eul = rodrigues2euler(rvec2);
+
     for(int i=0; i<3; i++) {
-        cout << std::abs(rvec1[i]-rvec2[i]) << endl;
-        if(std::abs(rvec1[i]-rvec2[i]) > thr[i]) {
+        cout << std::abs(rvec1_eul[i]-rvec2_eul[i]) << endl;
+        if(std::abs(rvec1_eul[i]-rvec2_eul[i]) > thr[i]) {
             return false;
     }
     }
@@ -433,7 +436,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
 
     for(int i=0; i<4; i++) {
         if(detect_id[group*4+i]) {
-            rvecs.push_back(rvecs_ord[group*4+i]);
+            rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
         }
     }
 
@@ -444,11 +447,6 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
             bool fail=false;
-            cout << rodrigues2euler(rvecs[i]) << endl;
-            cout << getAngle(rvecs[i])*(180.0/M_PI) << endl;
-            cout << getAngle(rvecs[j])*(180.0/M_PI) << endl;
-            cout << getAngle(rvecs[i] / getAngle(rvecs[i])) << endl;
-            cout << std::abs(getAngle(rvecs[i]) - getAngle(rvecs[j])) << endl;
             for(int k=0; k<3; k++) {
                 //cout << thr[k] << endl;
                 //cout << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
@@ -605,7 +603,7 @@ int main(int argc, char *argv[]) {
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
-    thr_init[0] = thr_init[1] = thr_init[2] = 5;
+    thr_init[0] = thr_init[1] = thr_init[2] = 10;
 
 
     ////// ---KEY PART--- //////
