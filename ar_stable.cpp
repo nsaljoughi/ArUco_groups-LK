@@ -443,7 +443,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
         return false;
     }
 
-    std::vector<std::vector<bool>> checker(rvecs.size(), std::vector(rvecs.size(), true));
+    std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
     cout << checker << endl; 
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
@@ -460,6 +460,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
                 cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) << endl;
 
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) {
+                    checker[i][j] = false;`
                     unconsistent += 1;
                     fail = true;
                     break;
