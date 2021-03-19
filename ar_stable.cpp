@@ -618,7 +618,8 @@ int main(int argc, char *argv[]) {
                         detect_id[i] = false;
                         continue;
                     }
-
+                    cout << rvecs_ord[i] << endl;
+                    cout << quat2vec(vec2quat(rvecs_ord[i])) << endl;
                     aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
                 }
             }
