@@ -488,16 +488,16 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         cout << falses << endl;
 
         if(trues==3) return checkVec;
-        else if (falses==1) {
+        if (falses==1) {
             for (int k=0; k<rvecs.size(); k++) { 
                 if(!checker[i][k]) checkVec[group*4+k] = false;
                 return checkVec;
             }
         }
-        else if (falses==2) {
+        if (falses==2) {
             continue;
         }
-        else if (falses==3) {
+        if (falses==3) {
             continue;
         }
     }
