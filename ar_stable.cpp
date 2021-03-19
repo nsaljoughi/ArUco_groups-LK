@@ -762,6 +762,8 @@ int main(int argc, char *argv[]) {
 
                 if(!init_id[i*4]) { // if group needs init
 
+                    cout << "INIT" << endl;
+
                     cout << "Before: " << endl;
                     for(int j=0; j<12; j++) {
                         cout << detect_id[j] << endl;; 
@@ -784,7 +786,7 @@ int main(int argc, char *argv[]) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
                             rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
                             tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);
-                            t_stable[i] = 0;
+                            //t_stable[i] = 0;
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
@@ -795,6 +797,7 @@ int main(int argc, char *argv[]) {
                     }
                 } // if already init
                 else {
+                    cout << "NOT INIT" << endl;
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
                         t_lost[i] += delta_t;
                         if(t_lost[i] >= thr_lost) {
