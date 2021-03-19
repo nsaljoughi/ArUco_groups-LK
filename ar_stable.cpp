@@ -428,7 +428,7 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 
 
 // Check if num markers' poses are consistent
-std::vector<Vec3d> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
+std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
     std::vector<bool> checkVec = detect_id;
     std::vector<Vec3d> rvecs;
