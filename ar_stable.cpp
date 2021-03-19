@@ -139,6 +139,7 @@ Vec3d rodrigues2euler(Vec3d rvec) {
     rvec_euler[2] = bank;
 
     return rvec_euler;
+}
 
 
 // Transform Rodrigues rotation vector into a quaternion
