@@ -319,7 +319,7 @@ bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     Vec3d rvec2_eul = rodrigues2euler(rvec2);
 
     for(int i=0; i<3; i++) {
-        if(std::abs(rvec1_eul[i]-rvec2_eul[i]) > thr[i]) {
+        if(std::abs(sin(rvec1_eul[i])-sin(rvec2_eul[i])) > sin(thr[i])) {
             return false;
         }
     }
@@ -447,12 +447,13 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
             bool fail=false;
-            
+
             for(int k=0; k<3; k++) {
                 cout << rvecs[i][k] << endl;
                 cout << rvecs[j][k] << endl;
                 cout << "Angle diff " << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
-                cout << (std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) << endl;
+                cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k]) << endl;
+                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) << endl;
                 if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
                     unconsistent += 1;
                     fail = true;
