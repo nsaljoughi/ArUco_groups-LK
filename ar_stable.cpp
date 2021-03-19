@@ -750,7 +750,7 @@ int main(int argc, char *argv[]) {
                     continue;
                 }
 
-                else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)-1], thr_init)) {
+                else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)], thr_init)) {
                     detect_id[i] = false;
                     continue;
                 }
