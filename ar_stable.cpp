@@ -319,7 +319,6 @@ bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     Vec3d rvec2_eul = rodrigues2euler(rvec2);
 
     for(int i=0; i<3; i++) {
-        cout << std::abs(rvec1_eul[i]-rvec2_eul[i]) << endl;
         if(std::abs(rvec1_eul[i]-rvec2_eul[i]) > thr[i]) {
             return false;
     }
@@ -448,7 +447,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
         for(unsigned int j=0; j<rvecs.size(); j++) {
             bool fail=false;
             for(int k=0; k<3; k++) {
-                cout << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
+                cout << "Angle diff" << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
                 if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
                     unconsistent += 1;
                     fail = true;
@@ -458,9 +457,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
             if(fail) break;
         }
     }
-    //cout << rvecs.size()<< endl;
-    //cout << unconsistent << endl;
-    //cout << rvecs.size()-unconsistent << endl;
+    cout << "Unconsistent: " << rvecs.size() << " - " << unconsistent << " = " << rvecs.size()-unconsistent << endl;
 
     if((rvecs.size()-unconsistent)<num) {
         return false;
@@ -602,14 +599,13 @@ int main(int argc, char *argv[]) {
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
-    thr_init[0] = thr_init[1] = thr_init[2] = 10;
+    thr_init[0] = thr_init[1] = thr_init[2] = 10.0;
 
 
     ////// ---KEY PART--- //////
     while(inputVideo.grab()) {
 
         double tickk = (double)getTickCount();
-        cout << delta_t << endl;
 
         Mat image, imageCopy;
         inputVideo.retrieve(image);
