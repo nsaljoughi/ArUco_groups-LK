@@ -474,11 +474,14 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         unsigned int counter=0;
-        cout << checker[i] << endl;
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(!checker[i][j]) counter += 1;
         }
         if(counter>=rvecs.size()-1) checkVec[group*4+i] = false;
+    }
+
+    for(unsigned int i=0; i<rvecs.size(); i++) {
+        cout << checker[i][0] << checker[i][1] << checker[i][2] << checker[i][3] << endl; 
     }
 
     return checkVec;
