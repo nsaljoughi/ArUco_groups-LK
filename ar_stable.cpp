@@ -688,7 +688,7 @@ int main(int argc, char *argv[]) {
             for(unsigned int i=0; i<3; i++) {
 
                 if(!init_id[i*4]) { // if group needs init
-                    if(checkPoseConsistent(rvecs_ord, detect_id, 4, i, thr_init)) { // if markers are consistent
+                    if(checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init)) { // if markers are consistent
                         t_stable[i] += delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
