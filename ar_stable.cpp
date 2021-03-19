@@ -592,7 +592,7 @@ int main(int argc, char *argv[]) {
     // We have three big markers
     std::vector<double>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(3, 0); // count seconds from moment markers are consistent
-    double thr_lost = 0.5; // TODO threshold in seconds for going into init
+    double thr_lost = 1; // TODO threshold in seconds for going into init
     double thr_stable = 1; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
