@@ -665,7 +665,7 @@ int main(int argc, char *argv[]) {
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
-    thr_init[0] = thr_init[1] = thr_init[2] = 180.0;
+    thr_init[0] = thr_init[1] = thr_init[2] = 360.0;
 
     vector<Vec3d> rMaster(3);
     vector<Vec3d> tMaster(3);
