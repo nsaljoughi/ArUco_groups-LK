@@ -475,6 +475,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) {
                     checker[i][j] = false;
+                    cout << "False" << endl;
                     break;
                 }
             }
