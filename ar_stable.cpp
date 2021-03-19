@@ -461,6 +461,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
             if(!detect_id[group*4+j]) {
+                cout << "It is false" << endl;
                 checker[i][j] = false;
                 continue;
             }
