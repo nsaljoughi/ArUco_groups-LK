@@ -428,6 +428,59 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 
 
 // Check if num markers' poses are consistent
+std::vector<Vec3d> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
+                         int group, std::vector<double> thr) {
+    std::vector<bool> checkVec = detect_id;
+    std::vector<Vec3d> rvecs;
+    unsigned int unconsistent = 0;
+
+    for(int i=0; i<4; i++) {
+        if(detect_id[group*4+i]) {
+            rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
+        }
+    }
+
+    if(rvecs.size() < num) {
+        return false;
+    }
+
+    std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
+
+    for(unsigned int i=0; i<rvecs.size(); i++) {
+        for(unsigned int j=0; j<rvecs.size(); j++) {
+            if(i==j) continue;
+            bool fail=false;
+
+            for(int k=0; k<3; k++) {
+
+                cout << rvecs[i][k] << endl;
+                cout << rvecs[j][k] << endl;
+                cout << "Angle diff " << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
+                cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) << endl;
+                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) << endl;
+
+                if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) {
+                    checker[i][j] = false;
+                    //unconsistent += 1;
+                    fail = true;
+                    break;
+                }
+            }
+            if(fail) break;
+        }
+    }
+
+    for(unsigned int i=0; i<rvecs.size(); i++) {
+        unsigned int counter=0;
+        for(unsigned int j=0; j<rvecs.size(); j++) {
+            if(!checker[i][j]) counter += 1;
+        }
+        if(counter>=rvecs.size()-1) checkVec[group*4+i] = false;
+    }
+
+    return checkVec;
+}
+/*
 bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
     std::vector<Vec3d> rvecs;
@@ -484,7 +537,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
 
     return true;
 }
-
+*/
 
 //////
 int main(int argc, char *argv[]) {
@@ -705,7 +758,18 @@ int main(int argc, char *argv[]) {
             for(unsigned int i=0; i<3; i++) {
 
                 if(!init_id[i*4]) { // if group needs init
-                    if(checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init)) { // if markers are consistent
+
+                    cout << detect_id << endl;
+                    detect_id = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
+                    cout << detect_id << endl;
+
+                    int counter=0;
+
+                    for(int j=0; j<4; j++) {
+                        if(detect_id[i*4+j]) counter += 1; 
+                    }
+
+                    if(counter >= 3) { // if n markers are consistent
                         t_stable[i] += delta_t;
                         if(t_stable[i] >= thr_stable) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = true;
