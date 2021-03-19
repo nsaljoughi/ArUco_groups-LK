@@ -316,7 +316,7 @@ Vec3d avgTrasl(Vec3d tvec1, Vec3d tvec2, double weight1, double weight2) {
 // Check diff between two rotations in Euler notation
 bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     Vec3d rvec1_eul = rodrigues2euler(rvec1);
-    vec3d rvec2_eul = rodrigues2euler(rvec2);
+    Vec3d rvec2_eul = rodrigues2euler(rvec2);
 
     for(int i=0; i<3; i++) {
         cout << std::abs(rvec1_eul[i]-rvec2_eul[i]) << endl;
