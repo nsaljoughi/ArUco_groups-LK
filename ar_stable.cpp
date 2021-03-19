@@ -759,9 +759,13 @@ int main(int argc, char *argv[]) {
 
                 if(!init_id[i*4]) { // if group needs init
 
-                    cout << detect_id << endl;
+                    for(int j=0; j<12; j++) {
+                        cout << detect_id[j] << endl;; 
+                    }
                     detect_id = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
-                    cout << detect_id << endl;
+                    for(int j=0; j<12; j++) {
+                        cout << detect_id[j] << endl;; 
+                    }
 
                     int counter=0;
 
