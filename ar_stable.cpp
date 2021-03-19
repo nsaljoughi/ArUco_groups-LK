@@ -497,6 +497,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     for(unsigned int i=0; i<rvecs.size(); i++) {
         unsigned int trues=0;
         unsigned int falses=0;
+        bool failed=false;
 
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
@@ -513,25 +514,34 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         cout << falses << endl;
 
         if(trues==3) {
-            return checkVec; 
+            //return checkVec; 
+            failed = true;
+            break;
         }
-        else if(falses==1) {
+        if(falses==1) {
             for (unsigned int k=0; k<rvecs.size(); k++) { 
                 if(!checker[i][k]) {
                     checkVec[group*4+k] = false;
                 }
-                return checkVec;
+                //return checkVec;
+                failed=true;
+                break;
             }
         }
-        else if(falses==2) {
+        if(falses==2) {
             continue;
         }
-        else if(falses==3) {
+        if(falses==3) {
             continue;
         }
-    }
-    for(int i=0; i<4; i++) {
-        checkVec[group*4+i] = false;
+
+        if(failed) break;
+
+        if(i==rvecs.size()-1) {
+            for(int j=0; j<4; j++) {
+                checkVec[group*4+j] = false;
+            }
+        }
     }
     return checkVec;
 }
