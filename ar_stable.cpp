@@ -105,8 +105,8 @@ Vec3d rodrigues2euler(Vec3d rvec) {
     y = rvec[1] / angle;
     z = rvec[2] / angle; 
 
-    double s=Math.sin(angle);
-    double c=Math.cos(angle);
+    double s=sin(angle);
+    double c=cos(angle);
     double t=1-c;
     double heading, attitude, bank;
 
