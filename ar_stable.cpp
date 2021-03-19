@@ -765,7 +765,9 @@ int main(int argc, char *argv[]) {
                     int counter=0;
 
                     for(int j=0; j<4; j++) {
-                        if(detect_id[i*4+j]) counter += 1; 
+                        if(detect_id[i*4+j]) {
+                            counter += 1;
+                        } 
                     }
 
                     if(counter >= 3) { // if n markers are consistent
