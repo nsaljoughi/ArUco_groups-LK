@@ -452,7 +452,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
                 cout << rvecs[i][k] << endl;
                 cout << rvecs[j][k] << endl;
                 cout << "Angle diff " << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
-                cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k]) << endl;
+                cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) << endl;
                 cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) << endl;
                 if(std::abs(rvecs[i][k]-rvecs[j][k]) > thr[k]) {
                     unconsistent += 1;
