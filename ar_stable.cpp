@@ -524,6 +524,10 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             return checkVec;
         }
     }
+    for(int i=0; i<4; i++) {
+        checkVec[group*4+i] = false;
+    }
+    return checkVec;
 }
 
 
