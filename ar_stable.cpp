@@ -319,7 +319,7 @@ bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
     Vec3d rvec2_eul = rodrigues2euler(rvec2);
 
     for(int i=0; i<3; i++) {
-        if(std::abs(sin(rvec1_eul[i])-sin(rvec2_eul[i])) > 2.0) {//std::abs(sin(thr[i]))) {
+        if(std::abs(sin(rvec1_eul[i])-sin(rvec2_eul[i])) > thr[i]) {
             return false;
         }
     }
@@ -473,10 +473,9 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                 cout << "Angle diff " << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
                 cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) << endl;
                 cout << "Thr " << thr[k] << endl;
-                cout << "Thr wih sin " << sin(thr[k]) << endl;
-                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > std::abs(sin(thr[k]))) << endl;
+                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) << endl;
 
-                if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > 2.0) {//std::abs(sin(thr[k]))) {
+                if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) {
                     checker[i][j] = false;
                     cout << "False" << endl;
                     break;
@@ -670,7 +669,7 @@ int main(int argc, char *argv[]) {
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
-    thr_init[0] = thr_init[1] = thr_init[2] = 360.0;
+    thr_init[0] = thr_init[1] = thr_init[2] = 1.0;
 
     vector<Vec3d> rMaster(3);
     vector<Vec3d> tMaster(3);
