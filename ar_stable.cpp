@@ -450,7 +450,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         return checkVec;
     }
     
-
+    cout << rvecs.size() << endl;
     std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
