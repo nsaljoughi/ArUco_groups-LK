@@ -444,7 +444,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     }
 
     std::vector<std::vector<bool>> checker(rvecs.size(), rvecs.size());
-    cout << checker << endl; 
+    cout << checker.shape() << endl; 
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
