@@ -500,8 +500,12 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         unsigned int falses=0;
 
         for(unsigned int j=0; j<rvecs.size(); j++) {
-            if(!checker[i][j]) falses += 1;
-            else trues += 1;
+            if(!checker[i][j]) {
+                falses += 1;
+            }
+            else {
+                trues += 1;
+            }
         }
 
 
