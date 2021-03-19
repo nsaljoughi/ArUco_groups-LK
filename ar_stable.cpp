@@ -432,7 +432,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                          int group, std::vector<double> thr) {
     std::vector<bool> checkVec = detect_id;
     std::vector<Vec3d> rvecs;
-    int items=0;
+    unsigned int items=0;
 
     
     for(int i=0; i<4; i++) {
@@ -504,7 +504,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             return checkVec; 
         }
         else if(falses==1) {
-            for (int k=0; k<rvecs.size(); k++) { 
+            for (unsigned int k=0; k<rvecs.size(); k++) { 
                 if(!checker[i][k]) {
                     checkVec[group*4+k] = false;
                 }
