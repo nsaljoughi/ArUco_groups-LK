@@ -98,7 +98,7 @@ double getAngle(Vec3d rvec) {
 Vec3d rodrigues2euler(Vec3d rvec) {
     Vec3d rvec_euler;
     double angle;
-    double x, y, x;
+    double x, y, z;
 
     angle = getAngle(rvec);
     x = rvec[0] / angle;
