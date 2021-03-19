@@ -473,7 +473,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                 cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) << endl;
                 cout << "Thr " << thr[k] << endl;
                 cout << "Thr wih sin " << sin(thr[k]) << endl;
-                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > sin(thr[k])) << endl;
+                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > std::abs(sin(thr[k]))) << endl;
 
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > std::abs(sin(thr[k]))) {
                     checker[i][j] = false;
