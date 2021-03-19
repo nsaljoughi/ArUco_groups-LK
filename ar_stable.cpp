@@ -675,6 +675,11 @@ int main(int argc, char *argv[]) {
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     thr_init[0] = thr_init[1] = thr_init[2] = 1.0;
 
+    vector<Vec3d> rMaster(3);
+    vector<Vec3d> tMaster(3);
+
+    std::vector<bool> init_id(12, false); // check if marker has been seen before
+
 
     ////// ---KEY PART--- //////
     while(inputVideo.grab()) {
@@ -688,10 +693,7 @@ int main(int argc, char *argv[]) {
         // We have 12 markers
         vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
         vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
-        vector<Vec3d> rMaster(3);
-        vector<Vec3d> tMaster(3);
         std::vector<bool> detect_id(12, true); // check if marker was detected or not
-        std::vector<bool> init_id(12, false); // check if marker has been seen before
 
 
         cout << "Frame " << totalIterations << endl;
