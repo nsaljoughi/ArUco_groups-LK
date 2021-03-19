@@ -437,6 +437,7 @@ bool checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_
     for(unsigned int i=0; i<rvecs.size(); i++) {
         for(unsigned int j=0; j<rvecs.size(); j++) {
             bool fail=false;
+            cout << rodrigues2euler(rvecs[i]) << endl;
             cout << getAngle(rvecs[i])*(180.0/M_PI) << endl;
             cout << getAngle(rvecs[j])*(180.0/M_PI) << endl;
             cout << getAngle(rvecs[i] / getAngle(rvecs[i])) << endl;
