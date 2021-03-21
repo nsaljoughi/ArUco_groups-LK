@@ -455,7 +455,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         if(!detect_id[group*4+i]) {
-            checker[i][0] = checker[i][1] = checker[i][2] = checker[i][3] = false;
+            checker[0][i] = checker[1][i] = checker[2][i] = checker[3][i] = false;
             continue;
         }
         for(unsigned int j=0; j<rvecs.size(); j++) {
@@ -481,7 +481,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                     break;
                 }
                 else {
-                    //checker[i][j] = true;
+                    checker[i][j] = true;
                     cout << "True" << endl;
                 }
             }
@@ -492,7 +492,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     for(unsigned int i=0; i<rvecs.size(); i++) {
         cout << checker[i][0] << checker[i][1] << checker[i][2] << checker[i][3] << endl; 
     }
-
+/*
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         unsigned int trues=0;
@@ -529,19 +529,39 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             }
         }
         if(falses==2) {
-            continue;
-        }
+		if(i==rvecs.size()-1) {
+			for(int j=0; j<4; j++) {
+				checkVec[group*4+j] = false;
+			}
+			failed=true;
+			break;
+		}
+		else {
+			continue;
+		}
+	}
         if(falses==3) {
-            continue;
+		if(i==rvecs.size()-1) {
+			for(int j=0; j<4; j++) {
+				checkVec[group*4+j] = false;
+			}
+			failed=true;
+			break;
+		}
+		else {
+			continue;
+		}
         }
 
         if(failed) break;
-
-        if(i==rvecs.size()-1) {
-            for(int j=0; j<4; j++) {
-                checkVec[group*4+j] = false;
-            }
-        }
+    }
+*/
+    for(int i=0; i<4; i++) {
+	    checkVec[group*4+i] = true;
+	    if(i==2) checkVec[group*4+i] = false;
+    }
+    for(int i=0; i<12; i++) {
+	    cout << checkVec[i] << endl;
     }
     return checkVec;
 }
@@ -679,7 +699,7 @@ int main(int argc, char *argv[]) {
     double alpha_rot = 0.7;
     double alpha_trasl = 0.7;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
-    thr_init[0] = thr_init[1] = thr_init[2] = 1.0;
+    thr_init[0] = thr_init[1] = thr_init[2] = 1.5;
 
     vector<Vec3d> rMaster(3);
     vector<Vec3d> tMaster(3);
@@ -700,6 +720,7 @@ int main(int argc, char *argv[]) {
         vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
         vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
         std::vector<bool> detect_id(12, true); // check if marker was detected or not
+
 
 
         cout << "Frame " << totalIterations << endl;
@@ -776,10 +797,10 @@ int main(int argc, char *argv[]) {
                     for(int j=0; j<12; j++) {
                         cout << detect_id[j] << endl;; 
                     }
-                    std::vector<Vec3d> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
+                    std::vector<bool> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
                     cout << "After check: " << endl;
                     for(int j=0; j<12; j++) {
-                        detect_id[j] = detect_id_check[j] << endl;
+                        detect_id[j] = detect_id_check[j];
                         cout << detect_id_check[j] << endl;; 
                     }
 
