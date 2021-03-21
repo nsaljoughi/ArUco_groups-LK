@@ -481,7 +481,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
                     break;
                 }
                 else {
-                    checker[i][j] = true;
+                    //checker[i][j] = true;
                     cout << "True" << endl;
                 }
             }
@@ -776,10 +776,11 @@ int main(int argc, char *argv[]) {
                     for(int j=0; j<12; j++) {
                         cout << detect_id[j] << endl;; 
                     }
-                    detect_id = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
+                    std::vector<Vec3d> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
                     cout << "After check: " << endl;
                     for(int j=0; j<12; j++) {
-                        cout << detect_id[j] << endl;; 
+                        detect_id[j] = detect_id_check[j] << endl;
+                        cout << detect_id_check[j] << endl;; 
                     }
 
                     int counter=0;
