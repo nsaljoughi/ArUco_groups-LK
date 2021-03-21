@@ -492,13 +492,13 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     for(unsigned int i=0; i<rvecs.size(); i++) {
         cout << checker[i][0] << checker[i][1] << checker[i][2] << checker[i][3] << endl; 
     }
-/*
+
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
         unsigned int trues=0;
         unsigned int falses=0;
-        bool failed=false;
 
+	// count how many markers are consistent with current one
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
             if(!checker[i][j]) {
@@ -509,57 +509,20 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             }
         }
 
+        cout << "Trues: " << trues << endl;
+        cout << "False: " << falses << endl;
 
-        cout << trues << endl;
-        cout << falses << endl;
-
-        if(trues==3) {
-            //return checkVec; 
-            failed = true;
-            break;
+	// If it agrees with all markers, keep it
+        if(trues >= (num-1)) { 
+            checkVec[group*4+i] = true;
+            continue;
         }
-        if(falses==1) {
-            for (unsigned int k=0; k<rvecs.size(); k++) { 
-                if(!checker[i][k]) {
-                    checkVec[group*4+k] = false;
-                }
-                //return checkVec;
-                failed=true;
-                break;
-            }
-        }
-        if(falses==2) {
-		if(i==rvecs.size()-1) {
-			for(int j=0; j<4; j++) {
-				checkVec[group*4+j] = false;
-			}
-			failed=true;
-			break;
-		}
-		else {
-			continue;
-		}
+        else {
+	    checkVec[group*4+i] = false;
+	    continue;
 	}
-        if(falses==3) {
-		if(i==rvecs.size()-1) {
-			for(int j=0; j<4; j++) {
-				checkVec[group*4+j] = false;
-			}
-			failed=true;
-			break;
-		}
-		else {
-			continue;
-		}
-        }
-
-        if(failed) break;
     }
-*/
-    for(int i=0; i<4; i++) {
-	    checkVec[group*4+i] = true;
-	    if(i==2) checkVec[group*4+i] = false;
-    }
+    
     for(int i=0; i<12; i++) {
 	    cout << checkVec[i] << endl;
     }
@@ -692,14 +655,16 @@ int main(int argc, char *argv[]) {
     // We have three big markers
     std::vector<double>  t_lost(3, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(3, 0); // count seconds from moment markers are consistent
-    double thr_lost = 1; // TODO threshold in seconds for going into init
+    double thr_lost = 0; // TODO threshold in seconds for going into init
     double thr_stable = 1; // TODO threshold in seconds for acquiring master pose
 
     // Weights for averaging final poses
-    double alpha_rot = 0.7;
-    double alpha_trasl = 0.7;
+    double alpha_rot = 0.5;
+    double alpha_trasl = 0.5;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
+    std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
     thr_init[0] = thr_init[1] = thr_init[2] = 1.5;
+    thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 1.0;
 
     vector<Vec3d> rMaster(3);
     vector<Vec3d> tMaster(3);
@@ -811,6 +776,8 @@ int main(int argc, char *argv[]) {
                             counter += 1;
                         } 
                     }
+
+		    cout << "Counter " << counter << endl;
 
                     if(counter >= 3) { // if n markers are consistent
                         t_stable[i] += delta_t;
