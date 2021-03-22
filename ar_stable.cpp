@@ -668,7 +668,7 @@ int main(int argc, char *argv[]) {
     thr_init[2] = std::abs(sin(60));
     thr_noinit[0] = std::abs(sin(60));
     thr_noinit[1] = std::abs(sin(60));
-    thr_noinit[2] = std::abs(sin(45))
+    thr_noinit[2] = std::abs(sin(45));
 
     vector<Vec3d> rMaster(3);
     vector<Vec3d> tMaster(3);
