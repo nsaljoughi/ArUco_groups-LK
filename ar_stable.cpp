@@ -498,7 +498,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         unsigned int trues=0;
         unsigned int falses=0;
 
-	// count how many markers are consistent with current one
+    // count how many markers are consistent with current one
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
             if(!checker[i][j]) {
@@ -512,19 +512,19 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         cout << "Trues: " << trues << endl;
         cout << "False: " << falses << endl;
 
-	// If it agrees with all markers, keep it
+    // If it agrees with all markers, keep it
         if(trues >= (num-1)) { 
             checkVec[group*4+i] = true;
             continue;
         }
         else {
-	    checkVec[group*4+i] = false;
-	    continue;
-	}
+        checkVec[group*4+i] = false;
+        continue;
+    }
     }
     
     for(int i=0; i<12; i++) {
-	    cout << checkVec[i] << endl;
+        cout << checkVec[i] << endl;
     }
     return checkVec;
 }
@@ -777,7 +777,7 @@ int main(int argc, char *argv[]) {
                         } 
                     }
 
-		    cout << "Counter " << counter << endl;
+                    cout << "Counter " << counter << endl;
 
                     if(counter >= 3) { // if n markers are consistent
                         t_stable[i] += delta_t;
@@ -811,13 +811,13 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-	    cout << rMaster[0] << endl;
-	    cout << rMaster[1] << endl;
-	    cout << rMaster[2] << endl;
             cout << rMaster[0] << endl;
-	    cout << rMaster[1] << endl;
-	    cout << rMaster[2] << endl;
-	    projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
+            cout << rMaster[1] << endl;
+            cout << rMaster[2] << endl;
+            cout << tMaster[0] << endl;
+            cout << tMaster[1] << endl;
+            cout << tMaster[2] << endl;
+            projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
 
