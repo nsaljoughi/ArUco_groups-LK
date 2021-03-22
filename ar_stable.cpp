@@ -825,9 +825,15 @@ int main(int argc, char *argv[]) {
 
             for (unsigned int j = 0; j < arrow1.size(); j++)
             {
-                if(init_id[0]) circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
-                if(init_id[4]) circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
-                if(init_id[8]) circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
+                if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
+                    circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
+                }
+                if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
+                    circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
+                }
+                if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+                    circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
+                }
             }
         }
 
