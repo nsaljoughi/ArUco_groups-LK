@@ -1,1 +1,3 @@
-# pama_ar
+# Augmented reality module with ArUco markers
+
+ 
