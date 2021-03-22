@@ -663,7 +663,7 @@ int main(int argc, char *argv[]) {
     double alpha_trasl = 0.5;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
-    thr_init[0] = std::abs(sin(00));
+    thr_init[0] = std::abs(sin(90));
     thr_init[1] = std::abs(sin(90));
     thr_init[2] = std::abs(sin(60));
     thr_noinit[0] = std::abs(sin(60));
