@@ -95,7 +95,7 @@ double getAngle(Vec3d rvec) {
     return theta;
 }
 
-Vec3d rodrigues2euler(Vec3d rvec, bool degrees=true) {
+Vec3d rodrigues2euler(Vec3d rvec, bool degrees=false) {
     Vec3d rvec_euler;
     double angle;
     double x, y, z;
@@ -663,12 +663,12 @@ int main(int argc, char *argv[]) {
     double alpha_trasl = 0.5;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
-    thr_init[0] = (sin(90));
-    thr_init[1] = (sin(90));
-    thr_init[2] = (sin(60));
-    thr_noinit[0] = (sin(60));
-    thr_noinit[1] = (sin(60));
-    thr_noinit[2] = (sin(45));
+    thr_init[0] = (sin(M_PI/2.0));
+    thr_init[1] = (sin(M_PI/2.0));
+    thr_init[2] = (sin(M_PI/3.0));
+    thr_noinit[0] = (sin(M_PI/3.0));
+    thr_noinit[1] = (sin(M_PI/3.0));
+    thr_noinit[2] = (sin(M_PI/4.0));
 
     vector<Vec3d> rMaster(3);
     vector<Vec3d> tMaster(3);
