@@ -348,7 +348,7 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
     std::vector<Vec3d> tvecs_centered;
     Vec3d tvec_avg;
 
-    if(group==0 || group==1) { // markers in a square
+    if(group==0 || group==1 || group==3) { // markers in a square
         for(unsigned int i=0; i<4; i++) {
             Vec3d tvec;
             if(detect_id[group*4+i]) {
