@@ -450,7 +450,6 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         return checkVec;
     }
     
-    cout << rvecs.size() << endl;
     std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
@@ -461,28 +460,18 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
             if(!detect_id[group*4+j]) {
-                cout << "It is false" << endl;
                 checker[i][j] = false;
                 continue;
             }
 
             for(int k=0; k<3; k++) {
 
-                cout << rvecs[i][k] << endl;
-                cout << rvecs[j][k] << endl;
-                cout << "Angle diff " << std::abs(rvecs[i][k]-rvecs[j][k]) << endl;
-                cout << "Angle diff with sin " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) << endl;
-                cout << "Thr " << thr[k] << endl;
-                cout << (std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) << endl;
-
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) {
                     checker[i][j] = false;
-                    cout << "False" << endl;
                     break;
                 }
                 else {
                     checker[i][j] = true;
-                    cout << "True" << endl;
                 }
             }
         }
@@ -490,15 +479,10 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
-        cout << checker[i][0] << checker[i][1] << checker[i][2] << checker[i][3] << endl; 
-    }
-
-
-    for(unsigned int i=0; i<rvecs.size(); i++) {
         unsigned int trues=0;
         unsigned int falses=0;
 
-    // count how many markers are consistent with current one
+        // count how many markers are consistent with current one
         for(unsigned int j=0; j<rvecs.size(); j++) {
             if(i==j) continue;
             if(!checker[i][j]) {
@@ -509,23 +493,17 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             }
         }
 
-        cout << "Trues: " << trues << endl;
-        cout << "False: " << falses << endl;
-
-    // If it agrees with all markers, keep it
+        // If it agrees with all markers, keep it
         if(trues >= (num-1)) { 
             checkVec[group*4+i] = true;
             continue;
         }
         else {
-        checkVec[group*4+i] = false;
-        continue;
+            checkVec[group*4+i] = false;
+            continue;
+        }
     }
-    }
-    
-    for(int i=0; i<12; i++) {
-        cout << checkVec[i] << endl;
-    }
+   
     return checkVec;
 }
 
