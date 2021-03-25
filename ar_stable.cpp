@@ -630,9 +630,9 @@ int main(int argc, char *argv[]) {
 
     vector<Point2d> arrow1, arrow2, arrow3; // vec to print arrow on image plane
 
-    // We have three big markers
-    std::vector<double>  t_lost(3, 0); // count seconds from last time marker was seen
-    std::vector<double>  t_stable(3, 0); // count seconds from moment markers are consistent
+    // We have four big markers
+    std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
+    std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
     double thr_lost = 0.1; // TODO threshold in seconds for going into init
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
 
@@ -648,10 +648,10 @@ int main(int argc, char *argv[]) {
     thr_noinit[1] = (sin(M_PI/3.0));
     thr_noinit[2] = (sin(M_PI/4.0));
 
-    vector<Vec3d> rMaster(3);
-    vector<Vec3d> tMaster(3);
+    vector<Vec3d> rMaster(4);
+    vector<Vec3d> tMaster(4);
 
-    std::vector<bool> init_id(12, false); // check if marker has been seen before
+    std::vector<bool> init_id(16, false); // check if marker has been seen before
 
 
     ////// ---KEY PART--- //////
@@ -663,10 +663,10 @@ int main(int argc, char *argv[]) {
         inputVideo.retrieve(image);
         //cv::resize(image, image, Size(image.cols/2, image.rows/2)); // lower video resolution
     
-        // We have 12 markers
-        vector<Vec3d> rvecs_ord(12); // store markers' Euler rotation vectors
-        vector<Vec3d> tvecs_ord(12); // store markers' translation vectors
-        std::vector<bool> detect_id(12, true); // check if marker was detected or not
+        // We have 16 markers
+        vector<Vec3d> rvecs_ord(16); // store markers' Euler rotation vectors
+        vector<Vec3d> tvecs_ord(16); // store markers' translation vectors
+        std::vector<bool> detect_id(16, true); // check if marker was detected or not
 
 
 
@@ -710,7 +710,7 @@ int main(int argc, char *argv[]) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
 
             // Loop over markers
-            for(unsigned int i=0; i<12; i++) {
+            for(unsigned int i=0; i<16; i++) {
 
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
@@ -733,7 +733,7 @@ int main(int argc, char *argv[]) {
 
 
             // Loop over groups
-            for(unsigned int i=0; i<3; i++) {
+            for(unsigned int i=0; i<4; i++) {
 
                 if(!init_id[i*4]) { // if group needs init
 
@@ -741,12 +741,12 @@ int main(int argc, char *argv[]) {
                     cout << "INIT" << endl;
 
                     cout << "Before check: " << endl;
-                    for(int j=0; j<12; j++) {
+                    for(int j=0; j<16; j++) {
                         cout << detect_id[j] << endl;; 
                     }
                     std::vector<bool> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
                     cout << "After check: " << endl;
-                    for(int j=0; j<12; j++) {
+                    for(int j=0; j<16; j++) {
                         detect_id[j] = detect_id_check[j];
                         cout << detect_id_check[j] << endl;; 
                     }
@@ -804,6 +804,7 @@ int main(int argc, char *argv[]) {
             projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
+            projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
 
             for (unsigned int j = 0; j < arrow1.size(); j++)
             {
@@ -814,6 +815,9 @@ int main(int argc, char *argv[]) {
                     circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
                 }
                 if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+                    circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
+                }
+                if(init_id[8] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
                     circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
                 }
             }
@@ -836,10 +840,12 @@ int main(int argc, char *argv[]) {
         cout << "Stable time " << t_stable[0] << endl;
         cout << t_stable[1] << endl;
         cout << t_stable[2] << endl;
+        cout << t_stable[3] << endl;
 
         cout << "Lost time " << t_lost[0] << endl;
         cout << t_lost[1] << endl;
         cout << t_lost[2] << endl;
+        cout << t_lost[3] << endl;
 
 
         char key = (char)waitKey(waitTime); 
