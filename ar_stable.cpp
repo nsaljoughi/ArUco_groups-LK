@@ -8,6 +8,7 @@
 #include <ctime>
 #include <cmath>
 #include <math.h>
+#include <limits>
 
 using namespace std;
 using namespace cv;
@@ -26,7 +27,7 @@ const char* keys  =
         "{o        | 0.04  | Offset between markers (in meters) }"
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }"
-        "{f        |       | Use stabilization filtering}"
+        "{n        |       | Naive mode (no stabilization)}"
         "{s        |       | Save results}";
 }
 
@@ -508,6 +509,8 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 }
 
 
+
+
 //////
 int main(int argc, char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
@@ -526,7 +529,7 @@ int main(int argc, char *argv[]) {
     bool estimatePose = parser.has("c");
     float markerLength = parser.get<float>("l");
     float markerOffset = parser.get<float>("o");
-    bool stabilFilt = parser.has("f");
+    bool naiveMode = parser.has("n");
     bool saveResults = parser.has("s");
 
 
@@ -600,14 +603,14 @@ int main(int argc, char *argv[]) {
     // Save results to file
     ofstream resultfile;
 
-    if (stabilFilt && saveResults) {
+    if (!naiveMode && saveResults) {
         resultfile.open("results_filt.txt");
         if (resultfile.is_open()) {
             cout << "Filtered resulting transformations" << endl;
         }
         else cout << "Unable to open result file" << endl;
     }
-    else if (!stabilFilt && saveResults) {
+    else if (naiveMode && saveResults) {
         resultfile.open("results_unfilt.txt");
         if (resultfile.is_open()) {
            cout << "Unfiltered resulting transformations" << endl;
@@ -647,6 +650,12 @@ int main(int argc, char *argv[]) {
     thr_noinit[0] = (sin(M_PI/3.0));
     thr_noinit[1] = (sin(M_PI/3.0));
     thr_noinit[2] = (sin(M_PI/4.0));
+
+    if(naiveMode) {
+    	thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
+    	thr_lost = std::numeric_limits<double>::max();
+    	thr_init = 0.0;
+    }
 
     vector<Vec3d> rMaster(4);
     vector<Vec3d> tMaster(4);
