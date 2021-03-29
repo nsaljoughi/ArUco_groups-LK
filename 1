@@ -544,49 +544,58 @@ void DrawBox2D(Mat img, Vec3d rvec, Vec3d tvec, Mat camMat, Mat distCoeffs,  dou
 	Point box_points[1][4];
 	img.copyTo(overlay);
 
-	vector<Point3d> point_abs(4);
-	vector<Point3d> point_rel(4);
-	vector<Point2d> image_point(4);
-	point_rel[0].x = 0.0;
-	point_rel[0].y = 0.0;
-	point_rel[0].z = 0.0;
-	point_rel[1].x = -0.3;
-	point_rel[1].y = -0.3;
-	point_rel[1].z = 0.0;
-	point_rel[2].x = 0.6;
-	point_rel[2].y = 0.6;
-	point_rel[2].z = 0.0;
-	point_rel[3].x = 0.9;
-	point_rel[3].y = 0.9;
-	point_rel[3].z = 0.0;
+	vector<Point3d> rectangle_rel(4); //relative coordinates of rectangle vertices
+	vector<Point3d> rectangle_abs(4); //absolute coordinates of rectangle vertices
+	rectangle_rel[0].x = -xdim/2;
+	rectangle_rel[0].y = -ydim/2;
+	rectangle_rel[1].x = xdim/2;
+	rectangle_rel[1].y = -ydim/2;
+	rectangle_rel[2].x = xdim/2;
+	rectangle_rel[2].y = ydim/2;
+	rectangle_rel[3].x = -xdim/2;
+	rectangle_rel[3].y = ydim/2;
+	rectangle_rel[0].z = rectangle_rel[1].z = rectangle_rel[2].z = rectangle_rel[3].z = 0.02;
+	rectangle_abs[0] = transformVec(rectangle_rel[0], rvec, tvec);
+	rectangle_abs[1] = transformVec(rectangle_rel[1], rvec, tvec);
+	rectangle_abs[2] = transformVec(rectangle_rel[2], rvec, tvec);
+	rectangle_abs[3] = transformVec(rectangle_rel[3], rvec, tvec);
 
-	point_abs[0] = transformPoint(point_rel[0], rvec, tvec);
-	point_abs[1] = transformPoint(point_rel[1], rvec, tvec);
-	point_abs[2] = transformPoint(point_rel[2], rvec, tvec);
-	point_abs[3] = transformPoint(point_rel[3], rvec, tvec);
+	vector<Point2d> image_points(4);
+	projectPoints(rectangle_abs, rvec, tvec, camMat, distCoeffs, image_points);
+
+	box_points[0][0] = Point(image_points[0].x, image_points[0].y);
+	box_points[0][1] = Point(image_points[1].x, image_points[1].y);
+	box_points[0][2] = Point(image_points[2].x, image_points[2].y);
+	box_points[0][3] = Point(image_points[3].x, image_points[3].y);
 	
-	cout << "SPACE!!!!!" << point_abs[0].x << ", " << point_abs[0].y << ", " << point_abs[0].z << endl;
-	cout << "SPACE!!!!!" << point_abs[1].x << ", " << point_abs[1].y << ", " << point_abs[1].z << endl;
-	cout << "SPACE!!!!!" << point_abs[2].x << ", " << point_abs[2].y << ", " << point_abs[2].z << endl;
-	cout << "SPACE!!!!!" << point_abs[3].x << ", " << point_abs[3].y << ", " << point_abs[3].z << endl;
+	/*
 
+	cout << "BOX!!!!!" << rectangle_rel[0].x << rectangle_rel[0].y << rectangle_rel[0].z << endl;
+	cout << "BOX!!!!!" << rectangle_rel[1].x << rectangle_rel[1].y << rectangle_rel[1].z << endl;
+	cout << "BOX!!!!!" << rectangle_rel[2].x << rectangle_rel[2].y << rectangle_rel[2].z << endl;
+	cout << "BOX!!!!!" << rectangle_rel[3].x << rectangle_rel[3].y << rectangle_rel[3].z << endl;
+	
+	cout << "BOX!!!!!" << rectangle_abs[0].x << rectangle_abs[0].y << rectangle_abs[0].z << endl;
+	cout << "BOX!!!!!" << rectangle_abs[1].x << rectangle_abs[1].y << rectangle_abs[1].z << endl;
+	cout << "BOX!!!!!" << rectangle_abs[2].x << rectangle_abs[2].y << rectangle_abs[2].z << endl;
+	cout << "BOX!!!!!" << rectangle_abs[3].x << rectangle_abs[3].y << rectangle_abs[3].z << endl;
 
-	projectPoints(point_abs, rvec, tvec, camMat, distCoeffs, image_point);
+	cout << "BOX!!!!!" << box_points[0][0].x << box_points[0][0].y << endl;
+	cout << "BOX!!!!!" << box_points[0][1].x << box_points[0][1].y << endl;
+	cout << "BOX!!!!!" << box_points[0][2].x << box_points[0][2].y << endl;
+	cout << "BOX!!!!!" << box_points[0][3].x << box_points[0][3].y << endl;
+	
+	cout << "BOX!!!!!" << image_points[0].x << image_points[0].y << endl;
+	cout << "BOX!!!!!" << image_points[1].x << image_points[1].y << endl;
+	cout << "BOX!!!!!" << image_points[2].x << image_points[2].y << endl;
+	cout << "BOX!!!!!" << image_points[3].x << image_points[3].y << endl;
 
-	cout << "IMAGE!!!!!" << image_point[0].x << ", " << image_point[0].y << endl;
-	cout << "IMAGE!!!!!" << image_point[1].x << ", " << image_point[1].y << endl;
-	cout << "IMAGE!!!!!" << image_point[2].x << ", " << image_point[2].y << endl;
-	cout << "IMAGE!!!!!" << image_point[3].x << ", " << image_point[3].y << endl;
-
-	box_points[0][0] = Point(300, 300);
-	box_points[0][1] = Point(400, 400);
-	box_points[0][2] = Point(600, 600);
-	box_points[0][3] = Point(700, 700);
+	*/
 
 	const Point* ppt[1] = {box_points[0]};
 	int npt[] = {4};
 	double alpha = 0.3;
-	fillPoly(overlay, ppt, npt, 1, Scalar(60,20,220), lineType);
+	fillPoly(overlay,ppt,npt,1,Scalar(60,20,220),lineType);
 	addWeighted(overlay, alpha, img, 1-alpha, 0, img);
 }
 
@@ -920,8 +929,6 @@ int main(int argc, char *argv[]) {
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
             projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
-	    
-	    DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
 
             for (unsigned int j = 0; j < arrow1.size(); j++)
             {
@@ -938,6 +945,7 @@ int main(int argc, char *argv[]) {
                     circle(imageCopy, arrow4[j], 1, Scalar(0,0,255), -1);
                 }
             }
+	    DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
         }
 
         if(showRejected && rejected.size() > 0)
@@ -947,7 +955,6 @@ int main(int argc, char *argv[]) {
 
         //imshow("out", imageCopy);
         Mat imageResize;
-
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
         imshow("resize", imageResize);
 
