@@ -1,0 +1,5 @@
+- function to combine all group poses
+- tune hyperparameters
+- redo calibration
+- write module as a library
+- write documentation
