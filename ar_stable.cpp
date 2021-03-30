@@ -927,7 +927,12 @@ int main(int argc, char *argv[]) {
             {
                 if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                     circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
+<<<<<<< Updated upstream
 		}
+=======
+                    cout << arrow1[j].x << ", " << arrow1[j].y << endl;
+                }
+>>>>>>> Stashed changes
                 if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                     circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
                 }
