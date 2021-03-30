@@ -994,18 +994,75 @@ int main(int argc, char *argv[]) {
             line(imageCopy, box1[1], box1[5], Scalar(0,0,0), 2, LINE_8);
 
             Point face1[1][4];
+            Point face2[1][4];
+            Point face3[1][4];
+            Point face4[1][4];
+            Point face5[1][4];
+            Point face6[1][4];
+
             face1[0][0] = Point(box1[0].x, box1[0].y);
             face1[0][1] = Point(box1[1].x, box1[1].y);
             face1[0][2] = Point(box1[2].x, box1[2].y);
             face1[0][3] = Point(box1[3].x, box1[3].y);
 
-            const Point* boxppt[1] = {face1[0]};
+            face2[0][0] = Point(box1[1].x, box1[1].y);
+            face2[0][1] = Point(box1[5].x, box1[5].y);
+            face2[0][2] = Point(box1[4].x, box1[4].y);
+            face2[0][3] = Point(box1[2].x, box1[2].y);
+
+            face3[0][0] = Point(box1[5].x, box1[5].y);
+            face3[0][1] = Point(box1[7].x, box1[7].y);
+            face3[0][2] = Point(box1[6].x, box1[6].y);
+            face3[0][3] = Point(box1[4].x, box1[4].y);
+
+            face4[0][0] = Point(box1[7].x, box1[7].y);
+            face4[0][1] = Point(box1[0].x, box1[0].y);
+            face4[0][2] = Point(box1[3].x, box1[3].y);
+            face4[0][3] = Point(box1[6].x, box1[6].y);
+
+            face5[0][0] = Point(box1[3].x, box1[3].y);
+            face5[0][1] = Point(box1[2].x, box1[2].y);
+            face5[0][2] = Point(box1[4].x, box1[4].y);
+            face5[0][3] = Point(box1[6].x, box1[6].y);
+
+            face6[0][0] = Point(box1[0].x, box1[0].y);
+            face6[0][1] = Point(box1[1].x, box1[1].y);
+            face6[0][2] = Point(box1[5].x, box1[5].y);
+            face6[0][3] = Point(box1[7].x, box1[7].y);
+
+
+            const Point* boxppt1[1] = {face1[0]};
+            const Point* boxppt2[1] = {face2[0]};
+            const Point* boxppt3[1] = {face3[0]};
+            const Point* boxppt4[1] = {face4[0]};
+            const Point* boxppt5[1] = {face5[0]};
+            const Point* boxppt6[1] = {face6[0]};
             int npt[] = {4};
             double alpha = 0.3;
-            Mat overlay;
-            imageCopy.copyTo(overlay);
-            fillPoly(overlay, boxppt, npt, 1, Scalar(60,20,220), LINE_8);
-            addWeighted(overlay, alpha, imageCopy, 1-alpha, 0, imageCopy);
+            Mat overlay1, overlay2, overlay3, overlay4, overlay5, overlay6;
+            imageCopy.copyTo(overlay1);
+            fillPoly(overlay1, boxppt1, npt, 1, Scalar(60,20,220), LINE_8);
+            addWeighted(overlay1, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+            imageCopy.copyTo(overlay2);
+            fillPoly(overlay2, boxppt2, npt, 1, Scalar(60,20,220), LINE_8);
+            addWeighted(overlay2, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+            imageCopy.copyTo(overlay3);
+            fillPoly(overlay3, boxppt3, npt, 1, Scalar(60,20,220), LINE_8);
+            addWeighted(overlay3, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+            imageCopy.copyTo(overlay4);
+            fillPoly(overlay4, boxppt4, npt, 1, Scalar(60,20,220), LINE_8);
+            addWeighted(overlay4, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+            imageCopy.copyTo(overlay5);
+            fillPoly(overlay5, boxppt5, npt, 1, Scalar(60,20,220), LINE_8);
+            addWeighted(overlay5, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+            imageCopy.copyTo(overlay6);
+            fillPoly(overlay6, boxppt6, npt, 1, Scalar(60,20,220), LINE_8);
+            addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
         }
 
         if(showRejected && rejected.size() > 0)
