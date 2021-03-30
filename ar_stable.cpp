@@ -978,20 +978,20 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            line(imageCopy, box1[0], box1[1], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[1], box1[2], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[2], box1[3], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[3], box1[0], Scalar(0,0,0), 2, LINE_8);
+            line(imageCopy, box1[0], box1[1], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[1], box1[2], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[2], box1[3], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[3], box1[0], Scalar(60,20,220), 2, LINE_8);
 
-            line(imageCopy, box1[4], box1[6], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[6], box1[7], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[7], box1[4], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[5], box1[4], Scalar(0,0,0), 2, LINE_8);
+            line(imageCopy, box1[4], box1[6], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[6], box1[7], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[7], box1[4], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[5], box1[4], Scalar(60,20,220), 2, LINE_8);
 
-            line(imageCopy, box1[6], box1[3], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[7], box1[0], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[2], box1[4], Scalar(0,0,0), 2, LINE_8);
-            line(imageCopy, box1[1], box1[5], Scalar(0,0,0), 2, LINE_8);
+            line(imageCopy, box1[6], box1[3], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[7], box1[0], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[2], box1[4], Scalar(60,20,220), 2, LINE_8);
+            line(imageCopy, box1[1], box1[5], Scalar(60,20,220), 2, LINE_8);
 
             Point face1[1][4];
             Point face2[1][4];
