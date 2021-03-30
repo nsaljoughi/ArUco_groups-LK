@@ -956,7 +956,7 @@ int main(int argc, char *argv[]) {
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
             projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
 
-            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1)
+            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
 
             //DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
 
