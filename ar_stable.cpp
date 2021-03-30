@@ -806,7 +806,7 @@ int main(int argc, char *argv[]) {
     double abs_tick = (double)getTickCount();
     double delta_t = 0;
 
-    vector<Point2d> arrow1, arrow2, arrow3, arrow4, box1; // vec to print arrow on image plane
+    vector<Point2d> arrow1, arrow2, arrow3, arrow4, box1, box2, box3, box4; // vec to print arrow on image plane
 
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
