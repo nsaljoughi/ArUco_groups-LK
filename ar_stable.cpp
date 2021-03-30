@@ -539,55 +539,55 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 
 
 void DrawBox2D(Mat img, Vec3d rvec, Vec3d tvec, Mat camMat, Mat distCoeffs,  double xdim, double ydim) {
-	Mat overlay;
-	int lineType = LINE_8;
-	Point box_points[1][4];
-	img.copyTo(overlay);
+    Mat overlay;
+    int lineType = LINE_8;
+    Point box_points[1][4];
+    img.copyTo(overlay);
 
-	vector<Point3d> point_abs(4);
-	vector<Point3d> point_rel(4);
-	vector<Point2d> image_point(4);
-	point_rel[0].x = 0.0;
-	point_rel[0].y = 0.0;
-	point_rel[0].z = 0.0;
-	point_rel[1].x = -0.3;
-	point_rel[1].y = -0.3;
-	point_rel[1].z = 0.0;
-	point_rel[2].x = 0.6;
-	point_rel[2].y = 0.6;
-	point_rel[2].z = 0.0;
-	point_rel[3].x = 0.9;
-	point_rel[3].y = 0.9;
-	point_rel[3].z = 0.0;
+    vector<Point3d> point_abs(4);
+    vector<Point3d> point_rel(4);
+    vector<Point2d> image_point(4);
+    point_rel[0].x = 0.0;
+    point_rel[0].y = 0.0;
+    point_rel[0].z = 0.0;
+    point_rel[1].x = -0.3;
+    point_rel[1].y = -0.3;
+    point_rel[1].z = 0.0;
+    point_rel[2].x = 0.6;
+    point_rel[2].y = 0.6;
+    point_rel[2].z = 0.0;
+    point_rel[3].x = 0.9;
+    point_rel[3].y = 0.9;
+    point_rel[3].z = 0.0;
 
-	point_abs[0] = transformPoint(point_rel[0], rvec, tvec);
-	point_abs[1] = transformPoint(point_rel[1], rvec, tvec);
-	point_abs[2] = transformPoint(point_rel[2], rvec, tvec);
-	point_abs[3] = transformPoint(point_rel[3], rvec, tvec);
-	
-	cout << "SPACE!!!!!" << point_abs[0].x << ", " << point_abs[0].y << ", " << point_abs[0].z << endl;
-	cout << "SPACE!!!!!" << point_abs[1].x << ", " << point_abs[1].y << ", " << point_abs[1].z << endl;
-	cout << "SPACE!!!!!" << point_abs[2].x << ", " << point_abs[2].y << ", " << point_abs[2].z << endl;
-	cout << "SPACE!!!!!" << point_abs[3].x << ", " << point_abs[3].y << ", " << point_abs[3].z << endl;
+    point_abs[0] = transformPoint(point_rel[0], rvec, tvec);
+    point_abs[1] = transformPoint(point_rel[1], rvec, tvec);
+    point_abs[2] = transformPoint(point_rel[2], rvec, tvec);
+    point_abs[3] = transformPoint(point_rel[3], rvec, tvec);
+    
+    cout << "SPACE!!!!!" << point_abs[0].x << ", " << point_abs[0].y << ", " << point_abs[0].z << endl;
+    cout << "SPACE!!!!!" << point_abs[1].x << ", " << point_abs[1].y << ", " << point_abs[1].z << endl;
+    cout << "SPACE!!!!!" << point_abs[2].x << ", " << point_abs[2].y << ", " << point_abs[2].z << endl;
+    cout << "SPACE!!!!!" << point_abs[3].x << ", " << point_abs[3].y << ", " << point_abs[3].z << endl;
 
 
-	projectPoints(point_abs, rvec, tvec, camMat, distCoeffs, image_point);
+    projectPoints(point_abs, rvec, tvec, camMat, distCoeffs, image_point);
 
-	cout << "IMAGE!!!!!" << image_point[0].x << ", " << image_point[0].y << endl;
-	cout << "IMAGE!!!!!" << image_point[1].x << ", " << image_point[1].y << endl;
-	cout << "IMAGE!!!!!" << image_point[2].x << ", " << image_point[2].y << endl;
-	cout << "IMAGE!!!!!" << image_point[3].x << ", " << image_point[3].y << endl;
+    cout << "IMAGE!!!!!" << image_point[0].x << ", " << image_point[0].y << endl;
+    cout << "IMAGE!!!!!" << image_point[1].x << ", " << image_point[1].y << endl;
+    cout << "IMAGE!!!!!" << image_point[2].x << ", " << image_point[2].y << endl;
+    cout << "IMAGE!!!!!" << image_point[3].x << ", " << image_point[3].y << endl;
 
-	box_points[0][0] = Point(300, 300);
-	box_points[0][1] = Point(400, 400);
-	box_points[0][2] = Point(600, 600);
-	box_points[0][3] = Point(700, 700);
+    box_points[0][0] = Point(300, 300);
+    box_points[0][1] = Point(400, 400);
+    box_points[0][2] = Point(600, 600);
+    box_points[0][3] = Point(700, 700);
 
-	const Point* ppt[1] = {box_points[0]};
-	int npt[] = {4};
-	double alpha = 0.3;
-	fillPoly(overlay, ppt, npt, 1, Scalar(60,20,220), lineType);
-	addWeighted(overlay, alpha, img, 1-alpha, 0, img);
+    const Point* ppt[1] = {box_points[0]};
+    int npt[] = {4};
+    double alpha = 0.3;
+    fillPoly(overlay, ppt, npt, 1, Scalar(60,20,220), lineType);
+    addWeighted(overlay, alpha, img, 1-alpha, 0, img);
 }
 
 
@@ -683,22 +683,22 @@ int main(int argc, char *argv[]) {
     // cx' = (width'/width) * cx
     // cy' = (height'/height) * cy
     if(frame_width < frame_height) {  // TODO if video is vertical
-	    camMatrix.at<double>(0,0) *= (frame_width/1080);
-	    camMatrix.at<double>(1,1) *= (frame_height/1920);
-	    camMatrix.at<double>(0,2) *= (frame_width/1080);
-	    camMatrix.at<double>(1,2) *= (frame_height/1920);
+        camMatrix.at<double>(0,0) *= (frame_width/1080);
+        camMatrix.at<double>(1,1) *= (frame_height/1920);
+        camMatrix.at<double>(0,2) *= (frame_width/1080);
+        camMatrix.at<double>(1,2) *= (frame_height/1920);
     }
     else {
-	    camMatrix.at<double>(0,0) *= (frame_width/1920);
-	    camMatrix.at<double>(1,1) *= (frame_height/1080);
-	    camMatrix.at<double>(0,2) *= (frame_width/1920);
-	    camMatrix.at<double>(1,2) *= (frame_height/1080);
+        camMatrix.at<double>(0,0) *= (frame_width/1920);
+        camMatrix.at<double>(1,1) *= (frame_height/1080);
+        camMatrix.at<double>(0,2) *= (frame_width/1920);
+        camMatrix.at<double>(1,2) *= (frame_height/1080);
     }
 
     // Save results to video
     VideoWriter cap;
     if (saveResults) cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
-	inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+    inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
 
 
     // Save results to file
@@ -755,10 +755,10 @@ int main(int argc, char *argv[]) {
 
     
     if(naiveMode) {
-    	thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
-    	thr_lost = std::numeric_limits<double>::max();
-    	thr_stable = 0.0;
-	consist_markers = 1.0;
+        thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
+        thr_lost = std::numeric_limits<double>::max();
+        thr_stable = 0.0;
+    consist_markers = 1.0;
     }
 
     vector<Vec3d> rMaster(4);
@@ -825,7 +825,7 @@ int main(int argc, char *argv[]) {
             // Loop over markers
             for(unsigned int i=0; i<16; i++) {
 
-		cout << "Rvec[" << i << "] <" << rvecs_ord[i][0] << "," << rvecs_ord[i][1] << "," << rvecs_ord[i][2] << ">" << endl;
+        cout << "Rvec[" << i << "] <" << rvecs_ord[i][0] << "," << rvecs_ord[i][1] << "," << rvecs_ord[i][2] << ">" << endl;
 
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
@@ -920,19 +920,15 @@ int main(int argc, char *argv[]) {
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
             projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
-	    
-	    DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
+
+            //DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
 
             for (unsigned int j = 0; j < arrow1.size(); j++)
             {
                 if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                     circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
-<<<<<<< Updated upstream
-		}
-=======
                     cout << arrow1[j].x << ", " << arrow1[j].y << endl;
                 }
->>>>>>> Stashed changes
                 if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                     circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
                 }
