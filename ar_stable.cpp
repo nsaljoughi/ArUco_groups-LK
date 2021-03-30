@@ -964,7 +964,7 @@ int main(int argc, char *argv[]) {
             {
                 if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                     circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
-                    cout << arrow1[j].x << ", " << arrow1[j].y << endl;
+                    //cout << arrow1[j].x << ", " << arrow1[j].y << endl;
                     cout << box1[0].x << ", " << box1[0].y << endl;
                 }
                 if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
