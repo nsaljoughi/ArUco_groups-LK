@@ -687,7 +687,6 @@ int main(int argc, char *argv[]) {
     bool naiveMode = parser.get<bool>("n");
     bool saveResults = parser.has("s");
 
-    cout << naiveMode << endl;
 
     // Detector parameters
     Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
@@ -900,8 +899,6 @@ int main(int argc, char *argv[]) {
             // Loop over markers
             for(unsigned int i=0; i<16; i++) {
 
-        cout << "Rvec[" << i << "] <" << rvecs_ord[i][0] << "," << rvecs_ord[i][1] << "," << rvecs_ord[i][2] << ">" << endl;
-
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
                     detect_id[i] = false;
@@ -1004,7 +1001,7 @@ int main(int argc, char *argv[]) {
             }
             */
 
-            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix/*, distCoeffs,*/ box1);
             projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
