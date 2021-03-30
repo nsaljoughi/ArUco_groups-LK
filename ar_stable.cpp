@@ -1001,7 +1001,7 @@ int main(int argc, char *argv[]) {
             }
             */
 
-            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix/*, distCoeffs,*/ box1);
+            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, box1);
             projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
