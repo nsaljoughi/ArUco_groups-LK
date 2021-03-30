@@ -1006,8 +1006,6 @@ int main(int argc, char *argv[]) {
             imageCopy.copyTo(overlay);
             fillPoly(overlay, boxppt, npt, 1, Scalar(60,20,220), LINE_8);
             addWeighted(overlay, alpha, imageCopy, 1-alpha, 0, imageCopy);
-
-            fillPoly(imageCopy, box1, Scalar(60, 20, 220), LINE_8);
         }
 
         if(showRejected && rejected.size() > 0)
