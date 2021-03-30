@@ -795,7 +795,7 @@ int main(int argc, char *argv[]) {
     // Load arrow point cloud
     Mat arrow_cloud = cvcloud_load();
 
-    Mat box_cloud = create_bbox(1.0, 1.0, 1.0);
+    Mat box_cloud = create_bbox(1.5, 1.0, 1.0);
 
 
 
