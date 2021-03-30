@@ -88,6 +88,38 @@ static Mat cvcloud_load()
     return cloud;
 }
 
+Mat create_bbox(double x_scale, double y_scale, double z_scale) 
+{
+    Mat bbox(1, 8, CV_64FC3);
+
+    bbox[0].x = - 1.0 * (x_scale / 2.0);
+    bbox[0].y = - 1.0 * (y_scale / 2.0);
+    bbox[0].z = z_scale / 2.0;
+    bbox[1].x = x_scale / 2.0;
+    bbox[1].y = - 1.0 * (y_scale / 2.0);
+    bbox[1].z = z_scale / 2.0;
+    bbox[2].x = x_scale / 2.0;
+    bbox[2].y = y_scale / 2.0;
+    bbox[2].z = z_scale / 2.0;
+    bbox[3].x = - 1.0 * (x_scale / 2.0);
+    bbox[3].y = y_scale / 2.0;
+    bbox[3].z = z_scale / 2.0;
+    bbox[4].x = x_scale / 2.0;
+    bbox[4].y = y_scale / 2.0;
+    bbox[4].z = - 1.0 * (z_scale / 2.0);
+    bbox[5].x = x_scale / 2.0;
+    bbox[5].y = - 1.0 * (y_scale / 2.0);
+    bbox[5].z = - 1.0 * (z_scale / 2.0);
+    bbox[6].x = - 1.0 * (x_scale / 2.0);
+    bbox[6].y = y_scale / 2.0;
+    bbox[6].z = - 1.0 * (z_scale / 2.0);
+    bbox[7].x = - 1.0 * (x_scale / 2.0);
+    bbox[7].y = - 1.0 * (y_scale / 2.0);
+    bbox[7].z = - 1.0 * (z_scale / 2.0);
+
+    return bbox;
+}
+
 
 // Get angle from Rodrigues vector
 double getAngle(Vec3d rvec) {
@@ -723,6 +755,8 @@ int main(int argc, char *argv[]) {
     // Load arrow point cloud
     Mat arrow_cloud = cvcloud_load();
 
+    Mat box_cloud = create_bbox(1.0, 1.0, 1.0);
+
 
 
     // Define variables
@@ -732,7 +766,7 @@ int main(int argc, char *argv[]) {
     double abs_tick = (double)getTickCount();
     double delta_t = 0;
 
-    vector<Point2d> arrow1, arrow2, arrow3, arrow4; // vec to print arrow on image plane
+    vector<Point2d> arrow1, arrow2, arrow3, arrow4, box1; // vec to print arrow on image plane
 
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
@@ -921,6 +955,8 @@ int main(int argc, char *argv[]) {
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
             projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
 
+            prohectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1)
+
             //DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
 
             for (unsigned int j = 0; j < arrow1.size(); j++)
@@ -928,6 +964,7 @@ int main(int argc, char *argv[]) {
                 if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                     circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
                     cout << arrow1[j].x << ", " << arrow1[j].y << endl;
+                    cout << box1[0].x << ", " << box1[0].y << endl;
                 }
                 if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                     circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
