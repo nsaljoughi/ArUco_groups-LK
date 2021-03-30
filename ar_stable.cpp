@@ -88,6 +88,7 @@ static Mat cvcloud_load()
     return cloud;
 }
 
+
 Mat create_bbox(double x_scale, double y_scale, double z_scale) 
 {
     Mat cloud(1, 8, CV_64FC3);
