@@ -977,6 +977,10 @@ int main(int argc, char *argv[]) {
                     circle(imageCopy, arrow4[j], 1, Scalar(0,0,255), -1);
                 }
             }
+            line(imageCopy, box1[0], box1[1], Scalar(0,0,0), 2, LINE_8);
+            line(imageCopy, box1[1], box1[2], Scalar(0,0,0), 2, LINE_8);
+            line(imageCopy, box1[2], box1[3], Scalar(0,0,0), 2, LINE_8);
+            line(imageCopy, box1[3], box1[0], Scalar(0,0,0), 2, LINE_8);
         }
 
         if(showRejected && rejected.size() > 0)
