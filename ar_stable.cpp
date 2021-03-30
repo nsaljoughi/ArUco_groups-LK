@@ -90,7 +90,8 @@ static Mat cvcloud_load()
 
 Mat create_bbox(double x_scale, double y_scale, double z_scale) 
 {
-    Mat bbox(1, 8, CV_64FC3);
+    Mat cloud(1, 8, CV_64FC3);
+    Point3d* bbox = cloud.ptr<cv::Point3d>();
 
     bbox[0].x = - 1.0 * (x_scale / 2.0);
     bbox[0].y = - 1.0 * (y_scale / 2.0);
@@ -117,7 +118,7 @@ Mat create_bbox(double x_scale, double y_scale, double z_scale)
     bbox[7].y = - 1.0 * (y_scale / 2.0);
     bbox[7].z = - 1.0 * (z_scale / 2.0);
 
-    return bbox;
+    return cloud;
 }
 
 
