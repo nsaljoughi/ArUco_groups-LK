@@ -993,6 +993,20 @@ int main(int argc, char *argv[]) {
             line(imageCopy, box1[2], box1[4], Scalar(0,0,0), 2, LINE_8);
             line(imageCopy, box1[1], box1[5], Scalar(0,0,0), 2, LINE_8);
 
+            Point face1[1][4];
+            face1[0][0] = Point(box1[0].x, box1[0].y);
+            face1[0][1] = Point(box1[1].x, box1[1].y);
+            face1[0][2] = Point(box1[2].x, box1[2].y);
+            face1[0][3] = Point(box1[3].x, box1[3].y);
+
+            const Point* boxppt[1] = {face1[0]};
+            int npt[] = {4};
+            double alpha = 0.3;
+            Mat overlay;
+            imageCopy.copyTo(overlay);
+            fillPoly(overlay, boxppt, npt, 1, Scalar(60,20,220), lineType);
+            addWeighted(overlay, alpha, imageCopy, 1-alpha, 0, img);
+
             fillPoly(imageCopy, box1, Scalar(60, 20, 220), LINE_8);
         }
 
