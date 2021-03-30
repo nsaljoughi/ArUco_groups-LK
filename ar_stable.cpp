@@ -571,56 +571,95 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 }
 
 
-void DrawBox2D(Mat img, Vec3d rvec, Vec3d tvec, Mat camMat, Mat distCoeffs,  double xdim, double ydim) {
-    Mat overlay;
-    int lineType = LINE_8;
-    Point box_points[1][4];
-    img.copyTo(overlay);
+void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch) {
 
-    vector<Point3d> point_abs(4);
-    vector<Point3d> point_rel(4);
-    vector<Point2d> image_point(4);
-    point_rel[0].x = 0.0;
-    point_rel[0].y = 0.0;
-    point_rel[0].z = 0.0;
-    point_rel[1].x = -0.3;
-    point_rel[1].y = -0.3;
-    point_rel[1].z = 0.0;
-    point_rel[2].x = 0.6;
-    point_rel[2].y = 0.6;
-    point_rel[2].z = 0.0;
-    point_rel[3].x = 0.9;
-    point_rel[3].y = 0.9;
-    point_rel[3].z = 0.0;
+    line(imageCopy, box1[0], box1[1], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[1], box1[2], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[2], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[3], box1[0], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
 
-    point_abs[0] = transformPoint(point_rel[0], rvec, tvec);
-    point_abs[1] = transformPoint(point_rel[1], rvec, tvec);
-    point_abs[2] = transformPoint(point_rel[2], rvec, tvec);
-    point_abs[3] = transformPoint(point_rel[3], rvec, tvec);
-    
-    cout << "SPACE!!!!!" << point_abs[0].x << ", " << point_abs[0].y << ", " << point_abs[0].z << endl;
-    cout << "SPACE!!!!!" << point_abs[1].x << ", " << point_abs[1].y << ", " << point_abs[1].z << endl;
-    cout << "SPACE!!!!!" << point_abs[2].x << ", " << point_abs[2].y << ", " << point_abs[2].z << endl;
-    cout << "SPACE!!!!!" << point_abs[3].x << ", " << point_abs[3].y << ", " << point_abs[3].z << endl;
+    line(imageCopy, box1[4], box1[6], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[6], box1[7], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[7], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[5], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+
+    line(imageCopy, box1[6], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[7], box1[0], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[2], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[1], box1[5], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+
+    Point face1[1][4];
+    Point face2[1][4];
+    Point face3[1][4];
+    Point face4[1][4];
+    Point face5[1][4];
+    Point face6[1][4];
+
+    face1[0][0] = Point(box1[0].x, box1[0].y);
+    face1[0][1] = Point(box1[1].x, box1[1].y);
+    face1[0][2] = Point(box1[2].x, box1[2].y);
+    face1[0][3] = Point(box1[3].x, box1[3].y);
+
+    face2[0][0] = Point(box1[1].x, box1[1].y);
+    face2[0][1] = Point(box1[5].x, box1[5].y);
+    face2[0][2] = Point(box1[4].x, box1[4].y);
+    face2[0][3] = Point(box1[2].x, box1[2].y);
+
+    face3[0][0] = Point(box1[5].x, box1[5].y);
+    face3[0][1] = Point(box1[7].x, box1[7].y);
+    face3[0][2] = Point(box1[6].x, box1[6].y);
+    face3[0][3] = Point(box1[4].x, box1[4].y);
+
+    face4[0][0] = Point(box1[7].x, box1[7].y);
+    face4[0][1] = Point(box1[0].x, box1[0].y);
+    face4[0][2] = Point(box1[3].x, box1[3].y);
+    face4[0][3] = Point(box1[6].x, box1[6].y);
+
+    face5[0][0] = Point(box1[3].x, box1[3].y);
+    face5[0][1] = Point(box1[2].x, box1[2].y);
+    face5[0][2] = Point(box1[4].x, box1[4].y);
+    face5[0][3] = Point(box1[6].x, box1[6].y);
+
+    face6[0][0] = Point(box1[0].x, box1[0].y);
+    face6[0][1] = Point(box1[1].x, box1[1].y);
+    face6[0][2] = Point(box1[5].x, box1[5].y);
+    face6[0][3] = Point(box1[7].x, box1[7].y);
 
 
-    projectPoints(point_abs, rvec, tvec, camMat, distCoeffs, image_point);
+    const Point* boxppt1[1] = {face1[0]};
+    const Point* boxppt2[1] = {face2[0]};
+    const Point* boxppt3[1] = {face3[0]};
+    const Point* boxppt4[1] = {face4[0]};
+    const Point* boxppt5[1] = {face5[0]};
+    const Point* boxppt6[1] = {face6[0]};
 
-    cout << "IMAGE!!!!!" << image_point[0].x << ", " << image_point[0].y << endl;
-    cout << "IMAGE!!!!!" << image_point[1].x << ", " << image_point[1].y << endl;
-    cout << "IMAGE!!!!!" << image_point[2].x << ", " << image_point[2].y << endl;
-    cout << "IMAGE!!!!!" << image_point[3].x << ", " << image_point[3].y << endl;
-
-    box_points[0][0] = Point(300, 300);
-    box_points[0][1] = Point(400, 400);
-    box_points[0][2] = Point(600, 600);
-    box_points[0][3] = Point(700, 700);
-
-    const Point* ppt[1] = {box_points[0]};
     int npt[] = {4};
     double alpha = 0.3;
-    fillPoly(overlay, ppt, npt, 1, Scalar(60,20,220), lineType);
-    addWeighted(overlay, alpha, img, 1-alpha, 0, img);
+
+    Mat overlay1, overlay2, overlay3, overlay4, overlay5, overlay6;
+    imageCopy.copyTo(overlay1);
+    fillPoly(overlay1, boxppt1, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay1, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay2);
+    fillPoly(overlay2, boxppt2, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay2, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay3);
+    fillPoly(overlay3, boxppt3, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay3, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay4);
+    fillPoly(overlay4, boxppt4, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay4, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay5);
+    fillPoly(overlay5, boxppt5, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay5, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay6);
+    fillPoly(overlay6, boxppt6, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
 }
 
 
@@ -958,14 +997,10 @@ int main(int argc, char *argv[]) {
 
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
 
-            //DrawBox2D(imageCopy, rMaster[0], tMaster[0], camMatrix, distCoeffs, 0.25, 0.25);
-
             for (unsigned int j = 0; j < arrow1.size(); j++)
             {
                 if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                     circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
-                    //cout << arrow1[j].x << ", " << arrow1[j].y << endl;
-                    cout << box1[0].x << ", " << box1[0].y << endl;
                 }
                 if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                     circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
@@ -978,6 +1013,9 @@ int main(int argc, char *argv[]) {
                 }
             }
 
+            DrawBox2D(imageCopy, box1, 60, 20, 220);
+
+            /*
             line(imageCopy, box1[0], box1[1], Scalar(60,20,220), 2, LINE_8);
             line(imageCopy, box1[1], box1[2], Scalar(60,20,220), 2, LINE_8);
             line(imageCopy, box1[2], box1[3], Scalar(60,20,220), 2, LINE_8);
@@ -1063,6 +1101,7 @@ int main(int argc, char *argv[]) {
             imageCopy.copyTo(overlay6);
             fillPoly(overlay6, boxppt6, npt, 1, Scalar(60,20,220), LINE_8);
             addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
+            */
         }
 
         if(showRejected && rejected.size() > 0)
