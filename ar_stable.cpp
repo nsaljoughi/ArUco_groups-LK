@@ -984,19 +984,20 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-            cout << rMaster[0] << endl;
-            cout << rMaster[1] << endl;
-            cout << rMaster[2] << endl;
-            cout << tMaster[0] << endl;
-            cout << tMaster[1] << endl;
-            cout << tMaster[2] << endl;
+
+            /*
             projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
             projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
+            */
 
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
+            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
+            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
 
+            /*
             for (unsigned int j = 0; j < arrow1.size(); j++)
             {
                 if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
@@ -1012,8 +1013,20 @@ int main(int argc, char *argv[]) {
                     circle(imageCopy, arrow4[j], 1, Scalar(0,0,255), -1);
                 }
             }
+            */
 
-            DrawBox2D(imageCopy, box1, 60, 20, 220);
+            if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
+                DrawBox2D(imageCopy, box1, 60, 20, 220);
+            }
+            if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
+                DrawBox2D(imageCopy, box2, 0, 255, 0);
+                }
+            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+                DrawBox2D(imageCopy, box3, 60, 20, 220);
+            }
+            if(init_id[12] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
+                DrawBox2D(imageCopy, box4, 60, 20, 220);
+            }
 
             /*
             line(imageCopy, box1[0], box1[1], Scalar(60,20,220), 2, LINE_8);
