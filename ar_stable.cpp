@@ -1314,15 +1314,16 @@ int main(int argc, char *argv[]) {
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
 
+/*
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
-/*            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
+            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
 
 */
 
             //projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
-            //projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
