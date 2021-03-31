@@ -1198,7 +1198,7 @@ int main(int argc, char *argv[]) {
             rMasterMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(2,2);
             rMasterMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(1,2);
 
-            rMaster[0] = Rodrigues(rMasterMatrTrans, rMaster[0]);
+            Rodrigues(rMasterMatrTrans, rMaster[0]);
 
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
