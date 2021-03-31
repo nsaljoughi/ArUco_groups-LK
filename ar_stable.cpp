@@ -1202,9 +1202,16 @@ int main(int argc, char *argv[]) {
 
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
+            
+            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
+/*            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
+            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
+            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
+
+*/
 
             //projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
-            projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
+            //projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
@@ -1218,13 +1225,8 @@ int main(int argc, char *argv[]) {
             boxes[3] = box4;
 
             avg_box = avgBoxes(boxes, init_id);
-/*
-            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
-            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
-            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
-            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
 
-*/
+            
             if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
                 DrawBox2D(imageCopy, avg_box, 0, 0, 0);
