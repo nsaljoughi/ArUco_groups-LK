@@ -502,6 +502,7 @@ Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, s
             quat_avg.push_back(quat);
         }
     }
+    cout << "Size" << quat_avg.size() << endl;
     if (quat_avg.size()==1) return quat_eigen2vec(quat_avg[0]);
     rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
 
