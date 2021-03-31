@@ -1125,7 +1125,7 @@ int main(int argc, char *argv[]) {
             tvec1[0] = -2.05;
             tvec1[1] = -1.1;
             tvec1[2] = 0.0;
-            tvec2[0] = 1.0;
+            tvec2[0] = - 1.0;
             tvec2[1] = 1.0;
             tvec2[2] = 0.0;
 
