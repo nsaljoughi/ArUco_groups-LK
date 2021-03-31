@@ -904,16 +904,18 @@ Vec3d rotateAxis(Vec3d rvec) {
     rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(0,2);
     rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
 */
-    // - 90 y 
-    rMatrTrans1.at<double>(0,0) = - rMatr.at<double>(2,0);
-    rMatrTrans1.at<double>(1,0) = rMatr.at<double>(1,0);
-    rMatrTrans1.at<double>(2,0) = rMatr.at<double>(0,0);
-    rMatrTrans1.at<double>(0,1) = - rMatr.at<double>(2,1);
-    rMatrTrans1.at<double>(1,1) = rMatr.at<double>(1,1);
-    rMatrTrans1.at<double>(2,1) = rMatr.at<double>(0,1);
-    rMatrTrans1.at<double>(0,2) = - rMatr.at<double>(2,2);
-    rMatrTrans1.at<double>(1,2) = rMatr.at<double>(1,2);
-    rMatrTrans1.at<double>(2,2) = rMatr.at<double>(0,2);
+
+
+    // - 90 z 
+    rMatrTrans1.at<double>(0,0) = rMatr.at<double>(1,0);
+    rMatrTrans1.at<double>(1,0) = - rMatr.at<double>(0,0);
+    rMatrTrans1.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans1.at<double>(0,1) = rMatr.at<double>(1,1);
+    rMatrTrans1.at<double>(1,1) = - rMatr.at<double>(0,1);
+    rMatrTrans1.at<double>(2,1) = rMatr.at<double>(2,1);
+    rMatrTrans1.at<double>(0,2) = rMatr.at<double>(1,2);
+    rMatrTrans1.at<double>(1,2) = - rMatr.at<double>(0,2);
+    rMatrTrans1.at<double>(2,2) = rMatr.at<double>(2,2);
 
     // - 90 z 
     rMatrTrans2.at<double>(0,0) = rMatrTrans1.at<double>(1,0);
@@ -926,16 +928,16 @@ Vec3d rotateAxis(Vec3d rvec) {
     rMatrTrans2.at<double>(1,2) = - rMatrTrans1.at<double>(0,2);
     rMatrTrans2.at<double>(2,2) = rMatrTrans1.at<double>(2,2);
 
-    // - 90 z 
-    rMatrTrans3.at<double>(0,0) = rMatrTrans2.at<double>(1,0);
-    rMatrTrans3.at<double>(1,0) = - rMatrTrans2.at<double>(0,0);
-    rMatrTrans3.at<double>(2,0) = rMatrTrans2.at<double>(2,0);
-    rMatrTrans3.at<double>(0,1) = rMatrTrans2.at<double>(1,1);
-    rMatrTrans3.at<double>(1,1) = - rMatrTrans2.at<double>(0,1);
-    rMatrTrans3.at<double>(2,1) = rMatrTrans2.at<double>(2,1);
-    rMatrTrans3.at<double>(0,2) = rMatrTrans2.at<double>(1,2);
-    rMatrTrans3.at<double>(1,2) = - rMatrTrans2.at<double>(0,2);
-    rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(2,2);
+    // - 90 y 
+    rMatrTrans3.at<double>(0,0) = - rMatrTrans2.at<double>(2,0);
+    rMatrTrans3.at<double>(1,0) = rMatrTrans2.at<double>(1,0);
+    rMatrTrans3.at<double>(2,0) = rMatrTrans2.at<double>(0,0);
+    rMatrTrans3.at<double>(0,1) = - rMatrTrans2.at<double>(2,1);
+    rMatrTrans3.at<double>(1,1) = rMatrTrans2.at<double>(1,1);
+    rMatrTrans3.at<double>(2,1) = rMatrTrans2.at<double>(0,1);
+    rMatrTrans3.at<double>(0,2) = - rMatrTrans2.at<double>(2,2);
+    rMatrTrans3.at<double>(1,2) = rMatrTrans2.at<double>(1,2);
+    rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(0,2);
 
     Rodrigues(rMatrTrans3, rvec);
 
