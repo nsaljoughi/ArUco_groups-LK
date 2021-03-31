@@ -1289,15 +1289,16 @@ int main(int argc, char *argv[]) {
             rScene = computeSceneRot(rMaster, detect_id, init_id, 1);
 
             Vec3d tvec1, tvec2;
-            tvec1[0] = 3.0;//2.2;
-            tvec1[1] = 0.0;//- 1.1;
-            tvec1[2] = 0.0;//0.0;
+            tvec1[0] = - 2.2;
+            tvec1[1] = - 1.1;
+            tvec1[2] = 0.0;
             tvec2[0] = - 1.3;
             tvec2[1] = 1.2;
             tvec2[2] = 0.0;
 
+            cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
             rMaster[0] = rotateAxis(rMaster[0]);
-
+            cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
 
