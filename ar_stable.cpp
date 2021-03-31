@@ -936,7 +936,7 @@ Vec3d rotateAxis(Vec3d rvec) {
     rMatrTrans3.at<double>(1,2) = - rMatrTrans2.at<double>(0,2);
     rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(2,2);
 
-    Rodrigues(rMatrTrans2, rvec);
+    Rodrigues(rMatrTrans3, rvec);
 }
 
 
@@ -1167,8 +1167,12 @@ int main(int argc, char *argv[]) {
 
         // reorder rvecs and tvecs into rvecs_ord and tvecs_ord
         for(unsigned int i=0; i<rvecs.size(); i++) {
-            if(i<4) rvecs[i] = rotateAxis(rvecs[i]);
-            rvecs_ord[ids[i]-1] = rvecs[i];
+            if(ids[i]-1<4) {
+                rvecs_ord[ids[i]-1] = rotateAxis(rvecs[i]);
+            }
+            else {
+                rvecs_ord[ids[i]-1] = rvecs[i];
+            }
             tvecs_ord[ids[i]-1] = tvecs[i];
         }
 
