@@ -1294,7 +1294,7 @@ int main(int argc, char *argv[]) {
             tvec2[1] = 1.2;
             tvec2[2] = 0.0;
 
-            rMaster[0] = rotateAxis(rMaster[0]);
+            //rMaster[0] = rotateAxis(rMaster[0]);
 
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
