@@ -831,6 +831,113 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
     return avg_box;
 }
 
+Vec3d rotateAxis(Vec3d rvec) {
+    Mat rMatr, rMatrTrans1, rMatrTrans2, rMatrTrans3;
+    rMatr = rMatrTrans1 = rMatrTrans2 = rMatrTrans3 = Mat::zeros(3,3,CV_64F);
+
+    Rodrigues(rvec, rMatr);
+/*
+    // + 90 x 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(1,0) = - rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(1,1) = - rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(1,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(1,2);
+
+    // - 90 x 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(2,0) = - rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(2,1) = - rMasterMatr.at<double>(1,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(2,2) = - rMasterMatr.at<double>(1,2);
+
+    // + 90 y 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(2,0) = - rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(2,1) = - rMasterMatr.at<double>(0,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(2,2) = - rMasterMatr.at<double>(0,2);
+
+    // - 90 y 
+    rMatrTrans.at<double>(0,0) = - rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(0,1) = - rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(0,1);
+    rMatrTrans.at<double>(0,2) = - rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(0,2);
+
+    // + 90 z 
+    rMatrTrans.at<double>(0,0) = - rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(0,1) = - rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(2,1);
+    rMatrTrans.at<double>(0,2) = - rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
+
+    // - 90 z 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(1,0) = - rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(1,1) = - rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(2,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
+*/
+    // - 90 y 
+    rMatrTrans1.at<double>(0,0) = - rMatr.at<double>(2,0);
+    rMatrTrans1.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans1.at<double>(2,0) = rMatr.at<double>(0,0);
+    rMatrTrans1.at<double>(0,1) = - rMatr.at<double>(2,1);
+    rMatrTrans1.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans1.at<double>(2,1) = rMatr.at<double>(0,1);
+    rMatrTrans1.at<double>(0,2) = - rMatr.at<double>(2,2);
+    rMatrTrans1.at<double>(1,2) = rMatr.at<double>(1,2);
+    rMatrTrans1.at<double>(2,2) = rMatr.at<double>(0,2);
+
+    // - 90 z 
+    rMatrTrans2.at<double>(0,0) = rMatrTrans1.at<double>(1,0);
+    rMatrTrans2.at<double>(1,0) = - rMatrTrans1.at<double>(0,0);
+    rMatrTrans2.at<double>(2,0) = rMatrTrans1.at<double>(2,0);
+    rMatrTrans2.at<double>(0,1) = rMatrTrans1.at<double>(1,1);
+    rMatrTrans2.at<double>(1,1) = - rMatrTrans1.at<double>(0,1);
+    rMatrTrans2.at<double>(2,1) = rMatrTrans1.at<double>(2,1);
+    rMatrTrans2.at<double>(0,2) = rMatrTrans1.at<double>(1,2);
+    rMatrTrans2.at<double>(1,2) = - rMatrTrans1.at<double>(0,2);
+    rMatrTrans2.at<double>(2,2) = rMatrTrans1.at<double>(2,2);
+
+    // - 90 z 
+    rMatrTrans3.at<double>(0,0) = rMatrTrans2.at<double>(1,0);
+    rMatrTrans3.at<double>(1,0) = - rMatrTrans2.at<double>(0,0);
+    rMatrTrans3.at<double>(2,0) = rMatrTrans2.at<double>(2,0);
+    rMatrTrans3.at<double>(0,1) = rMatrTrans2.at<double>(1,1);
+    rMatrTrans3.at<double>(1,1) = - rMatrTrans2.at<double>(0,1);
+    rMatrTrans3.at<double>(2,1) = rMatrTrans2.at<double>(2,1);
+    rMatrTrans3.at<double>(0,2) = rMatrTrans2.at<double>(1,2);
+    rMatrTrans3.at<double>(1,2) = - rMatrTrans2.at<double>(0,2);
+    rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(2,2);
+
+    Rodrigues(rMatrTrans2, rvec);
+}
 
 
 
@@ -1060,6 +1167,7 @@ int main(int argc, char *argv[]) {
 
         // reorder rvecs and tvecs into rvecs_ord and tvecs_ord
         for(unsigned int i=0; i<rvecs.size(); i++) {
+            if(i<4) rvecs[i] = rotateAxis(rvecs[i]);
             rvecs_ord[ids[i]-1] = rvecs[i];
             tvecs_ord[ids[i]-1] = tvecs[i];
         }
@@ -1202,7 +1310,7 @@ int main(int argc, char *argv[]) {
 
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
-            
+
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
 /*            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
