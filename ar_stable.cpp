@@ -510,6 +510,99 @@ Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, s
     return rvec_avg;
 }
 
+Vec3d computeSceneTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord, 
+                      std::vector<bool> detect_id, int group, float markerLength, float markerOffset) {
+    std::vector<Vec3d> tvecs_centered;
+    Vec3d tvec_avg;
+
+    Vec3d tvec1, tvec2;
+    tvec1[0] = -2.05;
+    tvec1[1] = -1.1;
+    tvec1[2] = 0.0;
+    tvec2[0] = 1.0;
+    tvec2[1] = 1.0;
+    tvec2[2] = 0.0;
+
+
+    if(group==0 || group==1 || group==3) { // markers in a square
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+    else { // markers in line
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = 1.5*markerLength + 1.5*markerOffset;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (1.5*markerLength + 1.5*markerOffset);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+
+    for (int i=0; i<3; i++) {
+        tvec_avg[i] = 0.0;
+        for (unsigned int j=0; j<tvecs_centered.size(); j++) {
+            tvec_avg[i] += tvecs_centered[j][i];
+        }
+        tvec_avg[i] /= tvecs_centered.size();
+    }
+
+    return tvec_avg;
+} 
+
+
 
 // Check if num markers' poses are consistent
 std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
@@ -1028,7 +1121,20 @@ int main(int argc, char *argv[]) {
             tScene = tMaster[0];
             rScene = computeSceneRot(rMaster, detect_id, init_id, 1);
 
-            projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
+            Vec3d tvec1, tvec2;
+            tvec1[0] = -2.05;
+            tvec1[1] = -1.1;
+            tvec1[2] = 0.0;
+            tvec2[0] = 1.0;
+            tvec2[1] = 1.0;
+            tvec2[2] = 0.0;
+
+            tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
+            tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
+
+            //projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
 /*
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
@@ -1039,10 +1145,10 @@ int main(int argc, char *argv[]) {
             if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
             }
-/*            if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
+            if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                 DrawBox2D(imageCopy, box2, 0, 255, 0);
                 }
-            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+/*            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
                 DrawBox2D(imageCopy, box3, 60, 20, 220);
             }
             if(init_id[12] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
