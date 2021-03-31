@@ -497,7 +497,7 @@ Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, s
     Vec3d rvec_avg;
     for(unsigned int i=0; i<4; i++) {
         Eigen::Vector4f quat;
-        if(!init_id[i]) {
+        if(init_id[i]) {
             quat = vec2quat_eigen(rMaster[i]);
             quat_avg.push_back(quat);
         }
