@@ -497,7 +497,7 @@ Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, s
     Vec3d rvec_avg;
     for(unsigned int i=0; i<4; i++) {
         Eigen::Vector4f quat;
-        if(init_id[i]) {
+        if(init_id[i*4]) {
             quat = vec2quat_eigen(rMaster[i]);
             quat_avg.push_back(quat);
         }
@@ -797,7 +797,7 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
 
     int initialized = 0;
     for(int i=0;i<4;i++) {
-        if(init_id[i]) {
+        if(init_id[i*4]) {
             initialized += 1;
             avg_box[0].x += boxes[i][0].x;
             avg_box[0].y += boxes[i][0].y;
