@@ -832,6 +832,7 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
 }
 
 Vec3d rotateAxis(Vec3d rvec) {
+    Vec3d rvecTrans;
     Mat rMatr, rMatrTrans1, rMatrTrans2, rMatrTrans3;
     rMatr = rMatrTrans1 = rMatrTrans2 = rMatrTrans3 = Mat::zeros(3,3,CV_64F);
 
@@ -937,6 +938,8 @@ Vec3d rotateAxis(Vec3d rvec) {
     rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(2,2);
 
     Rodrigues(rMatrTrans3, rvec);
+
+    return rvecTrans;
 }
 
 
