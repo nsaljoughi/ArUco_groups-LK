@@ -1288,28 +1288,12 @@ int main(int argc, char *argv[]) {
 
             Vec3d tvec1, tvec2;
             tvec1[2] = 2.2;
-            tvec1[1] = 1.1;
+            tvec1[1] = -1.1;
             tvec1[0] = 0.0;
             tvec2[0] = - 1.3;
             tvec2[1] = 1.2;
             tvec2[2] = 0.0;
-/*
-            Mat rMasterMatr, rMasterMatrTrans;
-            rMasterMatr = Mat::zeros(3,3,CV_64F);
-            rMasterMatrTrans = Mat::zeros(3,3,CV_64F);
-            Rodrigues(rMaster[0], rMasterMatr);
-            rMasterMatrTrans.at<double>(0,0) = rMasterMatr.at<double>(0,0);
-            rMasterMatrTrans.at<double>(1,0) = - rMasterMatr.at<double>(2,0);
-            rMasterMatrTrans.at<double>(2,0) = rMasterMatr.at<double>(1,0);
-            rMasterMatrTrans.at<double>(0,1) = rMasterMatr.at<double>(0,1);
-            rMasterMatrTrans.at<double>(1,1) = - rMasterMatr.at<double>(2,1);
-            rMasterMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(1,1);
-            rMasterMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
-            rMasterMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(2,2);
-            rMasterMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(1,2);
 
-            Rodrigues(rMasterMatrTrans, rMaster[0]);
-*/
             rMaster[0] = rotateAxis(rMaster[0]);
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
