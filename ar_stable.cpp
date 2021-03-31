@@ -800,6 +800,7 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
             avg_box[7].y += boxes[i][7].y;
         }
     }
+    if(initialized==1) return avg_box;
     for(int i=0;i<8;i++) {
         avg_box[i].x /= initialized;
         avg_box[i].y /= initialized;
