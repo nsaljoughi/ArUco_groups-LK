@@ -1122,11 +1122,11 @@ int main(int argc, char *argv[]) {
             rScene = computeSceneRot(rMaster, detect_id, init_id, 1);
 
             Vec3d tvec1, tvec2;
-            tvec1[0] = -2.05;
+            tvec1[0] = -2.2;
             tvec1[1] = -1.1;
             tvec1[2] = 0.0;
-            tvec2[0] = - 1.0;
-            tvec2[1] = 1.0;
+            tvec2[0] = - 1.2;
+            tvec2[1] = 1.2;
             tvec2[2] = 0.0;
 
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
