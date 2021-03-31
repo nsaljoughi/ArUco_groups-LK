@@ -823,6 +823,11 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
         avg_box[i].x /= initialized;
         avg_box[i].y /= initialized;
     }
+    cout << "initialized" << initialized << endl;
+    for(int i=0; i<8; i++) {
+        cout << avg_box[i].x << ", " << avg_box[i].y << endl;
+    }
+
     return avg_box;
 }
 
