@@ -491,6 +491,23 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 } 
 
 
+// Compute pose for the whole scene
+Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, std::vector<bool> init_id, int scene) {
+    std::vector<Eigen::Vector4f> quat_avg;
+    Vec3d rvec_avg;
+    for(unsigned int i=0; i<4; i++) {
+        Eigen::Vector4f quat;
+        if(init_id[i]) {
+            quat = vec2quat_eigen(rMaster[i]);
+            quat_avg.push_back(quat);
+        }
+    }
+    rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
+
+    return rvec_avg;
+}
+
+
 // Check if num markers' poses are consistent
 std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
@@ -835,8 +852,12 @@ int main(int argc, char *argv[]) {
     consist_markers = 1.0;
     }
 
+    // One master pose for each group
     vector<Vec3d> rMaster(4);
     vector<Vec3d> tMaster(4);
+    // One pose for the whole scene
+    Vec3d rScene;
+    Vec3d tScene;
 
     std::vector<bool> init_id(16, false); // check if marker has been seen before
 
@@ -1001,16 +1022,21 @@ int main(int argc, char *argv[]) {
             }
             */
 
+            tScene = tMaster[0];
+            rScene = computeSceneRot(rMaster, detect_id, init_id, 1);
+
+            projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
+/*
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
 
-
+*/
             if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
             }
-            if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
+/*            if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                 DrawBox2D(imageCopy, box2, 0, 255, 0);
                 }
             if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
@@ -1019,7 +1045,7 @@ int main(int argc, char *argv[]) {
             if(init_id[12] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
                 DrawBox2D(imageCopy, box4, 60, 20, 220);
             }
-
+*/
         }
 
         if(showRejected && rejected.size() > 0)
