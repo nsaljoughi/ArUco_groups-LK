@@ -694,7 +694,7 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
 
     line(imageCopy, box1[4], box1[6], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
     line(imageCopy, box1[6], box1[7], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
-    line(imageCopy, box1[7], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[7], box1[5], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
     line(imageCopy, box1[5], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
 
     line(imageCopy, box1[6], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
