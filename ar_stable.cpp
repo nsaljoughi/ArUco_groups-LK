@@ -776,6 +776,37 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
     addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
 }
 
+vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
+    vector<Point2d> avg_box(8);
+    int initialized;
+    for(int i=0;i<4;i++) {
+        if(init_id[i]) {
+            initialized += 1;
+            avg_box[0].x += boxes[i][0].x;
+            avg_box[0].y += boxes[i][0].y;
+            avg_box[1].x += boxes[i][1].x;
+            avg_box[1].y += boxes[i][1].y;
+            avg_box[2].x += boxes[i][2].x;
+            avg_box[2].y += boxes[i][2].y;
+            avg_box[3].x += boxes[i][3].x;
+            avg_box[3].y += boxes[i][3].y;
+            avg_box[4].x += boxes[i][4].x;
+            avg_box[4].y += boxes[i][4].y;
+            avg_box[5].x += boxes[i][5].x;
+            avg_box[5].y += boxes[i][5].y;
+            avg_box[6].x += boxes[i][6].x;
+            avg_box[6].y += boxes[i][6].y;
+            avg_box[7].x += boxes[i][7].x;
+            avg_box[7].y += boxes[i][7].y;
+        }
+    }
+    for(int i=0;i<8;i++) {
+        avg_box[i].x /= initialized;
+        avg_box[i].y /= initialized;
+    }
+    return avg_box;
+}
+
 
 
 
@@ -1135,6 +1166,18 @@ int main(int argc, char *argv[]) {
             //projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
+            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
+            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
+
+            vector<vector<Point2d>> boxes(4);
+            vector<Point2d> avg_box; 
+
+            boxes[0] = box1;
+            boxes[1] = box2;
+            boxes[2] = box3;
+            boxes[3] = box4;
+
+            avg_box = avgBoxes(boxes, init_id);
 /*
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
@@ -1144,9 +1187,11 @@ int main(int argc, char *argv[]) {
 */
             if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
+                DrawBox2D(imageCopy, avg_box, 0, 0, 0);
             }
             if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                 DrawBox2D(imageCopy, box2, 0, 255, 0);
+                DrawBox2D(imageCopy, avg_box, 0, 0, 0);
                 }
 /*            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
                 DrawBox2D(imageCopy, box3, 60, 20, 220);
