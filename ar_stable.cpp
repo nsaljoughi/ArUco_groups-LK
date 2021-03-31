@@ -778,7 +778,7 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
 
 vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
     vector<Point2d> avg_box(8);
-    int initialized;
+    int initialized = 0;
     for(int i=0;i<4;i++) {
         if(init_id[i]) {
             initialized += 1;
