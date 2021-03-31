@@ -1170,12 +1170,7 @@ int main(int argc, char *argv[]) {
 
         // reorder rvecs and tvecs into rvecs_ord and tvecs_ord
         for(unsigned int i=0; i<rvecs.size(); i++) {
-            if(ids[i]-1<4) {
-                rvecs_ord[ids[i]-1] = rotateAxis(rvecs[i]);
-            }
-            else {
-                rvecs_ord[ids[i]-1] = rvecs[i];
-            }
+            rvecs_ord[ids[i]-1] = rvecs[i];
             tvecs_ord[ids[i]-1] = tvecs[i];
         }
 
@@ -1315,6 +1310,7 @@ int main(int argc, char *argv[]) {
 
             Rodrigues(rMasterMatrTrans, rMaster[0]);
 */
+            rMaster[0] = rotateAxis(rMaster[0]);
             tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
 
