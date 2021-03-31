@@ -1184,7 +1184,9 @@ int main(int argc, char *argv[]) {
             tvec2[1] = 1.2;
             tvec2[2] = 0.0;
 
-            Mat rMasterMatr(3,3), rMasterMatrTrans(3,3);
+            Mat rMasterMatr, rMasterMatrTrans;
+            rMasterMatr = Mat::zeros(3,3,CV_64F);
+            rMasterMatrTrans = Mat::zeros(3,3,CV_64F);
             Rodrigues(rMaster[0], rMasterMatr);
             rMasterMatrTrans.at<double>(0,0) = rMasterMatr.at<double>(0,0);
             rMasterMatrTrans.at<double>(1,0) = - rMasterMatr.at<double>(2,0);
