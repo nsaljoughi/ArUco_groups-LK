@@ -28,7 +28,8 @@ const char* keys  =
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }"
         "{n        | false | Naive mode (no stabilization)}"
-        "{s        |       | Save results}";
+        "{s        |       | Save results}"
+	"{u        |       | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
 }
 
 
@@ -685,6 +686,8 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 }
 
 
+// Given a vector of 2d points, draw a semi-transparent box
+// TODO take transparency weight as parameter and distinguish filling and borders color
 void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch) {
 
     line(imageCopy, box1[0], box1[1], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
@@ -776,6 +779,8 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
     addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
 }
 
+
+// Function to average boxes
 vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
     vector<Point2d> avg_box(8);
     avg_box[0].x = 0.0;
@@ -831,6 +836,9 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
     return avg_box;
 }
 
+
+// We want to write a function to align the marker's rotation with 
+// the general reference frame
 Vec3d rotateAxis(Vec3d rvec) {
     Vec3d rvecTrans;
     Mat rMatr, rMatrTrans1, rMatrTrans2, rMatrTrans3;
@@ -939,7 +947,7 @@ Vec3d rotateAxis(Vec3d rvec) {
     rMatrTrans3.at<double>(1,2) = rMatrTrans2.at<double>(1,2);
     rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(0,2);
 
-    Rodrigues(rMatrTrans3, rvec);
+    Rodrigues(rMatrTrans3, rvecTrans);
 
     return rvecTrans;
 }
@@ -1028,7 +1036,9 @@ int main(int argc, char *argv[]) {
     // Get frame width and height
     int frame_width = inputVideo.get(CAP_PROP_FRAME_WIDTH);
     int frame_height = inputVideo.get(CAP_PROP_FRAME_HEIGHT);
+    cout << "Frame size: " << frame_width << "x" << frame_height << endl;
     
+    /*
     // Adapt camera intrinsic parameters to current resolution
     // fx' = (width'/width) * fx
     // fy' = (height'/height) * fy
@@ -1046,11 +1056,14 @@ int main(int argc, char *argv[]) {
         camMatrix.at<double>(0,2) *= (frame_width/1920);
         camMatrix.at<double>(1,2) *= (frame_height/1080);
     }
+    */
 
     // Save results to video
     VideoWriter cap;
-    if (saveResults) cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
+    if (saveResults) {
+	cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
     inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+    }
 
 
     // Save results to file
@@ -1061,14 +1074,18 @@ int main(int argc, char *argv[]) {
         if (resultfile.is_open()) {
             cout << "Filtered resulting transformations" << endl;
         }
-        else cout << "Unable to open result file" << endl;
+        else {
+	    cout << "Unable to open result file" << endl;
+	}
     }
     else if (naiveMode && saveResults) {
         resultfile.open("results_unfilt.txt");
         if (resultfile.is_open()) {
            cout << "Unfiltered resulting transformations" << endl;
         }
-        else cout << "Unable to open result file" << endl;
+        else {
+	    cout << "Unable to open result file" << endl;
+	}
     }
 
 
@@ -1091,8 +1108,8 @@ int main(int argc, char *argv[]) {
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
-    double thr_lost = 0.1; // TODO threshold in seconds for going into init
-    double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
+    double thr_lost = 3.0; // TODO threshold in seconds for going into init
+    double thr_stable = 0.9; // TODO threshold in seconds for acquiring master pose
     int consist_markers = 3;
 
     // Weights for averaging final poses
@@ -1112,7 +1129,7 @@ int main(int argc, char *argv[]) {
         thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
         thr_lost = std::numeric_limits<double>::max();
         thr_stable = 0.0;
-    consist_markers = 1.0;
+	consist_markers = 1.0;
     }
 
     // One master pose for each group
@@ -1285,33 +1302,23 @@ int main(int argc, char *argv[]) {
             }
             */
 
-            tScene = tMaster[0];
-            rScene = computeSceneRot(rMaster, detect_id, init_id, 1);
-
+	    /*
             Vec3d tvec1, tvec2;
-            tvec1[0] = - 2.2;
-            tvec1[1] = - 1.1;
-            tvec1[2] = 0.0;
+            tvec1[2] = 2.2;
+            tvec1[1] = 1.1;
+            tvec1[0] = 0.0;
             tvec2[0] = - 1.3;
             tvec2[1] = 1.2;
             tvec2[2] = 0.0;
 
-            cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
-            rMaster[0] = rotateAxis(rMaster[0]);
-            cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
-            tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
+            //cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
+	    Vec3d rMasterTrans;
+            rMasterTrans = rotateAxis(rMaster[0]);
+            //cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
+            tvec1 = transformVec(tvec1, rMasterTrans, tMaster[0]);
             tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
 
-/*
-            projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
-            projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
-            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
-            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
-
-*/
-
-            //projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
-            projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMasterTrans, tvec1, camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
@@ -1325,24 +1332,75 @@ int main(int argc, char *argv[]) {
             boxes[3] = box4;
 
             avg_box = avgBoxes(boxes, init_id);
+	    
 
-            
-            if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
+	    if(init_id[0]) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
-                DrawBox2D(imageCopy, avg_box, 0, 0, 0);
             }
-            if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
+            if(init_id[4]) {
                 DrawBox2D(imageCopy, box2, 0, 255, 0);
-                DrawBox2D(imageCopy, avg_box, 0, 0, 0);
                 }
-/*            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+            if(init_id[8]) {
                 DrawBox2D(imageCopy, box3, 60, 20, 220);
             }
-            if(init_id[12] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
+            if(init_id[12]) {
                 DrawBox2D(imageCopy, box4, 60, 20, 220);
             }
-*/
+	    */
+	    
+	    Vec3d tvec1, tvec2, tvec3, tvec4;
+            tvec1[0] = 0.2;
+            tvec1[1] = 5.2;
+            tvec1[2] = -1;
+            tvec2[0] = 5;
+            tvec2[1] = 5.2;
+            tvec2[2] = -1;
+
+	    tvec3[0] = -1;
+	    tvec3[1] = 5.2;
+	    tvec3[2] = -1;
+	    tvec4[0] = 0;
+	    tvec4[1] = 0;
+	    tvec4[2] = 0;
+
+            tvec1 = transformVec(tvec1, rMaster[1], tMaster[1]);
+            tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
+	    tvec3 = transformVec(tvec3, rMaster[1], tMaster[1]);
+	    tvec4 = transformVec(tvec4, rMaster[1], tMaster[1]);
+
+
+	    projectPoints(box_cloud, rMaster[1], tvec1, camMatrix, distCoeffs, box1);
+	    projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
+	    projectPoints(box_cloud, rMaster[1], tvec3, camMatrix, distCoeffs, box3);
+	    projectPoints(box_cloud, rMaster[1], tvec4, camMatrix, distCoeffs, box4);
+
+	    if(init_id[4]) {
+		cout << rMaster[1][0] << endl;
+		cout << tMaster[1][0] << endl;
+		DrawBox2D(imageCopy, box1, 60, 20, 220);
+		DrawBox2D(imageCopy, box2, 0, 255, 0);
+		//DrawBox2D(imageCopy, box3, 0, 0, 255);
+		//DrawBox2D(imageCopy, box4, 255, 0, 0);
+	    }
+
         }
+	else {
+		for(unsigned int i=0; i<4; i++) {
+			if(init_id[i*4]) {
+				t_lost[i] += delta_t;
+				if(t_lost[i] >= thr_lost) {
+					init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
+					t_lost[i] = 0;
+				}
+			}
+		}
+		if(init_id[4]) {
+			DrawBox2D(imageCopy, box1, 60, 20, 220);
+			DrawBox2D(imageCopy, box2, 0, 255, 0);
+			//DrawBox2D(imageCopy, box3, 0, 0, 255);
+			//DrawBox2D(imageCopy, box4, 255, 0, 0);
+		}
+	}
 
         if(showRejected && rejected.size() > 0)
             aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
