@@ -4,3 +4,6 @@ test*
 *.mp4
 *.jpg
 build/demo.avi
+build/Make*
+build/CMake*
+build/make*
