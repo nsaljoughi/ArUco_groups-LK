@@ -1,4 +1,4 @@
-#include </home/nico/packages/eigen/Eigen/SVD>
+#include </home/nicola/Packages/eigen/Eigen/SVD>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/highgui.hpp>
