@@ -491,6 +491,119 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 } 
 
 
+// Compute pose for the whole scene
+Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, std::vector<bool> init_id, int scene) {
+    std::vector<Eigen::Vector4f> quat_avg;
+    Vec3d rvec_avg;
+    for(unsigned int i=0; i<4; i++) {
+        Eigen::Vector4f quat;
+        if(init_id[i*4]) {
+            quat = vec2quat_eigen(rMaster[i]);
+            quat_avg.push_back(quat);
+        }
+    }
+    cout << "Size" << quat_avg.size() << endl;
+    if (quat_avg.size()==0) return rMaster[0];
+    if (quat_avg.size()==1) return quat_eigen2vec(quat_avg[0]);
+    rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
+
+    return rvec_avg;
+}
+
+Vec3d computeSceneTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord, 
+                      std::vector<bool> detect_id, int group, float markerLength, float markerOffset) {
+    std::vector<Vec3d> tvecs_centered;
+    Vec3d tvec_avg;
+
+    Vec3d tvec1, tvec2;
+    tvec1[0] = -2.05;
+    tvec1[1] = -1.1;
+    tvec1[2] = 0.0;
+    tvec2[0] = 1.0;
+    tvec2[1] = 1.0;
+    tvec2[2] = 0.0;
+
+
+    if(group==0 || group==1 || group==3) { // markers in a square
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+    else { // markers in line
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = 1.5*markerLength + 1.5*markerOffset;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (1.5*markerLength + 1.5*markerOffset);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+
+    for (int i=0; i<3; i++) {
+        tvec_avg[i] = 0.0;
+        for (unsigned int j=0; j<tvecs_centered.size(); j++) {
+            tvec_avg[i] += tvecs_centered[j][i];
+        }
+        tvec_avg[i] /= tvecs_centered.size();
+    }
+
+    return tvec_avg;
+} 
+
+
+
 // Check if num markers' poses are consistent
 std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
@@ -581,7 +694,7 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
 
     line(imageCopy, box1[4], box1[6], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
     line(imageCopy, box1[6], box1[7], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
-    line(imageCopy, box1[7], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[7], box1[5], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
     line(imageCopy, box1[5], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
 
     line(imageCopy, box1[6], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
@@ -663,6 +776,173 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
     addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
 }
 
+vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
+    vector<Point2d> avg_box(8);
+    avg_box[0].x = 0.0;
+    avg_box[0].y = 0.0;
+    avg_box[1].x = 0.0;
+    avg_box[1].y = 0.0;
+    avg_box[2].x = 0.0;
+    avg_box[2].y = 0.0;
+    avg_box[3].x = 0.0;
+    avg_box[3].y = 0.0;
+    avg_box[4].x = 0.0;
+    avg_box[4].y = 0.0;
+    avg_box[5].x = 0.0;
+    avg_box[5].y = 0.0;
+    avg_box[6].x = 0.0;
+    avg_box[6].y = 0.0;
+    avg_box[7].x = 0.0;
+    avg_box[7].y = 0.0;
+
+    int initialized = 0;
+    for(int i=0;i<4;i++) {
+        if(init_id[i*4]) {
+            initialized += 1;
+            avg_box[0].x += boxes[i][0].x;
+            avg_box[0].y += boxes[i][0].y;
+            avg_box[1].x += boxes[i][1].x;
+            avg_box[1].y += boxes[i][1].y;
+            avg_box[2].x += boxes[i][2].x;
+            avg_box[2].y += boxes[i][2].y;
+            avg_box[3].x += boxes[i][3].x;
+            avg_box[3].y += boxes[i][3].y;
+            avg_box[4].x += boxes[i][4].x;
+            avg_box[4].y += boxes[i][4].y;
+            avg_box[5].x += boxes[i][5].x;
+            avg_box[5].y += boxes[i][5].y;
+            avg_box[6].x += boxes[i][6].x;
+            avg_box[6].y += boxes[i][6].y;
+            avg_box[7].x += boxes[i][7].x;
+            avg_box[7].y += boxes[i][7].y;
+        }
+    }
+    if(initialized==0) return boxes[0];
+    if(initialized==1) return avg_box;
+    for(int i=0;i<8;i++) {
+        avg_box[i].x /= initialized;
+        avg_box[i].y /= initialized;
+    }
+    cout << "initialized" << initialized << endl;
+    for(int i=0; i<8; i++) {
+        cout << avg_box[i].x << ", " << avg_box[i].y << endl;
+    }
+
+    return avg_box;
+}
+
+Vec3d rotateAxis(Vec3d rvec) {
+    Vec3d rvecTrans;
+    Mat rMatr, rMatrTrans1, rMatrTrans2, rMatrTrans3;
+    rMatr = rMatrTrans1 = rMatrTrans2 = rMatrTrans3 = Mat::zeros(3,3,CV_64F);
+
+    Rodrigues(rvec, rMatr);
+/*
+    // + 90 x 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(1,0) = - rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(1,1) = - rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(1,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(1,2);
+
+    // - 90 x 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(2,0) = - rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(2,1) = - rMasterMatr.at<double>(1,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(2,2) = - rMasterMatr.at<double>(1,2);
+
+    // + 90 y 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(2,0) = - rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(2,1) = - rMasterMatr.at<double>(0,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(2,2) = - rMasterMatr.at<double>(0,2);
+
+    // - 90 y 
+    rMatrTrans.at<double>(0,0) = - rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(0,1) = - rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(0,1);
+    rMatrTrans.at<double>(0,2) = - rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(0,2);
+
+    // + 90 z 
+    rMatrTrans.at<double>(0,0) = - rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(0,1) = - rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(2,1);
+    rMatrTrans.at<double>(0,2) = - rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
+
+    // - 90 z 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(1,0) = - rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(1,1) = - rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(2,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
+*/
+
+
+    // - 90 z 
+    rMatrTrans1.at<double>(0,0) = rMatr.at<double>(1,0);
+    rMatrTrans1.at<double>(1,0) = - rMatr.at<double>(0,0);
+    rMatrTrans1.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans1.at<double>(0,1) = rMatr.at<double>(1,1);
+    rMatrTrans1.at<double>(1,1) = - rMatr.at<double>(0,1);
+    rMatrTrans1.at<double>(2,1) = rMatr.at<double>(2,1);
+    rMatrTrans1.at<double>(0,2) = rMatr.at<double>(1,2);
+    rMatrTrans1.at<double>(1,2) = - rMatr.at<double>(0,2);
+    rMatrTrans1.at<double>(2,2) = rMatr.at<double>(2,2);
+
+    // - 90 z 
+    rMatrTrans2.at<double>(0,0) = rMatrTrans1.at<double>(1,0);
+    rMatrTrans2.at<double>(1,0) = - rMatrTrans1.at<double>(0,0);
+    rMatrTrans2.at<double>(2,0) = rMatrTrans1.at<double>(2,0);
+    rMatrTrans2.at<double>(0,1) = rMatrTrans1.at<double>(1,1);
+    rMatrTrans2.at<double>(1,1) = - rMatrTrans1.at<double>(0,1);
+    rMatrTrans2.at<double>(2,1) = rMatrTrans1.at<double>(2,1);
+    rMatrTrans2.at<double>(0,2) = rMatrTrans1.at<double>(1,2);
+    rMatrTrans2.at<double>(1,2) = - rMatrTrans1.at<double>(0,2);
+    rMatrTrans2.at<double>(2,2) = rMatrTrans1.at<double>(2,2);
+
+    // - 90 y 
+    rMatrTrans3.at<double>(0,0) = - rMatrTrans2.at<double>(2,0);
+    rMatrTrans3.at<double>(1,0) = rMatrTrans2.at<double>(1,0);
+    rMatrTrans3.at<double>(2,0) = rMatrTrans2.at<double>(0,0);
+    rMatrTrans3.at<double>(0,1) = - rMatrTrans2.at<double>(2,1);
+    rMatrTrans3.at<double>(1,1) = rMatrTrans2.at<double>(1,1);
+    rMatrTrans3.at<double>(2,1) = rMatrTrans2.at<double>(0,1);
+    rMatrTrans3.at<double>(0,2) = - rMatrTrans2.at<double>(2,2);
+    rMatrTrans3.at<double>(1,2) = rMatrTrans2.at<double>(1,2);
+    rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(0,2);
+
+    Rodrigues(rMatrTrans3, rvec);
+
+    return rvecTrans;
+}
 
 
 
@@ -835,8 +1115,12 @@ int main(int argc, char *argv[]) {
     consist_markers = 1.0;
     }
 
+    // One master pose for each group
     vector<Vec3d> rMaster(4);
     vector<Vec3d> tMaster(4);
+    // One pose for the whole scene
+    Vec3d rScene;
+    Vec3d tScene;
 
     std::vector<bool> init_id(16, false); // check if marker has been seen before
 
@@ -1001,25 +1285,63 @@ int main(int argc, char *argv[]) {
             }
             */
 
+            tScene = tMaster[0];
+            rScene = computeSceneRot(rMaster, detect_id, init_id, 1);
+
+            Vec3d tvec1, tvec2;
+            tvec1[0] = - 2.2;
+            tvec1[1] = - 1.1;
+            tvec1[2] = 0.0;
+            tvec2[0] = - 1.3;
+            tvec2[1] = 1.2;
+            tvec2[2] = 0.0;
+
+            cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
+            rMaster[0] = rotateAxis(rMaster[0]);
+            cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
+            tvec1 = transformVec(tvec1, rMaster[0], tMaster[0]);
+            tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
+
+/*
             projectPoints(box_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, box1);
             projectPoints(box_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, box2);
             projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
             projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
 
+*/
 
+            //projectPoints(box_cloud, rScene, tScene, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[0], tvec1, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
+            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
+            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
+
+            vector<vector<Point2d>> boxes(4);
+            vector<Point2d> avg_box; 
+
+            boxes[0] = box1;
+            boxes[1] = box2;
+            boxes[2] = box3;
+            boxes[3] = box4;
+
+            avg_box = avgBoxes(boxes, init_id);
+
+            
             if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
+                DrawBox2D(imageCopy, avg_box, 0, 0, 0);
             }
             if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
                 DrawBox2D(imageCopy, box2, 0, 255, 0);
+                DrawBox2D(imageCopy, avg_box, 0, 0, 0);
                 }
-            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+/*            if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
                 DrawBox2D(imageCopy, box3, 60, 20, 220);
             }
             if(init_id[12] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
                 DrawBox2D(imageCopy, box4, 60, 20, 220);
             }
-
+*/
         }
 
         if(showRejected && rejected.size() > 0)
