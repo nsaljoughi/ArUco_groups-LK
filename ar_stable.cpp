@@ -1109,7 +1109,7 @@ int main(int argc, char *argv[]) {
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
     double thr_lost = 3.0; // TODO threshold in seconds for going into init
-    double thr_stable = 0.9; // TODO threshold in seconds for acquiring master pose
+    double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
     int consist_markers = 3;
 
     // Weights for averaging final poses
@@ -1349,6 +1349,7 @@ int main(int argc, char *argv[]) {
 	    */
 	    
 	    Vec3d tvec1, tvec2, tvec3, tvec4;
+	    /* //  Scenario 1
             tvec1[0] = 0.2;
             tvec1[1] = 5.2;
             tvec1[2] = -1;
@@ -1363,24 +1364,55 @@ int main(int argc, char *argv[]) {
 	    tvec4[1] = 0;
 	    tvec4[2] = 0;
 
-            tvec1 = transformVec(tvec1, rMaster[1], tMaster[1]);
-            tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
-	    tvec3 = transformVec(tvec3, rMaster[1], tMaster[1]);
-	    tvec4 = transformVec(tvec4, rMaster[1], tMaster[1]);
+	    
+	    // Scenario 3
+	    tvec1[0] = 0.0;
+	    tvec1[1] = - 1.5;
+	    tvec1[2] = -3;
+	    tvec2[0] = 0.0;
+	    tvec2[1] = -1.5;
+	    tvec2[2] = -43;
+	    tvec3[0] = -20;
+	    tvec3[1] = -1.5;
+	    tvec3[2] = -23;
+	    tvec4[0] = 20;
+	    tvec4[1] = -1.5;
+	    tvec4[2] = -23;
+
+	    */
+	    // Scenario 5 - 6
+	    tvec1[0] = 0.0;
+	    tvec1[1] = 0.0;
+	    tvec1[2] = 0.0;
+	    tvec2[0] = 3.0;
+	    tvec2[1] = 0.0;
+	    tvec2[2] = 0.0;
+	    tvec3[0] = 3.0;
+	    tvec3[1] = 0.0;
+	    tvec3[2] = 0.0;
+	    tvec4[0] = -3.0;
+	    tvec4[1] = 0.0;
+	    tvec4[2] = 0.0;
 
 
-	    projectPoints(box_cloud, rMaster[1], tvec1, camMatrix, distCoeffs, box1);
-	    projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
-	    projectPoints(box_cloud, rMaster[1], tvec3, camMatrix, distCoeffs, box3);
-	    projectPoints(box_cloud, rMaster[1], tvec4, camMatrix, distCoeffs, box4);
+            tvec1 = transformVec(tvec1, rMaster[2], tMaster[2]);
+            tvec2 = transformVec(tvec2, rMaster[2], tMaster[2]);
+	    tvec3 = transformVec(tvec3, rMaster[2], tMaster[2]);
+	    tvec4 = transformVec(tvec4, rMaster[2], tMaster[2]);
 
-	    if(init_id[4]) {
-		cout << rMaster[1][0] << endl;
-		cout << tMaster[1][0] << endl;
+
+	    projectPoints(box_cloud, rMaster[2], tvec1, camMatrix, distCoeffs, box1);
+	    projectPoints(box_cloud, rMaster[2], tvec2, camMatrix, distCoeffs, box2);
+	    projectPoints(box_cloud, rMaster[2], tvec3, camMatrix, distCoeffs, box3);
+	    projectPoints(box_cloud, rMaster[2], tvec4, camMatrix, distCoeffs, box4);
+
+	    if(init_id[8]) {
+		cout << rMaster[2][0] << endl;
+		cout << tMaster[2][0] << endl;
 		DrawBox2D(imageCopy, box1, 60, 20, 220);
 		DrawBox2D(imageCopy, box2, 0, 255, 0);
 		//DrawBox2D(imageCopy, box3, 0, 0, 255);
-		//DrawBox2D(imageCopy, box4, 255, 0, 0);
+		DrawBox2D(imageCopy, box4, 255, 0, 0);
 	    }
 
         }
@@ -1394,11 +1426,11 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
-		if(init_id[4]) {
+		if(init_id[8]) {
 			DrawBox2D(imageCopy, box1, 60, 20, 220);
 			DrawBox2D(imageCopy, box2, 0, 255, 0);
 			//DrawBox2D(imageCopy, box3, 0, 0, 255);
-			//DrawBox2D(imageCopy, box4, 255, 0, 0);
+			DrawBox2D(imageCopy, box4, 255, 0, 0);
 		}
 	}
 
