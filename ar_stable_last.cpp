@@ -23,8 +23,8 @@ const char* keys  =
         "{v        |       | Input from video file, if ommited, input comes from camera }"
         "{ci       | 0     | Camera id if input doesnt come from video (-v) }"
         "{c        |       | Camera intrinsic parameters. Needed for camera pose }"
-        "{l        | 0.54  | Marker side lenght (in meters). Needed for correct scale in camera pose }"
-        "{o        | 0.04  | Offset between markers (in meters) }"
+        "{l        |       | Marker side lenght (in meters). Needed for correct scale in camera pose }"
+        "{o        |       | Offset between markers (in meters) }"
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }"
         "{n        | false | Naive mode (no stabilization)}"
@@ -550,6 +550,7 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 // Check if num markers' poses are consistent
 std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
+    cout << "Checking markers' consistency for GROUP " << group << endl;
     std::vector<bool> checkVec = detect_id;
     std::vector<Vec3d> rvecs;
     unsigned int items=0;
@@ -557,6 +558,16 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     
     for(int i=0; i<4; i++) {
         rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
+	Mat rotationMat = Mat::zeros(3, 3, CV_64F);
+	Rodrigues(rvecs_ord[group*4+i], rotationMat); //convert rodrigues angles into rotation matrix
+	cout << "[" ;
+	for(int i = 0; i<3; i++) {
+		for(int j=0; j<3; j++) {
+			cout << rotationMat.at<double>(i,j) << " ";
+		}
+		cout << endl;
+	}
+	cout << "]" << endl;
 
         if(detect_id[group*4+i]) {
             items += 1;
@@ -570,6 +581,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         return checkVec;
     }
     
+    cout << "Detected markers to compare: " << items << endl;
     std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
@@ -585,12 +597,16 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             }
 
             for(int k=0; k<3; k++) {
-
+		    cout << "Diff between angles: "
+		         << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k]))
+		         << " > " << thr[k] << "?" << endl;
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) {
+		    cout << "YES!!" << endl;
                     checker[i][j] = false;
                     break;
                 }
                 else {
+		    cout << "No, OK. " << endl;
                     checker[i][j] = true;
                 }
             }
@@ -623,20 +639,24 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             continue;
         }
     }
-   
+
+    cout << "Checker: ";
+    for(unsigned int i=0; i<rvecs.size();i++){
+	    
+	    for(auto&& j:checker[i]) {
+		    cout << j << " ";
+	    }
+    }
     return checkVec;
 }
 
 
 // Check if groups' poses are consistent
 std::vector<bool> checkGroupsConsistent(std::vector<Vec3d> rMasters, std::vector<int> groups, std::vector<bool> init_id, std::vector<double> thr) {
+    cout << "Checking groups' consistency... " << endl;
     std::vector<bool> checkVec = init_id;
     std::vector<Vec3d> rvecs;
     unsigned int items=0;
-
-    for(auto&& i:groups) {
-	    cout << i << endl;
-    }
 
     for(auto&& i:groups) {
         rvecs.push_back(rodrigues2euler(rMasters[i]));
@@ -645,7 +665,7 @@ std::vector<bool> checkGroupsConsistent(std::vector<Vec3d> rMasters, std::vector
             items += 1;
         }
     }
-    cout << "ITEMS " << items << endl;
+    cout << "Groups of markers to compare: " << items << endl;
 
     if(items==0) {
         for(auto&& i:groups) {
@@ -671,12 +691,16 @@ std::vector<bool> checkGroupsConsistent(std::vector<Vec3d> rMasters, std::vector
             }
 
             for(int k=0; k<3; k++) {
-
+		cout << "Diff between angles: "
+		     << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k]))
+		     << " > " << thr[k] << "?" << endl;
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) {
+	            cout << "YES!! " << endl;
                     checker[i][j] = false;
                     break;
                 }
                 else {
+		    cout << "No, OK." << endl;
                     checker[i][j] = true;
                 }
             }
@@ -686,7 +710,7 @@ std::vector<bool> checkGroupsConsistent(std::vector<Vec3d> rMasters, std::vector
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
 	if(!init_id[groups[i]*4]) {
-		checkVec[groups[i]*4] = false;
+		checkVec[groups[i]*4] = checkVec[groups[i]*4+1] = checkVec[groups[i]*4+2] = checkVec[groups[i]*4+3] = false;
 		continue;
 	}
         unsigned int trues=0;
@@ -705,16 +729,18 @@ std::vector<bool> checkGroupsConsistent(std::vector<Vec3d> rMasters, std::vector
 
         // If it agrees with all markers, keep it
         if(trues >= 1) { 
-            checkVec[groups[i]*4] = true;
+            checkVec[groups[i]*4] = checkVec[groups[i]*4+1] = checkVec[groups[i]*4+2] = checkVec[groups[i]*4+3] = true;
             continue;
         }
         else {
-            checkVec[groups[i]*4] = false;
+            checkVec[groups[i]*4] = checkVec[groups[i]*4+1] = checkVec[groups[i]*4+2] = checkVec[groups[i]*4+3] = false;
             continue;
         }
     }
-
+    
+    cout << "Checker: ";
     for(unsigned int i=0; i<rvecs.size();i++){
+	    
 	    for(auto&& j:checker[i]) {
 		    cout << j << " ";
 	    }
@@ -956,19 +982,19 @@ int main(int argc, char *argv[]) {
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
     double thr_lost = 2; // TODO threshold in seconds for going into init
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
-    int consist_markers = 3;
+    int consist_markers = 4;
 
     // Weights for averaging final poses
-    double alpha_rot = 0.8;
-    double alpha_trasl = 0.8;
+    double alpha_rot = 0.1;
+    double alpha_trasl = 0.1;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
-    thr_init[0] = (sin(M_PI/4.0));
-    thr_init[1] = (sin(M_PI/4.0));
-    thr_init[2] = (sin(M_PI/4.0));
-    thr_noinit[0] = (sin(M_PI/4.0));
-    thr_noinit[1] = (sin(M_PI/4.0));
-    thr_noinit[2] = (sin(M_PI/4.0));
+    thr_init[0] = (sin(M_PI/12.0));
+    thr_init[1] = (sin(M_PI/12.0));
+    thr_init[2] = (sin(M_PI/12.0));
+    thr_noinit[0] = (sin(M_PI/12.0));
+    thr_noinit[1] = (sin(M_PI/12.0));
+    thr_noinit[2] = (sin(M_PI/12.0));
 
     
     if(naiveMode) {
@@ -985,8 +1011,7 @@ int main(int argc, char *argv[]) {
     Vec3d rScene;
     Vec3d tScene;
     std::vector<bool> init_id(16, false); // check if marker has been seen before
-    Vec3d a_avg, b_avg, c_avg, d_avg;
-
+    
 
     ////// ---KEY PART--- //////
     while(inputVideo.grab()) {
@@ -1045,6 +1070,7 @@ int main(int argc, char *argv[]) {
 
             // Loop over markers
             for(unsigned int i=0; i<16; i++) {
+		cout << "Group " << ceil(i/4) << endl;
 
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
@@ -1058,6 +1084,32 @@ int main(int argc, char *argv[]) {
                 }
 
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)], thr_init)) {
+		    Mat rotationMat = Mat::zeros(3, 3, CV_64F);
+	            Rodrigues(rvecs_ord[i], rotationMat); //convert rodrigues angles into rotation matrix
+		    cout << "Marker is wrong! " << endl;
+		    cout <<  "Rvec matrix: " << endl;
+	            cout << "[" ;
+	            for(int i = 0; i<3; i++) {
+		        for(int j=0; j<3; j++) {
+			    cout << rotationMat.at<double>(i,j) << " ";
+		        }
+		        cout << endl;
+	            }
+	            cout << "]" << endl;
+		    
+		    cout << "rMaster matrix: " << endl; 
+		    Mat rotationMatM = Mat::zeros(3, 3, CV_64F);
+	            Rodrigues(rMaster[ceil(i/4)], rotationMatM); //convert rodrigues angles into rotation matrix
+	            cout << "[" ;
+	            for(int i = 0; i<3; i++) {
+		        for(int j=0; j<3; j++) {
+			    cout << rotationMatM.at<double>(i,j) << " ";
+		        }
+		        cout << endl;
+	            }
+	            cout << "]" << endl;
+
+
                     detect_id[i] = false;
                     continue;
                 }
@@ -1071,10 +1123,9 @@ int main(int argc, char *argv[]) {
 
                 if(!init_id[i*4]) { // if group needs init
 
-                    cout << "GROUP " << i << endl;
-                    cout << "INIT" << endl;
+                    cout << "GROUP " << i << ": initializing..." << endl;
 
-                    std::vector<bool> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
+                    std::vector<bool> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 4, i, thr_init);
 
                     for(int j=0; j<16; j++) {
                         detect_id[j] = detect_id_check[j];
@@ -1088,7 +1139,7 @@ int main(int argc, char *argv[]) {
                         } 
                     }
 
-                    cout << "Counter " << counter << endl;
+                    cout << "In group " << i << " there are " << counter << " consistent markers" << endl;
 
                     if(counter >= consist_markers) { // if n markers are consistent
                         t_stable[i] += delta_t;
@@ -1107,8 +1158,7 @@ int main(int argc, char *argv[]) {
                     }
                 } // if already init
                 else {
-                    cout << "GROUP " << i << endl;
-                    cout << "NOT INIT" << endl;
+                    cout << "GROUP " << i << " is already initialized." << endl;
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
                         t_lost[i] += delta_t;
                         if(t_lost[i] >= thr_lost) {
@@ -1126,7 +1176,7 @@ int main(int argc, char *argv[]) {
             }
 
 	    std::vector<bool> groups_check = init_id;
-	    std::vector<int> groups = {0,1,3};
+	    std::vector<int> groups = {0,1};
 	    int consists=0;
 
 	    cout << "Before" << endl;
@@ -1146,6 +1196,8 @@ int main(int argc, char *argv[]) {
 
 
 	    Vec3d a0, b0, c0, d0, a1, b1, c1, d1, a3, b3, c3, d3;
+	    Vec3d a_avg, b_avg, c_avg, d_avg;
+
 	    a0[0] = -1.6;
 	    a0[1] = -10.7 + 0.5;
 	    a0[2] = -3;
@@ -1200,28 +1252,35 @@ int main(int argc, char *argv[]) {
             b3 = transformVec(b3, rMaster[3], tMaster[3]);
 	    c3 = transformVec(c3, rMaster[3], tMaster[3]);
 	    d3 = transformVec(d3, rMaster[3], tMaster[3]);
-	    
-	    if (consists != 0) { 
+
+	    resultfile << "Frame " << totalIterations << ", " <<
+		   "x " << tMaster[0][0] << ", " <<
+		   "y " << tMaster[0][1] << ", " <<
+		   "z " << tMaster[0][2] << "; " << "\n";
+	   
+	    if (consists == 0) {
+		   cout << "Doing average" << endl; 
 		    std::vector<Vec3d> a_sum, b_sum, c_sum, d_sum;
-		    if(groups_check[0]) {
+		    for(auto&& i:groups) {
+		    if(init_id[0]) {
 			    a_sum.push_back(a0);
 			    b_sum.push_back(b0);
 			    c_sum.push_back(c0);
 			    d_sum.push_back(d0);
 		    }
-		    if(groups_check[4]) {
+		    if(init_id[4]) {
 			    a_sum.push_back(a1);
 			    b_sum.push_back(b1);
 			    c_sum.push_back(c1);
 			    d_sum.push_back(d1);
 		    }
-		    if(groups_check[12]) {
-			    a_sum.push_back(a3);
-			    b_sum.push_back(b3);
-			    c_sum.push_back(c3);
-			    d_sum.push_back(d3);
+		    //if(groups_check[12]) {
+			//    a_sum.push_back(a3);
+			//    b_sum.push_back(b3);
+			//    c_sum.push_back(c3);
+			//    d_sum.push_back(d3);
+		    //}
 		    }
-		    
 		    for (int i=0; i<3; i++) {
 			    a_avg[i] = 0.0;
 			    b_avg[i] = 0.0;
@@ -1239,34 +1298,69 @@ int main(int argc, char *argv[]) {
 			    d_avg[i] /= d_sum.size();
 		    }
 	    }
+	    cout << a0[0] << a_avg[0] << b0[1] << b_avg[1] << b0[2] << b_avg[2] << endl;
+
+	    projectPoints(box_cloud, rMaster[0], a_avg, camMatrix, distCoeffs, box1);
+	    projectPoints(box_cloud, rMaster[0], b_avg, camMatrix, distCoeffs, box2);
+	    projectPoints(box_cloud, rMaster[0], c_avg, camMatrix, distCoeffs, box3);
+	    projectPoints(box_cloud, rMaster[0], d_avg, camMatrix, distCoeffs, box4);
+	    projectPoints(box_cloud, rMaster[1], a_avg, camMatrix, distCoeffs, box5);
+	    projectPoints(box_cloud, rMaster[1], b_avg, camMatrix, distCoeffs, box6);
+	    projectPoints(box_cloud, rMaster[1], c_avg, camMatrix, distCoeffs, box7);
+	    projectPoints(box_cloud, rMaster[1], d_avg, camMatrix, distCoeffs, box8);
+	    //projectPoints(box_cloud, rMaster[2], a3, camMatrix, distCoeffs, box9);
+	    //projectPoints(box_cloud, rMaster[2], b3, camMatrix, distCoeffs, box10);
+	    //projectPoints(box_cloud, rMaster[2], c3, camMatrix, distCoeffs, box11);
+	    //projectPoints(box_cloud, rMaster[2], d3, camMatrix, distCoeffs, box12);
 	    
-	    projectPoints(box_cloud, rMaster[1], a_avg, camMatrix, distCoeffs, box1);
-	    projectPoints(box_cloud, rMaster[1], b_avg, camMatrix, distCoeffs, box2);
-	    projectPoints(box_cloud, rMaster[1], c_avg, camMatrix, distCoeffs, box3);
-	    projectPoints(box_cloud, rMaster[1], d_avg, camMatrix, distCoeffs, box4);
-
-	    DrawBox2D(imageCopy, box1, 60, 20, 220);
-	    DrawBox2D(imageCopy, box2, 0, 255, 0);
-	    DrawBox2D(imageCopy, box3, 0, 0, 255);
-            DrawBox2D(imageCopy, box4, 255, 0, 0);
-
+	    if(init_id[0]) {
+	        DrawBox2D(imageCopy, box1, 60, 20, 220);
+	        DrawBox2D(imageCopy, box2, 0, 255, 0);
+	        DrawBox2D(imageCopy, box3, 0, 0, 255);
+                DrawBox2D(imageCopy, box4, 255, 0, 0);
+	    }
+	    if(init_id[4]) {
+	        DrawBox2D(imageCopy, box5, 60, 20, 220);
+	        DrawBox2D(imageCopy, box6, 0, 255, 0);
+	        DrawBox2D(imageCopy, box7, 0, 0, 255);
+                DrawBox2D(imageCopy, box8, 255, 0, 0);
+	    }/*
+	    if(init_id[12]) {
+	        DrawBox2D(imageCopy, box9, 60, 20, 220);
+	        DrawBox2D(imageCopy, box10, 0, 255, 0);
+	        DrawBox2D(imageCopy, box11, 0, 0, 255);
+                DrawBox2D(imageCopy, box12, 255, 0, 0);
+	    } */
         }
 	else {
-		for(unsigned int i=0; i<4; i++) {
-			if(init_id[i*4]) {
-				t_lost[i] += delta_t;
-				if(t_lost[i] >= thr_lost) {
-					init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
-					t_lost[i] = 0;
-				}
-			}
-		}			
-		if(init_id[0] || init_id[1] || init_id[3]) {
-			DrawBox2D(imageCopy, box1, 60, 20, 220);
-			DrawBox2D(imageCopy, box2, 0, 255, 0);
-			DrawBox2D(imageCopy, box3, 0, 0, 255);
-			DrawBox2D(imageCopy, box4, 255, 0, 0);
-		}
+	    for(unsigned int i=0; i<4; i++) {
+	        if(init_id[i*4]) {
+		    t_lost[i] += delta_t;
+		    if(t_lost[i] >= thr_lost) {
+		        init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
+			t_lost[i] = 0;
+		    }
+	        }
+	    }					 
+	    if(init_id[0]) {
+	        DrawBox2D(imageCopy, box1, 60, 20, 220);
+	        DrawBox2D(imageCopy, box2, 0, 255, 0);
+	        DrawBox2D(imageCopy, box3, 0, 0, 255);
+                DrawBox2D(imageCopy, box4, 255, 0, 0);
+	    }
+	    if(init_id[4]) {
+	        DrawBox2D(imageCopy, box5, 60, 20, 220);
+	        DrawBox2D(imageCopy, box6, 0, 255, 0);
+	        DrawBox2D(imageCopy, box7, 0, 0, 255);
+                DrawBox2D(imageCopy, box8, 255, 0, 0);
+	    }/*
+	    if(init_id[12]) {
+	        DrawBox2D(imageCopy, box9, 60, 20, 220);
+	        DrawBox2D(imageCopy, box10, 0, 255, 0);
+	        DrawBox2D(imageCopy, box11, 0, 0, 255);
+                DrawBox2D(imageCopy, box12, 255, 0, 0);
+	    }
+*/
 	}
 
         if(showRejected && rejected.size() > 0)
@@ -1292,6 +1386,8 @@ int main(int argc, char *argv[]) {
         cout << t_lost[1] << endl;
         cout << t_lost[2] << endl;
         cout << t_lost[3] << endl;
+
+	cout << "///////////////////////////////////" << endl;
 
 
         char key = (char)waitKey(waitTime); 

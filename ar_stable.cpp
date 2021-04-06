@@ -1279,7 +1279,7 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            /*
+            
             projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
             projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
             projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
@@ -1300,121 +1300,6 @@ int main(int argc, char *argv[]) {
                     circle(imageCopy, arrow4[j], 1, Scalar(0,0,255), -1);
                 }
             }
-            */
-
-	    /*
-            Vec3d tvec1, tvec2;
-            tvec1[2] = 2.2;
-            tvec1[1] = 1.1;
-            tvec1[0] = 0.0;
-            tvec2[0] = - 1.3;
-            tvec2[1] = 1.2;
-            tvec2[2] = 0.0;
-
-            //cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
-	    Vec3d rMasterTrans;
-            rMasterTrans = rotateAxis(rMaster[0]);
-            //cout << rMaster[0][0] << rMaster[0][1] << rMaster[0][2] << endl;
-            tvec1 = transformVec(tvec1, rMasterTrans, tMaster[0]);
-            tvec2 = transformVec(tvec2, rMaster[1], tMaster[1]);
-
-            projectPoints(box_cloud, rMasterTrans, tvec1, camMatrix, distCoeffs, box1);
-            projectPoints(box_cloud, rMaster[1], tvec2, camMatrix, distCoeffs, box2);
-            projectPoints(box_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, box3);
-            projectPoints(box_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, box4);
-
-            vector<vector<Point2d>> boxes(4);
-            vector<Point2d> avg_box; 
-
-            boxes[0] = box1;
-            boxes[1] = box2;
-            boxes[2] = box3;
-            boxes[3] = box4;
-
-            avg_box = avgBoxes(boxes, init_id);
-	    
-
-	    if(init_id[0]) {
-                DrawBox2D(imageCopy, box1, 60, 20, 220);
-            }
-            if(init_id[4]) {
-                DrawBox2D(imageCopy, box2, 0, 255, 0);
-                }
-            if(init_id[8]) {
-                DrawBox2D(imageCopy, box3, 60, 20, 220);
-            }
-            if(init_id[12]) {
-                DrawBox2D(imageCopy, box4, 60, 20, 220);
-            }
-	    */
-	    
-	    Vec3d tvec1, tvec2, tvec3, tvec4;
-	    /* //  Scenario 1
-            tvec1[0] = 0.2;
-            tvec1[1] = 5.2;
-            tvec1[2] = -1;
-            tvec2[0] = 5;
-            tvec2[1] = 5.2;
-            tvec2[2] = -1;
-
-	    tvec3[0] = -1;
-	    tvec3[1] = 5.2;
-	    tvec3[2] = -1;
-	    tvec4[0] = 0;
-	    tvec4[1] = 0;
-	    tvec4[2] = 0;
-
-	    
-	    // Scenario 3
-	    tvec1[0] = 0.0;
-	    tvec1[1] = - 1.5;
-	    tvec1[2] = -3;
-	    tvec2[0] = 0.0;
-	    tvec2[1] = -1.5;
-	    tvec2[2] = -43;
-	    tvec3[0] = -20;
-	    tvec3[1] = -1.5;
-	    tvec3[2] = -23;
-	    tvec4[0] = 20;
-	    tvec4[1] = -1.5;
-	    tvec4[2] = -23;
-
-	    */
-	    // Scenario 5 - 6
-	    tvec1[0] = 0.0;
-	    tvec1[1] = 0.0;
-	    tvec1[2] = 0.0;
-	    tvec2[0] = 3.0;
-	    tvec2[1] = 0.0;
-	    tvec2[2] = 0.0;
-	    tvec3[0] = 3.0;
-	    tvec3[1] = 0.0;
-	    tvec3[2] = 0.0;
-	    tvec4[0] = -3.0;
-	    tvec4[1] = 0.0;
-	    tvec4[2] = 0.0;
-
-
-            tvec1 = transformVec(tvec1, rMaster[2], tMaster[2]);
-            tvec2 = transformVec(tvec2, rMaster[2], tMaster[2]);
-	    tvec3 = transformVec(tvec3, rMaster[2], tMaster[2]);
-	    tvec4 = transformVec(tvec4, rMaster[2], tMaster[2]);
-
-
-	    projectPoints(box_cloud, rMaster[2], tvec1, camMatrix, distCoeffs, box1);
-	    projectPoints(box_cloud, rMaster[2], tvec2, camMatrix, distCoeffs, box2);
-	    projectPoints(box_cloud, rMaster[2], tvec3, camMatrix, distCoeffs, box3);
-	    projectPoints(box_cloud, rMaster[2], tvec4, camMatrix, distCoeffs, box4);
-
-	    if(init_id[8]) {
-		cout << rMaster[2][0] << endl;
-		cout << tMaster[2][0] << endl;
-		DrawBox2D(imageCopy, box1, 60, 20, 220);
-		DrawBox2D(imageCopy, box2, 0, 255, 0);
-		//DrawBox2D(imageCopy, box3, 0, 0, 255);
-		DrawBox2D(imageCopy, box4, 255, 0, 0);
-	    }
-
         }
 	else {
 		for(unsigned int i=0; i<4; i++) {
@@ -1425,13 +1310,7 @@ int main(int argc, char *argv[]) {
 					t_lost[i] = 0;
 				}
 			}
-		}
-		if(init_id[8]) {
-			DrawBox2D(imageCopy, box1, 60, 20, 220);
-			DrawBox2D(imageCopy, box2, 0, 255, 0);
-			//DrawBox2D(imageCopy, box3, 0, 0, 255);
-			DrawBox2D(imageCopy, box4, 255, 0, 0);
-		}
+		}	
 	}
 
         if(showRejected && rejected.size() > 0)
@@ -1441,7 +1320,7 @@ int main(int argc, char *argv[]) {
 
         Mat imageResize;
 
-        cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
+        cv::resize(imageCopy, imageResize, Size(imageCopy.cols,imageCopy.rows));
         imshow("resize", imageResize);
 
         delta = ((double)getTickCount() - tickk) / getTickFrequency();
