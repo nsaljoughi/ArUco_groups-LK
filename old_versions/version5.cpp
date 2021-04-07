@@ -92,7 +92,7 @@ static Mat cvcloud_load()
 
 Mat create_bbox(double x_scale, double y_scale, double z_scale) 
 {
-    Mat cloud(1, 4, CV_64FC3);
+    Mat cloud(1, 8, CV_64FC3);
     Point3d* bbox = cloud.ptr<cv::Point3d>();
 
     bbox[0].x = - 1.0 * (x_scale / 2.0);
@@ -107,6 +107,18 @@ Mat create_bbox(double x_scale, double y_scale, double z_scale)
     bbox[3].x = - 1.0 * (x_scale / 2.0);
     bbox[3].y = y_scale / 2.0;
     bbox[3].z = z_scale / 2.0;
+    bbox[4].x = x_scale / 2.0;
+    bbox[4].y = y_scale / 2.0;
+    bbox[4].z = - 1.0 * (z_scale / 2.0);
+    bbox[5].x = x_scale / 2.0;
+    bbox[5].y = - 1.0 * (y_scale / 2.0);
+    bbox[5].z = - 1.0 * (z_scale / 2.0);
+    bbox[6].x = - 1.0 * (x_scale / 2.0);
+    bbox[6].y = y_scale / 2.0;
+    bbox[6].z = - 1.0 * (z_scale / 2.0);
+    bbox[7].x = - 1.0 * (x_scale / 2.0);
+    bbox[7].y = - 1.0 * (y_scale / 2.0);
+    bbox[7].z = - 1.0 * (z_scale / 2.0);
 
     return cloud;
 }
@@ -593,24 +605,89 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
     line(imageCopy, box1[2], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
     line(imageCopy, box1[3], box1[0], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
 
+    line(imageCopy, box1[4], box1[6], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[6], box1[7], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[7], box1[5], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[5], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+
+    line(imageCopy, box1[6], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[7], box1[0], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[2], box1[4], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[1], box1[5], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+
     Point face1[1][4];
+    Point face2[1][4];
+    Point face3[1][4];
+    Point face4[1][4];
+    Point face5[1][4];
+    Point face6[1][4];
 
     face1[0][0] = Point(box1[0].x, box1[0].y);
     face1[0][1] = Point(box1[1].x, box1[1].y);
     face1[0][2] = Point(box1[2].x, box1[2].y);
     face1[0][3] = Point(box1[3].x, box1[3].y);
 
+    face2[0][0] = Point(box1[1].x, box1[1].y);
+    face2[0][1] = Point(box1[5].x, box1[5].y);
+    face2[0][2] = Point(box1[4].x, box1[4].y);
+    face2[0][3] = Point(box1[2].x, box1[2].y);
+
+    face3[0][0] = Point(box1[5].x, box1[5].y);
+    face3[0][1] = Point(box1[7].x, box1[7].y);
+    face3[0][2] = Point(box1[6].x, box1[6].y);
+    face3[0][3] = Point(box1[4].x, box1[4].y);
+
+    face4[0][0] = Point(box1[7].x, box1[7].y);
+    face4[0][1] = Point(box1[0].x, box1[0].y);
+    face4[0][2] = Point(box1[3].x, box1[3].y);
+    face4[0][3] = Point(box1[6].x, box1[6].y);
+
+    face5[0][0] = Point(box1[3].x, box1[3].y);
+    face5[0][1] = Point(box1[2].x, box1[2].y);
+    face5[0][2] = Point(box1[4].x, box1[4].y);
+    face5[0][3] = Point(box1[6].x, box1[6].y);
+
+    face6[0][0] = Point(box1[0].x, box1[0].y);
+    face6[0][1] = Point(box1[1].x, box1[1].y);
+    face6[0][2] = Point(box1[5].x, box1[5].y);
+    face6[0][3] = Point(box1[7].x, box1[7].y);
+
+
     const Point* boxppt1[1] = {face1[0]};
+    const Point* boxppt2[1] = {face2[0]};
+    const Point* boxppt3[1] = {face3[0]};
+    const Point* boxppt4[1] = {face4[0]};
+    const Point* boxppt5[1] = {face5[0]};
+    const Point* boxppt6[1] = {face6[0]};
 
     int npt[] = {4};
     double alpha = 0.3;
 
-    Mat overlay1;
+    Mat overlay1, overlay2, overlay3, overlay4, overlay5, overlay6;
     imageCopy.copyTo(overlay1);
     fillPoly(overlay1, boxppt1, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
     addWeighted(overlay1, alpha, imageCopy, 1-alpha, 0, imageCopy);
-}
 
+    imageCopy.copyTo(overlay2);
+    fillPoly(overlay2, boxppt2, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay2, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay3);
+    fillPoly(overlay3, boxppt3, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay3, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay4);
+    fillPoly(overlay4, boxppt4, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay4, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay5);
+    fillPoly(overlay5, boxppt5, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay5, alpha, imageCopy, 1-alpha, 0, imageCopy);
+
+    imageCopy.copyTo(overlay6);
+    fillPoly(overlay6, boxppt6, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay6, alpha, imageCopy, 1-alpha, 0, imageCopy);
+}
 // Function to average boxes
 vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<double> weights) {
     vector<Point2d> avg_box(8);
@@ -622,6 +699,14 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<double> weights) 
     avg_box[2].y = 0.0;
     avg_box[3].x = 0.0;
     avg_box[3].y = 0.0;
+    avg_box[4].x = 0.0;
+    avg_box[4].y = 0.0;
+    avg_box[5].x = 0.0;
+    avg_box[5].y = 0.0;
+    avg_box[6].x = 0.0;
+    avg_box[6].y = 0.0;
+    avg_box[7].x = 0.0;
+    avg_box[7].y = 0.0;
 
     for(unsigned int i=0; i<boxes.size(); i++) {
 	    avg_box[0].x += boxes[i][0].x * weights[i];
@@ -632,7 +717,19 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<double> weights) 
             avg_box[2].y += boxes[i][2].y * weights[i];
             avg_box[3].x += boxes[i][3].x * weights[i];
             avg_box[3].y += boxes[i][3].y * weights[i];
+            avg_box[4].x += boxes[i][4].x * weights[i];
+            avg_box[4].y += boxes[i][4].y * weights[i];
+            avg_box[5].x += boxes[i][5].x * weights[i];
+            avg_box[5].y += boxes[i][5].y * weights[i];
+            avg_box[6].x += boxes[i][6].x * weights[i];
+            avg_box[6].y += boxes[i][6].y * weights[i];
+            avg_box[7].x += boxes[i][7].x * weights[i];
+            avg_box[7].y += boxes[i][7].y * weights[i];
     }
+    //for(int i=0;i<8;i++) {
+    //    avg_box[i].x /= boxes.size();
+    //    avg_box[i].y /= boxes.size();
+    //}
     for(int i=0; i<8; i++) {
         cout << avg_box[i].x << ", " << avg_box[i].y << endl;
     }
@@ -761,7 +858,7 @@ int main(int argc, char *argv[]) {
     // Load arrow point cloud
     Mat arrow_cloud = cvcloud_load();
 
-    Mat box_cloud = create_bbox(3.0, 2.0, 1.0);
+    Mat box_cloud = create_bbox(1.0, 1.0, 1.0);
     Mat tvec3d(1, 1, CV_64FC3);
     Point3d* pt3d = tvec3d.ptr<cv::Point3d>();
     pt3d[0].x = 0.0;
@@ -816,8 +913,6 @@ int main(int argc, char *argv[]) {
     Vec3d tScene;
     std::vector<bool> init_id(16, false); // check if marker has been seen before
     Vec3d a_avg, b_avg, c_avg, d_avg;
-    
-    bool average = false; //flag to decide whether to average or not
 
 
     ////// ---KEY PART--- //////
@@ -840,7 +935,6 @@ int main(int argc, char *argv[]) {
         double tick = (double)getTickCount();
         double delta = 0;
 
-	
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
         vector<Vec3d> rvecs, tvecs; 
@@ -966,8 +1060,7 @@ int main(int argc, char *argv[]) {
                         if(t_lost[i] >= thr_lost) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                             t_lost[i] = 0;
-			    average=false;    
-    			}
+                        }
                     }
                     else{
                         rMaster[i] = avgRot(computeAvgRot(rvecs_ord, detect_id, i), rMaster[i], alpha_rot, (1 - alpha_rot));
@@ -1072,38 +1165,33 @@ int main(int argc, char *argv[]) {
             cout << a0[0] << a_avg[0] << b0[1] << b_avg[1] << b0[2] << b_avg[2] << endl;
 	    
 	    vector<vector<Point2d>> boxes1, boxes2, boxes3, boxes4;
-	    vector<double> weights={0.9,0.1}; //weights for past and current frame
+	    vector<double> weights={0.9,0.1};
 
-	    if(average==true) {
-	        boxes1.push_back(box1);
-	        boxes2.push_back(box2);
-	        boxes3.push_back(box3);
-	        boxes4.push_back(box4);
+	    if(totalIterations > 10) {
+	    boxes1.push_back(box1);
+	    boxes2.push_back(box2);
+	    boxes3.push_back(box3);
+	    boxes4.push_back(box4); 
 	    }
-	    else {
-		cout << "EMPTY!!!" << endl;
-	    }
-	    if (init_id[0] || init_id[4] ) {
-		average = true;
-                projectPoints(tvec3d, Vec3d::zeros(), a_avg, camMatrix, distCoeffs, tvec2d);
-                projectPoints(box_cloud, Vec3d::zeros() , a_avg, camMatrix, distCoeffs, box1);
-                projectPoints(box_cloud, Vec3d::zeros(), b_avg, camMatrix, distCoeffs, box2);
-                projectPoints(box_cloud, Vec3d::zeros(), c_avg, camMatrix, distCoeffs, box3);
-                projectPoints(box_cloud, Vec3d::zeros(), d_avg, camMatrix, distCoeffs, box4);
-	    }
-	    if(!boxes1.empty()) {
-	        boxes1.push_back(box1);
-	        boxes2.push_back(box2);
-	        boxes3.push_back(box3);
-	        boxes4.push_back(box4); 
+	    
+            projectPoints(tvec3d, rMaster[0], a_avg, camMatrix, distCoeffs, tvec2d);
+            projectPoints(box_cloud, rMaster[0], a_avg, camMatrix, distCoeffs, box1);
+            projectPoints(box_cloud, rMaster[0], b_avg, camMatrix, distCoeffs, box2);
+            projectPoints(box_cloud, rMaster[0], c_avg, camMatrix, distCoeffs, box3);
+            projectPoints(box_cloud, rMaster[0], d_avg, camMatrix, distCoeffs, box4);
+	   
+	    if(totalIterations > 10) {
+	    boxes1.push_back(box1);
+	    boxes2.push_back(box2);
+	    boxes3.push_back(box3);
+	    boxes4.push_back(box4); 
 
-	        box1 = avgBoxes(boxes1, weights);
-	        box2 = avgBoxes(boxes2, weights);
-	        box3 = avgBoxes(boxes3, weights);
-	        box4 = avgBoxes(boxes4, weights);
+	    box1 = avgBoxes(boxes1, weights);
+	    box2 = avgBoxes(boxes2, weights);
+	    box3 = avgBoxes(boxes3, weights);
+	    box4 = avgBoxes(boxes4, weights);
 	    }
-
-	    	     
+	     
 	    
            if(init_id[0]||init_id[4]) {
                 DrawBox2D(imageCopy, box1, 60, 20, 220);
@@ -1119,7 +1207,6 @@ int main(int argc, char *argv[]) {
                     if(t_lost[i] >= thr_lost) {
                         init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                         t_lost[i] = 0;
-			average=false;
                     }
                 }
             }                    
