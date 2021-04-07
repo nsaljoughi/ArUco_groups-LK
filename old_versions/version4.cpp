@@ -964,6 +964,12 @@ int main(int argc, char *argv[]) {
     Mat arrow_cloud = cvcloud_load();
 
     Mat box_cloud = create_bbox(1.0, 1.0, 1.0);
+    Mat tvec3d(1, 1, CV_64FC3);
+    Point3d* pt3d = tvec3d.ptr<cv::Point3d>();
+    pt3d[0].x = 0.0;
+    pt3d[0].y = 0.0;
+    pt3d[0].z = 0.0;
+    vector<Point2d> tvec2d;
 
 
 
@@ -1248,10 +1254,6 @@ int main(int argc, char *argv[]) {
 	    c1 = transformVec(c1, rMaster[1], tMaster[1]);
 	    d1 = transformVec(d1, rMaster[1], tMaster[1]);
 	   
-	    a3 = transformVec(a3, rMaster[3], tMaster[3]);
-            b3 = transformVec(b3, rMaster[3], tMaster[3]);
-	    c3 = transformVec(c3, rMaster[3], tMaster[3]);
-	    d3 = transformVec(d3, rMaster[3], tMaster[3]);
 
 	    resultfile << "Frame " << totalIterations << ", " <<
 		   "x " << tMaster[0][0] << ", " <<
@@ -1262,24 +1264,18 @@ int main(int argc, char *argv[]) {
 		   cout << "Doing average" << endl; 
 		    std::vector<Vec3d> a_sum, b_sum, c_sum, d_sum;
 		    for(auto&& i:groups) {
-		    if(init_id[0]) {
+		        if(init_id[0]) {
 			    a_sum.push_back(a0);
 			    b_sum.push_back(b0);
 			    c_sum.push_back(c0);
 			    d_sum.push_back(d0);
 		    }
-		    if(init_id[4]) {
+		        if(init_id[4]) {
 			    a_sum.push_back(a1);
 			    b_sum.push_back(b1);
 			    c_sum.push_back(c1);
 			    d_sum.push_back(d1);
-		    }
-		    //if(groups_check[12]) {
-			//    a_sum.push_back(a3);
-			//    b_sum.push_back(b3);
-			//    c_sum.push_back(c3);
-			//    d_sum.push_back(d3);
-		    //}
+		        }
 		    }
 		    for (int i=0; i<3; i++) {
 			    a_avg[i] = 0.0;
@@ -1300,37 +1296,18 @@ int main(int argc, char *argv[]) {
 	    }
 	    cout << a0[0] << a_avg[0] << b0[1] << b_avg[1] << b0[2] << b_avg[2] << endl;
 
+	    projectPoints(tvec3d, rMaster[0], a_avg, camMatrix, distCoeffs, tvec2d);
 	    projectPoints(box_cloud, rMaster[0], a_avg, camMatrix, distCoeffs, box1);
 	    projectPoints(box_cloud, rMaster[0], b_avg, camMatrix, distCoeffs, box2);
 	    projectPoints(box_cloud, rMaster[0], c_avg, camMatrix, distCoeffs, box3);
-	    projectPoints(box_cloud, rMaster[0], d_avg, camMatrix, distCoeffs, box4);
-	    projectPoints(box_cloud, rMaster[1], a_avg, camMatrix, distCoeffs, box5);
-	    projectPoints(box_cloud, rMaster[1], b_avg, camMatrix, distCoeffs, box6);
-	    projectPoints(box_cloud, rMaster[1], c_avg, camMatrix, distCoeffs, box7);
-	    projectPoints(box_cloud, rMaster[1], d_avg, camMatrix, distCoeffs, box8);
-	    //projectPoints(box_cloud, rMaster[2], a3, camMatrix, distCoeffs, box9);
-	    //projectPoints(box_cloud, rMaster[2], b3, camMatrix, distCoeffs, box10);
-	    //projectPoints(box_cloud, rMaster[2], c3, camMatrix, distCoeffs, box11);
-	    //projectPoints(box_cloud, rMaster[2], d3, camMatrix, distCoeffs, box12);
-	    
-	    if(init_id[0]) {
+	    projectPoints(box_cloud, rMaster[0], d_avg, camMatrix, distCoeffs, box4); 
+
+	    if(init_id[0]||init_id[4]) {
 	        DrawBox2D(imageCopy, box1, 60, 20, 220);
 	        DrawBox2D(imageCopy, box2, 0, 255, 0);
 	        DrawBox2D(imageCopy, box3, 0, 0, 255);
                 DrawBox2D(imageCopy, box4, 255, 0, 0);
 	    }
-	    if(init_id[4]) {
-	        DrawBox2D(imageCopy, box5, 60, 20, 220);
-	        DrawBox2D(imageCopy, box6, 0, 255, 0);
-	        DrawBox2D(imageCopy, box7, 0, 0, 255);
-                DrawBox2D(imageCopy, box8, 255, 0, 0);
-	    }/*
-	    if(init_id[12]) {
-	        DrawBox2D(imageCopy, box9, 60, 20, 220);
-	        DrawBox2D(imageCopy, box10, 0, 255, 0);
-	        DrawBox2D(imageCopy, box11, 0, 0, 255);
-                DrawBox2D(imageCopy, box12, 255, 0, 0);
-	    } */
         }
 	else {
 	    for(unsigned int i=0; i<4; i++) {
@@ -1342,25 +1319,12 @@ int main(int argc, char *argv[]) {
 		    }
 	        }
 	    }					 
-	    if(init_id[0]) {
+	    if(init_id[0]||init_id[4]) {
 	        DrawBox2D(imageCopy, box1, 60, 20, 220);
 	        DrawBox2D(imageCopy, box2, 0, 255, 0);
 	        DrawBox2D(imageCopy, box3, 0, 0, 255);
                 DrawBox2D(imageCopy, box4, 255, 0, 0);
 	    }
-	    if(init_id[4]) {
-	        DrawBox2D(imageCopy, box5, 60, 20, 220);
-	        DrawBox2D(imageCopy, box6, 0, 255, 0);
-	        DrawBox2D(imageCopy, box7, 0, 0, 255);
-                DrawBox2D(imageCopy, box8, 255, 0, 0);
-	    }/*
-	    if(init_id[12]) {
-	        DrawBox2D(imageCopy, box9, 60, 20, 220);
-	        DrawBox2D(imageCopy, box10, 0, 255, 0);
-	        DrawBox2D(imageCopy, box11, 0, 0, 255);
-                DrawBox2D(imageCopy, box12, 255, 0, 0);
-	    }
-*/
 	}
 
         if(showRejected && rejected.size() > 0)

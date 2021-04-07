@@ -23,13 +23,13 @@ const char* keys  =
         "{v        |       | Input from video file, if ommited, input comes from camera }"
         "{ci       | 0     | Camera id if input doesnt come from video (-v) }"
         "{c        |       | Camera intrinsic parameters. Needed for camera pose }"
-        "{l        |       | Marker side lenght (in meters). Needed for correct scale in camera pose }"
-        "{o        |       | Offset between markers (in meters) }"
+        "{l        | 0.54  | Marker side lenght (in meters). Needed for correct scale in camera pose }"
+        "{o        | 0.04  | Offset between markers (in meters) }"
         "{dp       |       | File of marker detector parameters }"
         "{r        |       | show rejected candidates too }"
         "{n        | false | Naive mode (no stabilization)}"
         "{s        |       | Save results}"
-        "{u        |       | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
+	"{u        |       | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
 }
 
 
@@ -320,7 +320,7 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
     vechomo[3] = 1.0;
 
     Vec3d vectrans; //output, vector transformed
-    Mat vectransMat = transformMat*Mat(vechomo);
+        Mat vectransMat = transformMat*Mat(vechomo);
     vectrans[0] = vectransMat.at<double>(0);
     vectrans[1] = vectransMat.at<double>(1);
     vectrans[2] = vectransMat.at<double>(2);
@@ -492,11 +492,122 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 } 
 
 
+// Compute pose for the whole scene
+Vec3d computeSceneRot(std::vector<Vec3d> rMaster, std::vector<bool> detect_id, std::vector<bool> init_id, int scene) {
+    std::vector<Eigen::Vector4f> quat_avg;
+    Vec3d rvec_avg;
+    for(unsigned int i=0; i<4; i++) {
+        Eigen::Vector4f quat;
+        if(init_id[i*4]) {
+            quat = vec2quat_eigen(rMaster[i]);
+            quat_avg.push_back(quat);
+        }
+    }
+    cout << "Size" << quat_avg.size() << endl;
+    if (quat_avg.size()==0) return rMaster[0];
+    if (quat_avg.size()==1) return quat_eigen2vec(quat_avg[0]);
+    rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
+
+    return rvec_avg;
+}
+
+Vec3d computeSceneTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord, 
+                      std::vector<bool> detect_id, int group, float markerLength, float markerOffset) {
+    std::vector<Vec3d> tvecs_centered;
+    Vec3d tvec_avg;
+
+    Vec3d tvec1, tvec2;
+    tvec1[0] = -2.05;
+    tvec1[1] = -1.1;
+    tvec1[2] = 0.0;
+    tvec2[0] = 1.0;
+    tvec2[1] = 1.0;
+    tvec2[2] = 0.0;
+
+
+    if(group==0 || group==1 || group==3) { // markers in a square
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+    else { // markers in line
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
+                if(i==0) {
+                    tvec[0] = 1.5*markerLength + 1.5*markerOffset;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==1) {
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) {
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==3) {
+                    tvec[0] = -1.0 * (1.5*markerLength + 1.5*markerOffset);
+                    tvec[1] = tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+            }
+        }
+    }
+
+    for (int i=0; i<3; i++) {
+        tvec_avg[i] = 0.0;
+        for (unsigned int j=0; j<tvecs_centered.size(); j++) {
+            tvec_avg[i] += tvecs_centered[j][i];
+        }
+        tvec_avg[i] /= tvecs_centered.size();
+    }
+
+    return tvec_avg;
+} 
+
+
 
 // Check if num markers' poses are consistent
 std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, 
                          int group, std::vector<double> thr) {
-    cout << "Checking markers' consistency for GROUP " << group << endl;
     std::vector<bool> checkVec = detect_id;
     std::vector<Vec3d> rvecs;
     unsigned int items=0;
@@ -504,16 +615,6 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     
     for(int i=0; i<4; i++) {
         rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
-        Mat rotationMat = Mat::zeros(3, 3, CV_64F);
-        Rodrigues(rvecs_ord[group*4+i], rotationMat); //convert rodrigues angles into rotation matrix
-        cout << "[" ;
-        for(int i = 0; i<3; i++) {
-            for(int j=0; j<3; j++) {
-                cout << rotationMat.at<double>(i,j) << " ";
-            }
-            cout << endl;
-        }
-        cout << "]" << endl;
 
         if(detect_id[group*4+i]) {
             items += 1;
@@ -527,7 +628,6 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
         return checkVec;
     }
     
-    cout << "Detected markers to compare: " << items << endl;
     std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
 
     for(unsigned int i=0; i<rvecs.size(); i++) {
@@ -543,16 +643,12 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             }
 
             for(int k=0; k<3; k++) {
-                cout << "Diff between angles: "
-                << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k]))
-                << " > " << thr[k] << "?" << endl;
+
                 if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) {
-                    cout << "YES!!" << endl;
                     checker[i][j] = false;
                     break;
                 }
                 else {
-                    cout << "No, OK. " << endl;
                     checker[i][j] = true;
                 }
             }
@@ -585,19 +681,13 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
             continue;
         }
     }
-
-    cout << "Checker: ";
-    for(unsigned int i=0; i<rvecs.size();i++){
-        
-        for(auto&& j:checker[i]) {
-            cout << j << " ";
-        }
-    }
+   
     return checkVec;
 }
 
 
 // Given a vector of 2d points, draw a semi-transparent box
+// TODO take transparency weight as parameter and distinguish filling and borders color
 void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch) {
 
     line(imageCopy, box1[0], box1[1], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
@@ -690,6 +780,179 @@ void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch
 }
 
 
+// Function to average boxes
+vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<bool> init_id) {
+    vector<Point2d> avg_box(8);
+    avg_box[0].x = 0.0;
+    avg_box[0].y = 0.0;
+    avg_box[1].x = 0.0;
+    avg_box[1].y = 0.0;
+    avg_box[2].x = 0.0;
+    avg_box[2].y = 0.0;
+    avg_box[3].x = 0.0;
+    avg_box[3].y = 0.0;
+    avg_box[4].x = 0.0;
+    avg_box[4].y = 0.0;
+    avg_box[5].x = 0.0;
+    avg_box[5].y = 0.0;
+    avg_box[6].x = 0.0;
+    avg_box[6].y = 0.0;
+    avg_box[7].x = 0.0;
+    avg_box[7].y = 0.0;
+
+    int initialized = 0;
+    for(int i=0;i<4;i++) {
+        if(init_id[i*4]) {
+            initialized += 1;
+            avg_box[0].x += boxes[i][0].x;
+            avg_box[0].y += boxes[i][0].y;
+            avg_box[1].x += boxes[i][1].x;
+            avg_box[1].y += boxes[i][1].y;
+            avg_box[2].x += boxes[i][2].x;
+            avg_box[2].y += boxes[i][2].y;
+            avg_box[3].x += boxes[i][3].x;
+            avg_box[3].y += boxes[i][3].y;
+            avg_box[4].x += boxes[i][4].x;
+            avg_box[4].y += boxes[i][4].y;
+            avg_box[5].x += boxes[i][5].x;
+            avg_box[5].y += boxes[i][5].y;
+            avg_box[6].x += boxes[i][6].x;
+            avg_box[6].y += boxes[i][6].y;
+            avg_box[7].x += boxes[i][7].x;
+            avg_box[7].y += boxes[i][7].y;
+        }
+    }
+    if(initialized==0) return boxes[0];
+    if(initialized==1) return avg_box;
+    for(int i=0;i<8;i++) {
+        avg_box[i].x /= initialized;
+        avg_box[i].y /= initialized;
+    }
+    cout << "initialized" << initialized << endl;
+    for(int i=0; i<8; i++) {
+        cout << avg_box[i].x << ", " << avg_box[i].y << endl;
+    }
+
+    return avg_box;
+}
+
+
+// We want to write a function to align the marker's rotation with 
+// the general reference frame
+Vec3d rotateAxis(Vec3d rvec) {
+    Vec3d rvecTrans;
+    Mat rMatr, rMatrTrans1, rMatrTrans2, rMatrTrans3;
+    rMatr = rMatrTrans1 = rMatrTrans2 = rMatrTrans3 = Mat::zeros(3,3,CV_64F);
+
+    Rodrigues(rvec, rMatr);
+/*
+    // + 90 x 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(1,0) = - rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(1,1) = - rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(1,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(1,2);
+
+    // - 90 x 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(2,0) = - rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(2,1) = - rMasterMatr.at<double>(1,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(2,2) = - rMasterMatr.at<double>(1,2);
+
+    // + 90 y 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(2,0) = - rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(2,1) = - rMasterMatr.at<double>(0,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(2,2) = - rMasterMatr.at<double>(0,2);
+
+    // - 90 y 
+    rMatrTrans.at<double>(0,0) = - rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(0,1) = - rMatr.at<double>(2,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(0,1);
+    rMatrTrans.at<double>(0,2) = - rMasterMatr.at<double>(2,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(0,2);
+
+    // + 90 z 
+    rMatrTrans.at<double>(0,0) = - rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(1,0) = rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(0,1) = - rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(1,1) = rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(2,1);
+    rMatrTrans.at<double>(0,2) = - rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(1,2) = rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
+
+    // - 90 z 
+    rMatrTrans.at<double>(0,0) = rMatr.at<double>(1,0);
+    rMatrTrans.at<double>(1,0) = - rMatr.at<double>(0,0);
+    rMatrTrans.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans.at<double>(0,1) = rMatr.at<double>(1,1);
+    rMatrTrans.at<double>(1,1) = - rMatr.at<double>(0,1);
+    rMatrTrans.at<double>(2,1) = rMasterMatr.at<double>(2,1);
+    rMatrTrans.at<double>(0,2) = rMasterMatr.at<double>(1,2);
+    rMatrTrans.at<double>(1,2) = - rMasterMatr.at<double>(0,2);
+    rMatrTrans.at<double>(2,2) = rMasterMatr.at<double>(2,2);
+*/
+
+
+    // - 90 z 
+    rMatrTrans1.at<double>(0,0) = rMatr.at<double>(1,0);
+    rMatrTrans1.at<double>(1,0) = - rMatr.at<double>(0,0);
+    rMatrTrans1.at<double>(2,0) = rMatr.at<double>(2,0);
+    rMatrTrans1.at<double>(0,1) = rMatr.at<double>(1,1);
+    rMatrTrans1.at<double>(1,1) = - rMatr.at<double>(0,1);
+    rMatrTrans1.at<double>(2,1) = rMatr.at<double>(2,1);
+    rMatrTrans1.at<double>(0,2) = rMatr.at<double>(1,2);
+    rMatrTrans1.at<double>(1,2) = - rMatr.at<double>(0,2);
+    rMatrTrans1.at<double>(2,2) = rMatr.at<double>(2,2);
+
+    // - 90 z 
+    rMatrTrans2.at<double>(0,0) = rMatrTrans1.at<double>(1,0);
+    rMatrTrans2.at<double>(1,0) = - rMatrTrans1.at<double>(0,0);
+    rMatrTrans2.at<double>(2,0) = rMatrTrans1.at<double>(2,0);
+    rMatrTrans2.at<double>(0,1) = rMatrTrans1.at<double>(1,1);
+    rMatrTrans2.at<double>(1,1) = - rMatrTrans1.at<double>(0,1);
+    rMatrTrans2.at<double>(2,1) = rMatrTrans1.at<double>(2,1);
+    rMatrTrans2.at<double>(0,2) = rMatrTrans1.at<double>(1,2);
+    rMatrTrans2.at<double>(1,2) = - rMatrTrans1.at<double>(0,2);
+    rMatrTrans2.at<double>(2,2) = rMatrTrans1.at<double>(2,2);
+
+    // - 90 y 
+    rMatrTrans3.at<double>(0,0) = - rMatrTrans2.at<double>(2,0);
+    rMatrTrans3.at<double>(1,0) = rMatrTrans2.at<double>(1,0);
+    rMatrTrans3.at<double>(2,0) = rMatrTrans2.at<double>(0,0);
+    rMatrTrans3.at<double>(0,1) = - rMatrTrans2.at<double>(2,1);
+    rMatrTrans3.at<double>(1,1) = rMatrTrans2.at<double>(1,1);
+    rMatrTrans3.at<double>(2,1) = rMatrTrans2.at<double>(0,1);
+    rMatrTrans3.at<double>(0,2) = - rMatrTrans2.at<double>(2,2);
+    rMatrTrans3.at<double>(1,2) = rMatrTrans2.at<double>(1,2);
+    rMatrTrans3.at<double>(2,2) = rMatrTrans2.at<double>(0,2);
+
+    Rodrigues(rMatrTrans3, rvecTrans);
+
+    return rvecTrans;
+}
+
+
 
 //////
 int main(int argc, char *argv[]) {
@@ -775,11 +1038,31 @@ int main(int argc, char *argv[]) {
     int frame_height = inputVideo.get(CAP_PROP_FRAME_HEIGHT);
     cout << "Frame size: " << frame_width << "x" << frame_height << endl;
     
+    /*
+    // Adapt camera intrinsic parameters to current resolution
+    // fx' = (width'/width) * fx
+    // fy' = (height'/height) * fy
+    // cx' = (width'/width) * cx
+    // cy' = (height'/height) * cy
+    if(frame_width < frame_height) {  // TODO if video is vertical
+        camMatrix.at<double>(0,0) *= (frame_width/1080);
+        camMatrix.at<double>(1,1) *= (frame_height/1920);
+        camMatrix.at<double>(0,2) *= (frame_width/1080);
+        camMatrix.at<double>(1,2) *= (frame_height/1920);
+    }
+    else {
+        camMatrix.at<double>(0,0) *= (frame_width/1920);
+        camMatrix.at<double>(1,1) *= (frame_height/1080);
+        camMatrix.at<double>(0,2) *= (frame_width/1920);
+        camMatrix.at<double>(1,2) *= (frame_height/1080);
+    }
+    */
+
     // Save results to video
     VideoWriter cap;
     if (saveResults) {
-        cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
-                inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+	cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
+    inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
     }
 
 
@@ -792,8 +1075,8 @@ int main(int argc, char *argv[]) {
             cout << "Filtered resulting transformations" << endl;
         }
         else {
-            cout << "Unable to open result file" << endl;
-        }
+	    cout << "Unable to open result file" << endl;
+	}
     }
     else if (naiveMode && saveResults) {
         resultfile.open("results_unfilt.txt");
@@ -801,8 +1084,8 @@ int main(int argc, char *argv[]) {
            cout << "Unfiltered resulting transformations" << endl;
         }
         else {
-            cout << "Unable to open result file" << endl;
-        }
+	    cout << "Unable to open result file" << endl;
+	}
     }
 
 
@@ -810,12 +1093,6 @@ int main(int argc, char *argv[]) {
     Mat arrow_cloud = cvcloud_load();
 
     Mat box_cloud = create_bbox(1.0, 1.0, 1.0);
-    Mat tvec3d(1, 1, CV_64FC3);
-    Point3d* pt3d = tvec3d.ptr<cv::Point3d>();
-    pt3d[0].x = 0.0;
-    pt3d[0].y = 0.0;
-    pt3d[0].z = 0.0;
-    vector<Point2d> tvec2d;
 
 
 
@@ -826,34 +1103,33 @@ int main(int argc, char *argv[]) {
     double abs_tick = (double)getTickCount();
     double delta_t = 0;
 
-    vector<Point2d> box, box1, box2, box3, box4, box5, box6, box7, box8, box9, box10, box11, box12; // vec to print arrow on image plane
-    
+    vector<Point2d> arrow1, arrow2, arrow3, arrow4, box1, box2, box3, box4; // vec to print arrow on image plane
 
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
-    double thr_lost = 2; // TODO threshold in seconds for going into init
+    double thr_lost = 3.0; // TODO threshold in seconds for going into init
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
-    int consist_markers = 4;
+    int consist_markers = 3;
 
     // Weights for averaging final poses
-    double alpha_rot = 0.1;
-    double alpha_trasl = 0.1;
+    double alpha_rot = 0.5;
+    double alpha_trasl = 0.5;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
-    thr_init[0] = (sin(M_PI/12.0));
-    thr_init[1] = (sin(M_PI/12.0));
-    thr_init[2] = (sin(M_PI/12.0));
-    thr_noinit[0] = (sin(M_PI/12.0));
-    thr_noinit[1] = (sin(M_PI/12.0));
-    thr_noinit[2] = (sin(M_PI/12.0));
+    thr_init[0] = (sin(M_PI/2.0));
+    thr_init[1] = (sin(M_PI/2.0));
+    thr_init[2] = (sin(M_PI/3.0));
+    thr_noinit[0] = (sin(M_PI/3.0));
+    thr_noinit[1] = (sin(M_PI/3.0));
+    thr_noinit[2] = (sin(M_PI/4.0));
 
     
     if(naiveMode) {
         thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
         thr_lost = std::numeric_limits<double>::max();
         thr_stable = 0.0;
-        consist_markers = 1.0;
+	consist_markers = 1.0;
     }
 
     // One master pose for each group
@@ -862,8 +1138,8 @@ int main(int argc, char *argv[]) {
     // One pose for the whole scene
     Vec3d rScene;
     Vec3d tScene;
+
     std::vector<bool> init_id(16, false); // check if marker has been seen before
-    Vec3d a_avg, b_avg, c_avg, d_avg;
 
 
     ////// ---KEY PART--- //////
@@ -879,6 +1155,8 @@ int main(int argc, char *argv[]) {
         vector<Vec3d> rvecs_ord(16); // store markers' Euler rotation vectors
         vector<Vec3d> tvecs_ord(16); // store markers' translation vectors
         std::vector<bool> detect_id(16, true); // check if marker was detected or not
+
+
 
         cout << "Frame " << totalIterations << endl;
         cout << "abs_tick" << ((double)getTickCount() - abs_tick) / getTickFrequency() << endl;
@@ -921,7 +1199,6 @@ int main(int argc, char *argv[]) {
 
             // Loop over markers
             for(unsigned int i=0; i<16; i++) {
-                cout << "Group " << ceil(i/4) << endl;
 
                 // check if marker was detected
                 if(rvecs_ord[i][0] == 0.0) { 
@@ -935,30 +1212,6 @@ int main(int argc, char *argv[]) {
                 }
 
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)], thr_init)) {
-                    Mat rotationMat = Mat::zeros(3, 3, CV_64F);
-                    Rodrigues(rvecs_ord[i], rotationMat); //convert rodrigues angles into rotation matrix
-                    cout << "Marker is wrong! " << endl;
-                    cout <<  "Rvec matrix: " << endl;
-                    cout << "[" ;
-                    for(int i = 0; i<3; i++) {
-                        for(int j=0; j<3; j++) {
-                            cout << rotationMat.at<double>(i,j) << " ";
-                        }
-                        cout << endl;
-                    }
-                    cout << "]" << endl;
-                    cout << "rMaster matrix: " << endl; 
-                    Mat rotationMatM = Mat::zeros(3, 3, CV_64F);
-                    Rodrigues(rMaster[ceil(i/4)], rotationMatM); //convert rodrigues angles into rotation matrix
-                    cout << "[" ;
-                    for(int i = 0; i<3; i++) {
-                        for(int j=0; j<3; j++) {
-                            cout << rotationMatM.at<double>(i,j) << " ";
-                        }
-                        cout << endl;
-                    }
-                    cout << "]" << endl;
-
                     detect_id[i] = false;
                     continue;
                 }
@@ -969,10 +1222,13 @@ int main(int argc, char *argv[]) {
 
             // Loop over groups
             for(unsigned int i=0; i<4; i++) {
-                if(!init_id[i*4]) { // if group needs init
-                    cout << "GROUP " << i << ": initializing..." << endl;
 
-                    std::vector<bool> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 4, i, thr_init);
+                if(!init_id[i*4]) { // if group needs init
+
+                    cout << "GROUP " << i << endl;
+                    cout << "INIT" << endl;
+
+                    std::vector<bool> detect_id_check = checkPoseConsistent(rvecs_ord, detect_id, 3, i, thr_init);
 
                     for(int j=0; j<16; j++) {
                         detect_id[j] = detect_id_check[j];
@@ -986,7 +1242,7 @@ int main(int argc, char *argv[]) {
                         } 
                     }
 
-                    cout << "In group " << i << " there are " << counter << " consistent markers" << endl;
+                    cout << "Counter " << counter << endl;
 
                     if(counter >= consist_markers) { // if n markers are consistent
                         t_stable[i] += delta_t;
@@ -1005,7 +1261,8 @@ int main(int argc, char *argv[]) {
                     }
                 } // if already init
                 else {
-                    cout << "GROUP " << i << " is already initialized." << endl;
+                    cout << "GROUP " << i << endl;
+                    cout << "NOT INIT" << endl;
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
                         t_lost[i] += delta_t;
                         if(t_lost[i] >= thr_lost) {
@@ -1021,130 +1278,40 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-            
-            Vec3d a0, b0, c0, d0, a1, b1, c1, d1, a3, b3, c3, d3;
-           
-            a0[0] = -1.6;
-            a0[1] = -10.7 + 0.5;
-            a0[2] = -3;
-            b0[0] = -1.6;
-            b0[1] = -10.7 + 0.5;
-            b0[2] = -43;
-            c0[0] = -1.6;
-            c0[1] = 9.3 + 0.5;
-            c0[2] = -23;
-            d0[0] = -1.6;
-            d0[1] = -30.7 + 0.5;
-            d0[2] = -23;
-        
-            a1[0] = 0.0 - 0.5;
-            a1[1] = -1.5;
-            a1[2] = -3;
-            b1[0] = 0.0 - 0.5;
-            b1[1] = -1.5;
-            b1[2] = -43;
-            c1[0] = -20 - 0.5;
-            c1[1] = -1.5;
-            c1[2] = -23;
-            d1[0] = 20 - 0.5;
-            d1[1] = -1.5;
-            d1[2] = -23;
-        
-            a3[0] = 10.8+0.5;
-            a3[1] = 1;
-            a3[2] = -3;
-            b3[0] = 10.8+0.5;
-            b3[1] = 1;
-            b3[2] = -43;
-            c3[0] = 30.8+0.5;
-            c3[1] = 1;
-            c3[2] = -23;
-            d3[0] = -9.2+0.5;
-            d3[1] = 1;
-            d3[2] = -23;
-       
-            a0 = transformVec(a0, rMaster[0], tMaster[0]);
-            b0 = transformVec(b0, rMaster[0], tMaster[0]);
-            c0 = transformVec(c0, rMaster[0], tMaster[0]);
-            d0 = transformVec(d0, rMaster[0], tMaster[0]);
-        
-            a1 = transformVec(a1, rMaster[1], tMaster[1]);
-            b1 = transformVec(b1, rMaster[1], tMaster[1]);
-            c1 = transformVec(c1, rMaster[1], tMaster[1]);
-            d1 = transformVec(d1, rMaster[1], tMaster[1]);
-       
 
-            resultfile << "Frame " << totalIterations << ", " <<
-            "x " << tMaster[0][0] << ", " <<
-            "y " << tMaster[0][1] << ", " <<
-            "z " << tMaster[0][2] << "; " << "\n";
-       
-        
-            cout << "Doing average" << endl; 
-            std::vector<Vec3d> a_sum, b_sum, c_sum, d_sum;
             
-            if(init_id[0]) {
-                a_sum.push_back(a0);
-                b_sum.push_back(b0);
-                c_sum.push_back(c0);
-                d_sum.push_back(d0);
-            }
-            if(init_id[4]) {
-                a_sum.push_back(a1);
-                b_sum.push_back(b1);
-                c_sum.push_back(c1);
-                d_sum.push_back(d1);
-            }
-            if(init_id[0]||init_id[4]){
-                for (int i=0; i<3; i++) {
-                    a_avg[i] = 0.0;
-                    b_avg[i] = 0.0;
-                    c_avg[i] = 0.0;
-                    d_avg[i] = 0.0;
-                    for (unsigned int j=0; j<a_sum.size(); j++) {
-                        a_avg[i] += a_sum[j][i];
-                        b_avg[i] += b_sum[j][i];
-                        c_avg[i] += c_sum[j][i];
-                        d_avg[i] += d_sum[j][i];
-                    }
-                    a_avg[i] /= a_sum.size();
-                    b_avg[i] /= b_sum.size();
-                    c_avg[i] /= c_sum.size();
-                    d_avg[i] /= d_sum.size();
+            projectPoints(arrow_cloud, rMaster[0], tMaster[0], camMatrix, distCoeffs, arrow1);
+            projectPoints(arrow_cloud, rMaster[1], tMaster[1], camMatrix, distCoeffs, arrow2);
+            projectPoints(arrow_cloud, rMaster[2], tMaster[2], camMatrix, distCoeffs, arrow3);
+            projectPoints(arrow_cloud, rMaster[3], tMaster[3], camMatrix, distCoeffs, arrow4);
+
+            for (unsigned int j = 0; j < arrow1.size(); j++)
+            {
+                if(init_id[0] && (detect_id[0] || detect_id[1] || detect_id[2] || detect_id[3])) {
+                    circle(imageCopy, arrow1[j], 1, Scalar(255,0,0), -1);
                 }
-            }
-            cout << a0[0] << a_avg[0] << b0[1] << b_avg[1] << b0[2] << b_avg[2] << endl;
-
-            projectPoints(tvec3d, rMaster[0], a_avg, camMatrix, distCoeffs, tvec2d);
-            projectPoints(box_cloud, rMaster[0], a_avg, camMatrix, distCoeffs, box1);
-            projectPoints(box_cloud, rMaster[0], b_avg, camMatrix, distCoeffs, box2);
-            projectPoints(box_cloud, rMaster[0], c_avg, camMatrix, distCoeffs, box3);
-            projectPoints(box_cloud, rMaster[0], d_avg, camMatrix, distCoeffs, box4); 
-
-            if(init_id[0]||init_id[4]) {
-                DrawBox2D(imageCopy, box1, 60, 20, 220);
-                DrawBox2D(imageCopy, box2, 0, 255, 0);
-                DrawBox2D(imageCopy, box3, 0, 0, 255);
-                DrawBox2D(imageCopy, box4, 255, 0, 0);
+                if(init_id[4] && (detect_id[0+4] || detect_id[1+4] || detect_id[2+4] || detect_id[3+4])) {
+                    circle(imageCopy, arrow2[j], 1, Scalar(0,255,0), -1);
+                }
+                if(init_id[8] && (detect_id[0+8] || detect_id[1+8] || detect_id[2+8] || detect_id[3+8])) {
+                    circle(imageCopy, arrow3[j], 1, Scalar(0,0,255), -1);
+                }
+                if(init_id[12] && (detect_id[0+12] || detect_id[1+12] || detect_id[2+12] || detect_id[3+12])) {
+                    circle(imageCopy, arrow4[j], 1, Scalar(0,0,255), -1);
+                }
             }
         }
-        else {
-            for(unsigned int i=0; i<4; i++) {
-                if(init_id[i*4]) {
-                    t_lost[i] += delta_t;
-                    if(t_lost[i] >= thr_lost) {
-                        init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
-                        t_lost[i] = 0;
-                    }
-                }
-            }                    
-            if(init_id[0]||init_id[4]) {
-                DrawBox2D(imageCopy, box1, 60, 20, 220);
-                DrawBox2D(imageCopy, box2, 0, 255, 0);
-                DrawBox2D(imageCopy, box3, 0, 0, 255);
-                DrawBox2D(imageCopy, box4, 255, 0, 0);
-            }
-        }   
+	else {
+		for(unsigned int i=0; i<4; i++) {
+			if(init_id[i*4]) {
+				t_lost[i] += delta_t;
+				if(t_lost[i] >= thr_lost) {
+					init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
+					t_lost[i] = 0;
+				}
+			}
+		}	
+	}
 
         if(showRejected && rejected.size() > 0)
             aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
@@ -1153,7 +1320,7 @@ int main(int argc, char *argv[]) {
 
         Mat imageResize;
 
-        cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
+        cv::resize(imageCopy, imageResize, Size(imageCopy.cols,imageCopy.rows));
         imshow("resize", imageResize);
 
         delta = ((double)getTickCount() - tickk) / getTickFrequency();
@@ -1170,13 +1337,11 @@ int main(int argc, char *argv[]) {
         cout << t_lost[2] << endl;
         cout << t_lost[3] << endl;
 
-        cout << "///////////////////////////////////" << endl;
-
 
         char key = (char)waitKey(waitTime); 
         if(key == 27) break;
     }
-    
+
     inputVideo.release();
     if (saveResults) cap.release();
     
