@@ -640,111 +640,6 @@ vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<double> weights) 
     return avg_box;
 }
 
-// Function that returns the coordinates of boxes in the scene
-std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d> tMaster, std::vector<bool> init_id, int scene) {
-    std::vector<Vec3d> avg_points;
-    Vec3d a0, b0, c0, d0, a1, b1, c1, d1, a3, b3, c3, d3, a_avg, b_avg, c_avg, d_avg;
-    std::vector<Vec3d> a_sum, b_sum, c_sum, d_sum;
-
-    if(scene == 3) {
-    	a0[0] = -1.6;
-    	a0[1] = -10.7 + 0.5;
-    	a0[2] = -3;
-    	b0[0] = -1.6;
-    	b0[1] = -10.7 + 0.5;
-    	b0[2] = -43;
-    	c0[0] = -1.6;
-    	c0[1] = 9.3 + 0.5;
-    	c0[2] = -23;
-    	d0[0] = -1.6;
-    	d0[1] = -30.7 + 0.5;
-    	d0[2] = -23;    
-    	a1[0] = 0.0 - 0.5;
-    	a1[1] = -1.5;
-    	a1[2] = -3;
-    	b1[0] = 0.0 - 0.5;
-    	b1[1] = -1.5;
-    	b1[2] = -43;
-    	c1[0] = -20 - 0.5;
-    	c1[1] = -1.5;
-    	c1[2] = -23;
-    	d1[0] = 20 - 0.5;
-    	d1[1] = -1.5;
-    	d1[2] = -23;
-            
-    	a0 = transformVec(a0, rMaster[0], tMaster[0]);
-    	b0 = transformVec(b0, rMaster[0], tMaster[0]);
-    	c0 = transformVec(c0, rMaster[0], tMaster[0]);
-    	d0 = transformVec(d0, rMaster[0], tMaster[0]);    
-    	a1 = transformVec(a1, rMaster[1], tMaster[1]);
-    	b1 = transformVec(b1, rMaster[1], tMaster[1]);
-    	c1 = transformVec(c1, rMaster[1], tMaster[1]);
-    	d1 = transformVec(d1, rMaster[1], tMaster[1]);
-
-    	if(init_id[0]) {
-            a_sum.push_back(a0);
-            b_sum.push_back(b0);
-            c_sum.push_back(c0);
-            d_sum.push_back(d0);
-        }
-        if(init_id[4]) {
-            a_sum.push_back(a1);
-            b_sum.push_back(b1);
-            c_sum.push_back(c1);
-            d_sum.push_back(d1);
-        }
-        if(init_id[0]||init_id[4]){
-            for (int i=0; i<3; i++) {
-                a_avg[i] = 0.0;
-                b_avg[i] = 0.0;
-                c_avg[i] = 0.0;
-                d_avg[i] = 0.0;
-                for (unsigned int j=0; j<a_sum.size(); j++) {
-                    a_avg[i] += a_sum[j][i];
-                    b_avg[i] += b_sum[j][i];
-                    c_avg[i] += c_sum[j][i];
-                    d_avg[i] += d_sum[j][i];
-                }
-                a_avg[i] /= a_sum.size();
-                b_avg[i] /= b_sum.size();
-                c_avg[i] /= c_sum.size();
-                d_avg[i] /= d_sum.size();
-            }
-        }
-        else {
-            return avg_points;
-        }
-        avg_points.push_back(a_avg);
-        avg_points.push_back(b_avg);
-        avg_points.push_back(c_avg);
-        avg_points.push_back(d_avg);
-    }
-    else if(scene==1) {
-        a0[0] = 0.0;
-    	a0[1] = 6.0;
-    	a0[2] = -1;
-    	b0[0] = 5.0;
-    	b0[1] = 6.0;
-    	b0[2] = -1;
-    	c0[0] = -5.5;
-    	c0[1] = 7.0;
-    	c0[2] = -6;
-        
-        a0 = transformVec(a0, rMaster[1], tMaster[1]);
-    	b0 = transformVec(b0, rMaster[1], tMaster[1]);
-    	c0 = transformVec(c0, rMaster[1], tMaster[1]);
-
-        if(init_id[4]) {
-            avg_points.push_back(a0);
-            avg_points.push_back(b0);
-            avg_points.push_back(c0);
-        }
-        else {
-            return avg_points;
-        }
-    }
-    return avg_points;
-} 
 
 
 
@@ -768,7 +663,6 @@ int main(int argc, char *argv[]) {
     float markerOffset = parser.get<float>("o");
     bool naiveMode = parser.get<bool>("n");
     bool saveResults = parser.has("s");
-    int scene = parser.get<int>("u");
 
 
     // Detector parameters
@@ -780,26 +674,7 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
-    detectorParams->adaptiveThreshWinSizeMin=3;
-    detectorParams->adaptiveThreshWinSizeMin=23;
-    detectorParams->adaptiveThreshWinSizeStep=10;
-    detectorParams->adaptiveThreshConstant=7;
-    detectorParams->minMarkerPerimeterRate=0.03;
-    detectorParams->maxMarkerPerimeterRate=4.0;
-    detectorParams->polygonalApproxAccuracyRate=0.05;
-    detectorParams->minCornerDistanceRate=0.05;
-    detectorParams->minMarkerDistanceRate=0.05;
-    detectorParams->minDistanceToBorder=3;
-    detectorParams->markerBorderBits=1;
-    detectorParams->minOtsuStdDev=5.0;
-    detectorParams->perspectiveRemovePixelPerCell=4;
-    detectorParams->perspectiveRemoveIgnoredMarginPerCell=0.13;
-    detectorParams->maxErroneousBitsInBorderRate=0.35;
-    detectorParams->errorCorrectionRate=0.6;
-    detectorParams->cornerRefinementMethod=aruco::CORNER_REFINE_CONTOUR;
-    detectorParams->cornerRefinementWinSize=5;
-    detectorParams->cornerRefinementMaxIterations=30;
-    detectorParams->cornerRefinementMinAccuracy=0.1;
+    detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_CONTOUR;
 
 
     // Load video 
@@ -886,9 +761,14 @@ int main(int argc, char *argv[]) {
     // Load arrow point cloud
     Mat arrow_cloud = cvcloud_load();
 
-    Mat box_cloud;
-    if(scene==3) box_cloud = create_bbox(3.0, 2.0, 1.0);
-    else if(scene==1) box_cloud = create_bbox(1.0,1.0,1.0);
+    Mat box_cloud = create_bbox(3.0, 2.0, 1.0);
+    Mat tvec3d(1, 1, CV_64FC3);
+    Point3d* pt3d = tvec3d.ptr<cv::Point3d>();
+    pt3d[0].x = 0.0;
+    pt3d[0].y = 0.0;
+    pt3d[0].z = 0.0;
+    vector<Point2d> tvec2d;
+
 
 
     // Define variables
@@ -909,8 +789,8 @@ int main(int argc, char *argv[]) {
     int consist_markers = 4;
 
     // Weights for averaging final poses
-    double alpha_rot = 0.3;
-    double alpha_trasl = 0.3;
+    double alpha_rot = 0.1;
+    double alpha_trasl = 0.1;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
     thr_init[0] = (sin(M_PI/12.0));
@@ -931,7 +811,9 @@ int main(int argc, char *argv[]) {
     // One master pose for each group
     vector<Vec3d> rMaster(4);
     vector<Vec3d> tMaster(4);
-
+    // One pose for the whole scene
+    Vec3d rScene;
+    Vec3d tScene;
     std::vector<bool> init_id(16, false); // check if marker has been seen before
     Vec3d a_avg, b_avg, c_avg, d_avg;
     
@@ -1095,76 +977,139 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-
             
-	    vector<Vec3d> avg_points = computeAvgBoxes(rMaster, tMaster, init_id, scene);
+            Vec3d a0, b0, c0, d0, a1, b1, c1, d1, a3, b3, c3, d3;
+           
+            a0[0] = -1.6;
+            a0[1] = -10.7 + 0.5;
+            a0[2] = -3;
+            b0[0] = -1.6;
+            b0[1] = -10.7 + 0.5;
+            b0[2] = -43;
+            c0[0] = -1.6;
+            c0[1] = 9.3 + 0.5;
+            c0[2] = -23;
+            d0[0] = -1.6;
+            d0[1] = -30.7 + 0.5;
+            d0[2] = -23;
+        
+            a1[0] = 0.0 - 0.5;
+            a1[1] = -1.5;
+            a1[2] = -3;
+            b1[0] = 0.0 - 0.5;
+            b1[1] = -1.5;
+            b1[2] = -43;
+            c1[0] = -20 - 0.5;
+            c1[1] = -1.5;
+            c1[2] = -23;
+            d1[0] = 20 - 0.5;
+            d1[1] = -1.5;
+            d1[2] = -23;
+        
+            a3[0] = 10.8+0.5;
+            a3[1] = 1;
+            a3[2] = -3;
+            b3[0] = 10.8+0.5;
+            b3[1] = 1;
+            b3[2] = -43;
+            c3[0] = 30.8+0.5;
+            c3[1] = 1;
+            c3[2] = -23;
+            d3[0] = -9.2+0.5;
+            d3[1] = 1;
+            d3[2] = -23;
+       
+            a0 = transformVec(a0, rMaster[0], tMaster[0]);
+            b0 = transformVec(b0, rMaster[0], tMaster[0]);
+            c0 = transformVec(c0, rMaster[0], tMaster[0]);
+            d0 = transformVec(d0, rMaster[0], tMaster[0]);
+        
+            a1 = transformVec(a1, rMaster[1], tMaster[1]);
+            b1 = transformVec(b1, rMaster[1], tMaster[1]);
+            c1 = transformVec(c1, rMaster[1], tMaster[1]);
+            d1 = transformVec(d1, rMaster[1], tMaster[1]);
+       
+
+            resultfile << "Frame " << totalIterations << ", " <<
+            "x " << tMaster[0][0] << ", " <<
+            "y " << tMaster[0][1] << ", " <<
+            "z " << tMaster[0][2] << "; " << "\n";
+       
+        
+            cout << "Doing average" << endl; 
+            std::vector<Vec3d> a_sum, b_sum, c_sum, d_sum;
+            
+            if(init_id[0]) {
+                a_sum.push_back(a0);
+                b_sum.push_back(b0);
+                c_sum.push_back(c0);
+                d_sum.push_back(d0);
+            }
+            if(init_id[4]) {
+                a_sum.push_back(a1);
+                b_sum.push_back(b1);
+                c_sum.push_back(c1);
+                d_sum.push_back(d1);
+            }
+            if(init_id[0]||init_id[4]){
+                for (int i=0; i<3; i++) {
+                    a_avg[i] = 0.0;
+                    b_avg[i] = 0.0;
+                    c_avg[i] = 0.0;
+                    d_avg[i] = 0.0;
+                    for (unsigned int j=0; j<a_sum.size(); j++) {
+                        a_avg[i] += a_sum[j][i];
+                        b_avg[i] += b_sum[j][i];
+                        c_avg[i] += c_sum[j][i];
+                        d_avg[i] += d_sum[j][i];
+                    }
+                    a_avg[i] /= a_sum.size();
+                    b_avg[i] /= b_sum.size();
+                    c_avg[i] /= c_sum.size();
+                    d_avg[i] /= d_sum.size();
+                }
+            }
+            cout << a0[0] << a_avg[0] << b0[1] << b_avg[1] << b0[2] << b_avg[2] << endl;
+	    
 	    vector<vector<Point2d>> boxes1, boxes2, boxes3, boxes4;
 	    vector<double> weights={0.9,0.1}; //weights for past and current frame
 
 	    if(average==true) {
-            if (scene==3) {
-                boxes1.push_back(box1);
-                boxes2.push_back(box2);
-                boxes3.push_back(box3);
-                boxes4.push_back(box4);
-            }
-            else if (scene==1) {
-                boxes1.push_back(box1);
-                boxes2.push_back(box2);
-                boxes3.push_back(box3);
-            }
+	        boxes1.push_back(box1);
+	        boxes2.push_back(box2);
+	        boxes3.push_back(box3);
+	        boxes4.push_back(box4);
 	    }
 	    else {
 		cout << "EMPTY!!!" << endl;
 	    }
 	    if (init_id[0] || init_id[4] ) {
-            average = true;
-            if (scene==3) {
-                projectPoints(box_cloud, Vec3d::zeros() , avg_points[0], camMatrix, distCoeffs, box1);
-                projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, box2);
-                projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, box3);
-                projectPoints(box_cloud, Vec3d::zeros(), avg_points[3], camMatrix, distCoeffs, box4);
-            }
-            else if (scene==1) {
-                projectPoints(box_cloud, rMaster[1] , avg_points[0], camMatrix, distCoeffs, box1);
-                projectPoints(box_cloud, rMaster[1], avg_points[1], camMatrix, distCoeffs, box2);
-                projectPoints(box_cloud, rMaster[1], avg_points[2], camMatrix, distCoeffs, box3);
-
-            }
+		average = true;
+                projectPoints(tvec3d, Vec3d::zeros(), a_avg, camMatrix, distCoeffs, tvec2d);
+                projectPoints(box_cloud, Vec3d::zeros() , a_avg, camMatrix, distCoeffs, box1);
+                projectPoints(box_cloud, Vec3d::zeros(), b_avg, camMatrix, distCoeffs, box2);
+                projectPoints(box_cloud, Vec3d::zeros(), c_avg, camMatrix, distCoeffs, box3);
+                projectPoints(box_cloud, Vec3d::zeros(), d_avg, camMatrix, distCoeffs, box4);
 	    }
 	    if(!boxes1.empty()) {
-            if (scene==3) {
-                boxes1.push_back(box1);
-	            boxes2.push_back(box2);
-	            boxes3.push_back(box3);
-	            boxes4.push_back(box4); 
-	            box1 = avgBoxes(boxes1, weights);
-	            box2 = avgBoxes(boxes2, weights);
-	            box3 = avgBoxes(boxes3, weights);
-	            box4 = avgBoxes(boxes4, weights);
-            }
-            else if (scene==1) {
-                boxes1.push_back(box1);
-	            boxes2.push_back(box2);
-	            boxes3.push_back(box3); 
-	            box1 = avgBoxes(boxes1, weights);
-	            box2 = avgBoxes(boxes2, weights);
-	            box3 = avgBoxes(boxes3, weights);
-            }
-	    }	     
+	        boxes1.push_back(box1);
+	        boxes2.push_back(box2);
+	        boxes3.push_back(box3);
+	        boxes4.push_back(box4); 
+
+	        box1 = avgBoxes(boxes1, weights);
+	        box2 = avgBoxes(boxes2, weights);
+	        box3 = avgBoxes(boxes3, weights);
+	        box4 = avgBoxes(boxes4, weights);
+	    }
+
+	    	     
 	    
            if(init_id[0]||init_id[4]) {
-               if (scene==3) {
-                   DrawBox2D(imageCopy, box1, 60, 20, 220);
-                   DrawBox2D(imageCopy, box2, 0, 255, 0);
-                   DrawBox2D(imageCopy, box3, 0, 0, 255);
-                   DrawBox2D(imageCopy, box4, 255, 0, 0);
-               }
-               else if (scene==1) {
-                   DrawBox2D(imageCopy, box1, 60, 20, 220);
-                   DrawBox2D(imageCopy, box2, 0, 255, 0);
-                   DrawBox2D(imageCopy, box3, 0, 0, 255);
-               }
+                DrawBox2D(imageCopy, box1, 60, 20, 220);
+                DrawBox2D(imageCopy, box2, 0, 255, 0);
+                DrawBox2D(imageCopy, box3, 0, 0, 255);
+                DrawBox2D(imageCopy, box4, 255, 0, 0);
             }
         }
         else {
@@ -1179,18 +1124,11 @@ int main(int argc, char *argv[]) {
                 }
             }                    
             if(init_id[0]||init_id[4]) {
-                if (scene==3) {
-                   DrawBox2D(imageCopy, box1, 60, 20, 220);
-                   DrawBox2D(imageCopy, box2, 0, 255, 0);
-                   DrawBox2D(imageCopy, box3, 0, 0, 255);
-                   DrawBox2D(imageCopy, box4, 255, 0, 0);
-               }
-               else if (scene==1) {
-                   DrawBox2D(imageCopy, box1, 60, 20, 220);
-                   DrawBox2D(imageCopy, box2, 0, 255, 0);
-                   DrawBox2D(imageCopy, box3, 0, 0, 255);
-               }
-            } 
+                DrawBox2D(imageCopy, box1, 60, 20, 220);
+                DrawBox2D(imageCopy, box2, 0, 255, 0);
+                DrawBox2D(imageCopy, box3, 0, 0, 255);
+                DrawBox2D(imageCopy, box4, 255, 0, 0);
+	    } 
         }   
 
         if(showRejected && rejected.size() > 0)
