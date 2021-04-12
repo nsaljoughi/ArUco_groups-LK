@@ -794,23 +794,23 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
-    /*
-    detectorParams->adaptiveThreshWinSizeMin=3;
-    detectorParams->adaptiveThreshWinSizeMin=23;
-    detectorParams->adaptiveThreshWinSizeStep=10;
-    detectorParams->adaptiveThreshConstant=7;
-    detectorParams->minMarkerPerimeterRate=0.03;
-    detectorParams->maxMarkerPerimeterRate=4.0;
-    detectorParams->polygonalApproxAccuracyRate=0.05;
-    detectorParams->minCornerDistanceRate=0.05;
-    detectorParams->minMarkerDistanceRate=0.05;
-    detectorParams->minDistanceToBorder=3;
-    detectorParams->markerBorderBits=1;
-    detectorParams->minOtsuStdDev=5.0;
-    detectorParams->perspectiveRemovePixelPerCell=4;
-    detectorParams->perspectiveRemoveIgnoredMarginPerCell=0.13;
-    detectorParams->maxErroneousBitsInBorderRate=0.35;
-    detectorParams->errorCorrectionRate=0.6;*/
+    
+    //detectorParams->adaptiveThreshWinSizeMin=3;
+    //detectorParams->adaptiveThreshWinSizeMin=23;
+    //detectorParams->adaptiveThreshWinSizeStep=10;
+    //detectorParams->adaptiveThreshConstant=7;
+    //detectorParams->minMarkerPerimeterRate=0.03;
+    detectorParams->maxMarkerPerimeterRate=1.0;
+    //detectorParams->polygonalApproxAccuracyRate=0.05;
+    //detectorParams->minCornerDistanceRate=0.05;
+    //detectorParams->minMarkerDistanceRate=0.05;
+    //detectorParams->minDistanceToBorder=3;
+    //detectorParams->markerBorderBits=1;
+    //detectorParams->minOtsuStdDev=5.0;
+    //detectorParams->perspectiveRemovePixelPerCell=4;
+    detectorParams->perspectiveRemoveIgnoredMarginPerCell=0.33;
+    //detectorParams->maxErroneousBitsInBorderRate=0.35;
+    //detectorParams->errorCorrectionRate=0.6;
     detectorParams->cornerRefinementMethod=aruco::CORNER_REFINE_CONTOUR;
     detectorParams->cornerRefinementWinSize=5;
     detectorParams->cornerRefinementMaxIterations=30;
@@ -1144,12 +1144,12 @@ int main(int argc, char *argv[]) {
                 projectPoints(box_cloud, Vec3d::zeros(), avg_points[3], camMatrix, distCoeffs, box4);
             }
             else if (scene==1) {
-                projectPoints(box_cloud, rMaster[1] , avg_points[0], camMatrix, distCoeffs, box1);
-                projectPoints(box_cloud, rMaster[1], avg_points[1], camMatrix, distCoeffs, box2);
-                projectPoints(box_cloud, rMaster[1], avg_points[2], camMatrix, distCoeffs, box3);
+                projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, box1);
+                projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, box2);
+                projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, box3);
             }
             else if (scene==5) {
-                projectPoints(box_cloud, rMaster[2] , avg_points[0], camMatrix, distCoeffs, box1);
+                projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, box1);
             }
 	    }
 	    if(!boxes1.empty()) {
@@ -1230,7 +1230,7 @@ int main(int argc, char *argv[]) {
 
         Mat imageResize;
 
-        cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3,imageCopy.rows/3));
+        cv::resize(imageCopy, imageResize, Size(imageCopy.cols/4,imageCopy.rows/4));
         imshow("resize", imageResize);
 
         delta = ((double)getTickCount() - tickk) / getTickFrequency();

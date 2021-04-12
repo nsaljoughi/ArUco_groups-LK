@@ -237,7 +237,11 @@ int main(int argc, char *argv[]) {
         putText(imageCopy, "Press 'c' to add current frame. 'ESC' to finish and calibrate",
                 Point(10, 20), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(255, 0, 0), 2);
 
-        imshow("out", imageCopy);
+        //imshow("out", imageCopy);
+	Mat imageResize;
+	cv::resize(imageCopy, imageResize, Size(imageCopy.cols/3, imageCopy.rows/3));
+	imshow("resize", imageResize);
+
         char key = (char)waitKey(waitTime);
         if(key == 27) break;
         if(key == 'c' && ids.size() > 0) {

@@ -1,0 +1,20 @@
+%YAML:1.0
+---
+calibration_time: "Mon 12 Apr 2021 04:14:11 PM CEST"
+image_width: 2160
+image_height: 3840
+flags: 0
+camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 2.9853622959752452e+03, 0., 1.0650786824227757e+03, 0.,
+       2.9840730399830954e+03, 1.9315535551932708e+03, 0., 0., 1. ]
+distortion_coefficients: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [ 3.0897276749838959e-01, -3.0318868162174186e+00,
+       3.1576294618310900e-04, 2.3389895106916853e-05,
+       1.1088050715316747e+01 ]
+avg_reprojection_error: 1.0096897026768998e+00
