@@ -743,6 +743,20 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
             return avg_points;
         }
     }
+    else if(scene==5) {
+        a0[0] = 0.0;
+    	a0[1] = 2.0;
+    	a0[2] = 0.0;        
+        a0 = transformVec(a0, rMaster[2], tMaster[2]);
+        if(init_id[8]) {
+            avg_points.push_back(a0);
+        }
+        else {
+            return avg_points;
+        }
+    }
+    return avg_points;
+
     return avg_points;
 } 
 
@@ -780,6 +794,7 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
+    /*
     detectorParams->adaptiveThreshWinSizeMin=3;
     detectorParams->adaptiveThreshWinSizeMin=23;
     detectorParams->adaptiveThreshWinSizeStep=10;
@@ -795,7 +810,7 @@ int main(int argc, char *argv[]) {
     detectorParams->perspectiveRemovePixelPerCell=4;
     detectorParams->perspectiveRemoveIgnoredMarginPerCell=0.13;
     detectorParams->maxErroneousBitsInBorderRate=0.35;
-    detectorParams->errorCorrectionRate=0.6;
+    detectorParams->errorCorrectionRate=0.6;*/
     detectorParams->cornerRefinementMethod=aruco::CORNER_REFINE_CONTOUR;
     detectorParams->cornerRefinementWinSize=5;
     detectorParams->cornerRefinementMaxIterations=30;
@@ -888,7 +903,7 @@ int main(int argc, char *argv[]) {
 
     Mat box_cloud;
     if(scene==3) box_cloud = create_bbox(3.0, 2.0, 1.0);
-    else if(scene==1) box_cloud = create_bbox(1.0,1.0,1.0);
+    else if(scene==1 || scene==5) box_cloud = create_bbox(1.0,1.0,1.0);
 
 
     // Define variables
@@ -906,7 +921,7 @@ int main(int argc, char *argv[]) {
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
     double thr_lost = 2; // TODO threshold in seconds for going into init
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
-    int consist_markers = 4;
+    int consist_markers = 3;
 
     // Weights for averaging final poses
     double alpha_rot = 0.3;
@@ -1099,7 +1114,7 @@ int main(int argc, char *argv[]) {
             
 	    vector<Vec3d> avg_points = computeAvgBoxes(rMaster, tMaster, init_id, scene);
 	    vector<vector<Point2d>> boxes1, boxes2, boxes3, boxes4;
-	    vector<double> weights={0.9,0.1}; //weights for past and current frame
+	    vector<double> weights={0.1,0.9}; //weights for past and current frame
 
 	    if(average==true) {
             if (scene==3) {
@@ -1113,11 +1128,14 @@ int main(int argc, char *argv[]) {
                 boxes2.push_back(box2);
                 boxes3.push_back(box3);
             }
+            else if (scene==5) {
+                boxes1.push_back(box1);
+            }
 	    }
 	    else {
 		cout << "EMPTY!!!" << endl;
 	    }
-	    if (init_id[0] || init_id[4] ) {
+	    if (init_id[0] || init_id[4] || init_id[8]) {
             average = true;
             if (scene==3) {
                 projectPoints(box_cloud, Vec3d::zeros() , avg_points[0], camMatrix, distCoeffs, box1);
@@ -1129,7 +1147,9 @@ int main(int argc, char *argv[]) {
                 projectPoints(box_cloud, rMaster[1] , avg_points[0], camMatrix, distCoeffs, box1);
                 projectPoints(box_cloud, rMaster[1], avg_points[1], camMatrix, distCoeffs, box2);
                 projectPoints(box_cloud, rMaster[1], avg_points[2], camMatrix, distCoeffs, box3);
-
+            }
+            else if (scene==5) {
+                projectPoints(box_cloud, rMaster[2] , avg_points[0], camMatrix, distCoeffs, box1);
             }
 	    }
 	    if(!boxes1.empty()) {
@@ -1151,9 +1171,13 @@ int main(int argc, char *argv[]) {
 	            box2 = avgBoxes(boxes2, weights);
 	            box3 = avgBoxes(boxes3, weights);
             }
+            else if (scene==5) {
+                boxes1.push_back(box1);
+                box1 = avgBoxes(boxes1, weights);
+            }
 	    }	     
 	    
-           if(init_id[0]||init_id[4]) {
+           if(init_id[0]||init_id[4]||init_id[8]) {
                if (scene==3) {
                    DrawBox2D(imageCopy, box1, 60, 20, 220);
                    DrawBox2D(imageCopy, box2, 0, 255, 0);
@@ -1164,6 +1188,9 @@ int main(int argc, char *argv[]) {
                    DrawBox2D(imageCopy, box1, 60, 20, 220);
                    DrawBox2D(imageCopy, box2, 0, 255, 0);
                    DrawBox2D(imageCopy, box3, 0, 0, 255);
+               }
+               else if (scene==5) {
+                   DrawBox2D(imageCopy, box1, 60, 20, 220);
                }
             }
         }
@@ -1178,7 +1205,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }                    
-            if(init_id[0]||init_id[4]) {
+            if(init_id[0]||init_id[4]||init_id[8]) {
                 if (scene==3) {
                    DrawBox2D(imageCopy, box1, 60, 20, 220);
                    DrawBox2D(imageCopy, box2, 0, 255, 0);
@@ -1189,6 +1216,9 @@ int main(int argc, char *argv[]) {
                    DrawBox2D(imageCopy, box1, 60, 20, 220);
                    DrawBox2D(imageCopy, box2, 0, 255, 0);
                    DrawBox2D(imageCopy, box3, 0, 0, 255);
+               }
+               else if (scene==5) {
+                   DrawBox2D(imageCopy, box1, 60, 20, 220);
                }
             } 
         }   
