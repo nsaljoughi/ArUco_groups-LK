@@ -8,5 +8,17 @@
 + **old_versions/** old versions of the main script
 + **graphs/**       schemes of the control logic
 
+## How to compile
+After changing the paths in CMakeLists.txt, make a build directory and compile:
+```
+mkdir build && cd build
+cmake -GNinja ..
+ninja
+```
+OR
+```
+cmake ..
+make -j8
+```
 ## Graph of the control logic
 ![plot](./graphs/scheme1.jpg)
