@@ -8,7 +8,7 @@ def get_num(line, startidx, sep1, sep2):
     return line[startidx + idx1 + 1:startidx + idx1 + 1 + idx2]
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-build_dir = os.path.abspath(os.path.join(current_dir, 'build'))
+build_dir = os.path.abspath(os.path.join(current_dir, '../build'))
 
 DIFF_FILT = []
 DIFF_UNFILT = []

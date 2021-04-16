@@ -1,4 +1,3 @@
 /home/nicola/pama_marker/build/CMakeFiles/rebuild_cache.dir
-/home/nicola/pama_marker/build/CMakeFiles/edit_cache.dir
-/home/nicola/pama_marker/build/CMakeFiles/calibrate_camera.dir
 /home/nicola/pama_marker/build/CMakeFiles/ar_stable.dir
+/home/nicola/pama_marker/build/CMakeFiles/edit_cache.dir

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project( PamaAR )
+project(PamaAR)
 set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
@@ -7,15 +7,21 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 CMAKE_POLICY(SET CMP0072 NEW)
 
-set( "OpenCV_DIR" "/home/nicola/Packages/opencv/build/" )
-set( "EIGEN3_INCLUDE_DIR" "/home/nicola/pama_marker/eigen")
-set( "CMAKE_MODULE_PATH" "/home/nicola/pama_marker/eigen/cmake")
-find_package( OpenCV REQUIRED )
-find_package( OpenGL REQUIRED )
-find_package( GLUT REQUIRED )
-find_package( Eigen3 REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
-add_executable( calibrate_camera calibrate_camera.cpp)
-add_executable( ar_stable ar_stable.cpp) 
-target_link_libraries( calibrate_camera ${OpenCV_LIBS} ${OPENGL_LIBS} ${GLUT_LIBS})
-target_link_libraries( ar_stable ${OpenCV_LIBS} ${OPENGL_LIBS} ${GLUT_LIBS})
+set("OpenCV_DIR" "/home/nicola/Packages/opencv/build/")
+set("EIGEN3_INCLUDE_DIR" "/home/nicola/pama_marker/eigen")
+set("CMAKE_MODULE_PATH" "/home/nicola/pama_marker/eigen/cmake")
+
+find_package(OpenCV REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+
+file(GLOB ar_stab
+	"src/*.cpp"
+	"src/*.h"
+)
+
+add_executable(ar_stable ${ar_stab})
+target_link_libraries(ar_stable ${OpenCV_LIBS} ${OPENGL_LIBS} ${GLUT_LIBS})
