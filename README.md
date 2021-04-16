@@ -20,5 +20,9 @@ OR
 cmake ..
 make -j8
 ```
+## Example
+```
+./ar_stable -v="../videos/demo.mp4" -c=2160x3840.yml -l=0.54 -o=0.04 -d=11 -u=1
+```
 ## Graph of the control logic
 ![plot](./graphs/scheme1.jpg)
