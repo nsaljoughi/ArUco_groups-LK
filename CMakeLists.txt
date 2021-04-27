@@ -23,5 +23,7 @@ file(GLOB ar_stab
 	"src/*.h"
 )
 
+add_executable(create_board "utils/create_board.cpp")
 add_executable(ar_stable ${ar_stab})
 target_link_libraries(ar_stable ${OpenCV_LIBS} ${OPENGL_LIBS} ${GLUT_LIBS})
+target_link_libraries(create_board ${OpenCV_LIBS} ${OPENGL_LIBS} ${GLUT_LIBS})

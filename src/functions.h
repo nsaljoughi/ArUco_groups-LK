@@ -1,10 +1,18 @@
 #include </home/nicola/Packages/eigen/Eigen/SVD> 
 #include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/aruco.hpp> 
 #include <opencv2/highgui.hpp> 
 #include <opencv2/plot.hpp>
-#include <iostream> 
+#include <opencv2/video/tracking.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <iostream>
+#include <sstream>
 #include <fstream>
+#include <iterator>
+#include <algorithm>
 #include <ctime>
 #include <cmath> 
 #include <math.h> 
@@ -766,5 +774,149 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
     return avg_points;
 } 
 
+void drawToImg(Mat img, vector<vector<Point2d>>& boxes, vector<bool>& init_id, int scene) {
+	if (init_id[0] || init_id[4] || init_id[8]) {
+		if (scene==3) {
+			DrawBox2D(img, boxes[0], 60, 20, 220);
+			DrawBox2D(img, boxes[1], 60, 20, 220);
+			DrawBox2D(img, boxes[2], 60, 20, 220);
+			DrawBox2D(img, boxes[3], 60, 20, 220);
+			DrawBox2D(img, boxes[4], 60, 20, 220);
+			DrawBox2D(img, boxes[5], 60, 20, 220);
+			DrawBox2D(img, boxes[6], 60, 20, 220);
+			DrawBox2D(img, boxes[7], 60, 20, 220);
+		}
+		else if (scene==1) {
+			DrawBox2D(img, boxes[0], 60, 20, 220);
+			DrawBox2D(img, boxes[1], 60, 20, 220);
+			DrawBox2D(img, boxes[2], 60, 20, 220);
+		}
+		else if (scene==5) {
+			DrawBox2D(img, boxes[0], 60, 20, 220);
+		}
+		else {
+			cout << "No known scenario...maybe wrong scene?" << endl;
+		}
+	}
+}
+
+void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Point2d>>& boxes, vector<bool>& init_id, vector<Vec3d>& avg_points, vector<double>& weights, bool average, int scene) { 
+	vector<vector<Point2d>> boxes1, boxes2, boxes3, boxes4, boxes5, boxes6, boxes7, boxes8;
+
+	if(average==true) {
+            if (scene==3) {
+                boxes1.push_back(boxes[0]);
+                boxes2.push_back(boxes[1]);
+                boxes3.push_back(boxes[2]);
+                boxes4.push_back(boxes[3]);
+		boxes5.push_back(boxes[4]);
+		boxes6.push_back(boxes[5]);
+		boxes7.push_back(boxes[6]);
+		boxes8.push_back(boxes[7]);
+            }
+            else if (scene==1) {
+                boxes1.push_back(boxes[0]);
+                boxes2.push_back(boxes[1]);
+                boxes3.push_back(boxes[2]);
+            }
+            else if (scene==5) {
+                boxes1.push_back(boxes[0]);
+            }
+	    }
+	    else {
+		cout << "EMPTY!!!" << endl;
+	    }
+	    if (init_id[0] || init_id[4] || init_id[8]) {
+            	average = true;
+           	if (scene==3) {
+               		projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, boxes[1]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, boxes[2]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[3], camMatrix, distCoeffs, boxes[3]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[4], camMatrix, distCoeffs, boxes[4]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[5], camMatrix, distCoeffs, boxes[5]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[6], camMatrix, distCoeffs, boxes[6]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[7], camMatrix, distCoeffs, boxes[7]);
+            	}
+            	else if (scene==1) {
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, boxes[1]);
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, boxes[2]);
+           	 }
+            	else if (scene==5) {
+                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
+            	}
+	   }
+	   if(!boxes1.empty()) {
+           if (scene==3) {
+		   boxes1.push_back(boxes[0]);
+		   boxes2.push_back(boxes[1]);
+		   boxes3.push_back(boxes[2]);
+		   boxes4.push_back(boxes[3]); 
+		   boxes5.push_back(boxes[4]);
+		   boxes6.push_back(boxes[5]);
+		   boxes7.push_back(boxes[6]);
+		   boxes8.push_back(boxes[7]); 
+		   boxes[0] = avgBoxes(boxes1, weights);
+		   boxes[1] = avgBoxes(boxes2, weights);
+		   boxes[2] = avgBoxes(boxes3, weights);
+		   boxes[3] = avgBoxes(boxes4, weights); 
+		   boxes[4] = avgBoxes(boxes5, weights);
+		   boxes[5] = avgBoxes(boxes6, weights);
+		   boxes[6] = avgBoxes(boxes7, weights);
+		   boxes[7] = avgBoxes(boxes8, weights);
+            }
+            else if (scene==1) {
+		boxes1.push_back(boxes[0]);
+		boxes2.push_back(boxes[1]);
+		boxes3.push_back(boxes[2]); 
+		boxes[0] = avgBoxes(boxes1, weights);
+		boxes[1] = avgBoxes(boxes2, weights);
+		boxes[2] = avgBoxes(boxes3, weights);
+            }
+            else if (scene==5) {
+                boxes1.push_back(boxes[0]);
+                boxes[0] = avgBoxes(boxes1, weights);
+            }
+	    }	
+}
+
+/* Functions for monocular visual odometry */
+// Credits: Avi Singh 2015
+//
+
+void featureTracking(Mat img_1, Mat img_2, vector<Point2f>& points1, vector<Point2f>& points2, vector<uchar>& status)	{ 
+
+//this function automatically gets rid of points for which tracking fails
+
+  vector<float> err;					
+  Size winSize=Size(21,21);																								
+  TermCriteria termcrit=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01);
+
+  calcOpticalFlowPyrLK(img_1, img_2, points1, points2, status, err, winSize, 3, termcrit, 0, 0.001);
+
+  //getting rid of points for which the KLT tracking failed or those who have gone outside the frame
+  int indexCorrection = 0;
+  for(unsigned int i=0; i<status.size(); i++)
+     {  Point2f pt = points2.at(i- indexCorrection);
+     	if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0))	{
+     		  if((pt.x<0)||(pt.y<0))	{
+     		  	status.at(i) = 0;
+     		  }
+     		  points1.erase (points1.begin() + (i - indexCorrection));
+     		  points2.erase (points2.begin() + (i - indexCorrection));
+     		  indexCorrection++;
+     	}
+
+     }
+
+}
 
 
+void featureDetection(Mat img_1, vector<Point2f>& points1)	{   //uses FAST as of now, modify parameters as necessary
+  vector<KeyPoint> keypoints_1;
+  int fast_threshold = 20;
+  bool nonmaxSuppression = true;
+  FAST(img_1, keypoints_1, fast_threshold, nonmaxSuppression);
+  KeyPoint::convert(keypoints_1, points1, vector<int>());
+}

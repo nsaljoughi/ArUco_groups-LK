@@ -1,10 +1,6 @@
 #include "functions.h"
 
-using namespace std;
-using namespace cv;
-
-#define MAX_FRAME 450
-#define MIN_NUM_FEAT 1000
+using namespace std; using namespace cv;
 
 namespace { const char* about = "Basic marker detection";
             const char* keys  =
@@ -12,12 +8,15 @@ namespace { const char* about = "Basic marker detection";
 	     "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, " 
 	     "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
 	     "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16}" 
+	     "{v|       | Input from video file, if ommited, input comes from camera }"
+	     "{ci       | 0     | Camera id if input doesnt come from video (-v) }"
 	     "{c        |	| Camera intrinsic parameters. Needed for camera pose }"
 	     "{l        |	| Marker side lenght (in meters). Needed for correct scale in camera pose }"
 	     "{o        |       | Offset between markers (in meters)}"
 	     "{dp       |       | File of marker detector parameters }"
 	     "{r        | false	| show rejected	candidates too}"
 	     "{n        | false | Naive mode (no stabilization)}"
+	     "{s        |       | Save results}"
 	     "{u        |       | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
 }
 
@@ -40,6 +39,7 @@ int main(int argc, char *argv[]) {
     float markerLength = parser.get<float>("l");
     float markerOffset = parser.get<float>("o");
     bool naiveMode = parser.get<bool>("n");
+    bool saveResults = parser.has("s");
     int scene = parser.get<int>("u");
 
 
@@ -75,6 +75,35 @@ int main(int argc, char *argv[]) {
     detectorParams->cornerRefinementMinAccuracy=0.1;
 
 
+    // Load video 
+    String video;
+    VideoCapture inputVideo;
+
+    int waitTime;
+    if(parser.has("v")) {
+        video = parser.get<String>("v");
+    }
+    if(!parser.check()) {
+        parser.printErrors();
+        return 0;
+    }
+    if(!video.empty()) {
+        inputVideo.open(video);
+        waitTime = 1000 * 1.0 /inputVideo.get(CAP_PROP_FPS);
+        // waitTime = 0; // wait for user for next frame
+        cout << "Success: video loaded" << endl;
+    } 
+    else {
+        inputVideo.open(0);
+        waitTime = 1;
+        cout << "Fail: video not found" << endl;
+    }
+    if(!inputVideo.isOpened()) {
+        cout << "Video could not be opened..." << endl;
+        return -1;
+    }
+
+
     //Select dictionary for markers detection
     Ptr<aruco::Dictionary> dictionary =
         aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
@@ -91,8 +120,45 @@ int main(int argc, char *argv[]) {
         }
     }
     
+    // Get frame width and height
+    int frame_width = inputVideo.get(CAP_PROP_FRAME_WIDTH);
+    int frame_height = inputVideo.get(CAP_PROP_FRAME_HEIGHT);
+    cout << "Frame size: " << frame_width << "x" << frame_height << endl;
+    
+    // Save results to video
+    VideoWriter cap;
+    if (saveResults) {
+        cap.open("demo.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'),
+                inputVideo.get(CAP_PROP_FPS), Size(frame_width, frame_height));
+    }
 
-    // Generate box point cloud
+
+    // Save results to file
+    ofstream resultfile;
+
+    if (!naiveMode && saveResults) {
+        resultfile.open("results_filt.txt");
+        if (resultfile.is_open()) {
+            cout << "Filtered resulting transformations" << endl;
+        }
+        else {
+            cout << "Unable to open result file" << endl;
+        }
+    }
+    else if (naiveMode && saveResults) {
+        resultfile.open("results_unfilt.txt");
+        if (resultfile.is_open()) {
+           cout << "Unfiltered resulting transformations" << endl;
+        }
+        else {
+            cout << "Unable to open result file" << endl;
+        }
+    }
+
+
+    // Load arrow point cloud
+    Mat arrow_cloud = cvcloud_load();
+
     Mat box_cloud;
     if(scene==3) box_cloud = create_bbox(3.0, 2.0, 1.0);
     else if(scene==1 || scene==5) box_cloud = create_bbox(1.0,1.0,1.0);
@@ -101,10 +167,12 @@ int main(int argc, char *argv[]) {
     // Define variables
     double totalTime = 0;
     int totalIterations = 0;
+
     double abs_tick = (double)getTickCount();
     double delta_t = 0;
 
     vector<vector<Point2d>> boxes(8);
+    
 
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
@@ -124,6 +192,8 @@ int main(int argc, char *argv[]) {
     thr_noinit[0] = (sin(M_PI/12.0));
     thr_noinit[1] = (sin(M_PI/12.0));
     thr_noinit[2] = (sin(M_PI/12.0));
+
+    
     if(naiveMode) {
         thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
         thr_lost = std::numeric_limits<double>::max();
@@ -136,42 +206,20 @@ int main(int argc, char *argv[]) {
     vector<Vec3d> tMaster(4);
 
     std::vector<bool> init_id(16, false); // check if marker has been seen before
+    Vec3d a_avg, b_avg, c_avg, d_avg;
     
     bool average = false; //flag to decide whether to average or not
-    char filename[100];
-    char resultname[100];
-    
-    Mat prevImage, currImage, imageCopy;
-
-    // Features for visual odometry
-    vector<Point2f> prevFeatures, currFeatures;
 
 
     ////// ---KEY PART--- //////
-    for(int numFrame = 1; numFrame < MAX_FRAME; numFrame++) {
-	sprintf(filename, "/home/nicola/pama_marker/videos/frames/%06d.jpg", numFrame);
-	sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/%06d.jpg", numFrame);
+    while(inputVideo.grab()) {
 
         double tickk = (double)getTickCount();
-       
-	Mat currImage_c  = imread(filename);	
-	cvtColor(currImage_c, currImage, COLOR_BGR2GRAY); // we work with grayscale images
-	vector<uchar> status;
 
-	// Visula odometry: detect features and track
-	if(numFrame==1) {
-		featureDetection(currImage, currFeatures);
-	}
-	else {
-		cout << "# of features detected = " << prevFeatures.size() << endl;
-		featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
-		if (prevFeatures.size() < MIN_NUM_FEAT) {
-			cout << "Too many features remained...redetecting" << endl;
-			featureDetection(prevImage, prevFeatures);
-			featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
-		}
-	}
-
+        Mat image, imageGray, imageCopy;
+        inputVideo.retrieve(image);
+	cvtColor(image, imageGray, COLOR_BGR2GRAY); // we work with grayscale images
+    
         // We have 16 markers
         vector<Vec3d> rvecs_ord(16); // store markers' Euler rotation vectors
         vector<Vec3d> tvecs_ord(16); // store markers' translation vectors
@@ -189,7 +237,7 @@ int main(int argc, char *argv[]) {
         vector<Vec3d> rvecs, tvecs; 
 
         // detect markers and estimate pose
-        aruco::detectMarkers(currImage, dictionary, corners, ids, detectorParams, rejected);
+        aruco::detectMarkers(imageGray, dictionary, corners, ids, detectorParams, rejected);
 
         if(estimatePose && ids.size() > 0)
             aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs, tvecs);
@@ -205,7 +253,7 @@ int main(int argc, char *argv[]) {
         }
 
         // draw results
-        currImage_c.copyTo(imageCopy);
+        image.copyTo(imageCopy);
 
         // reorder rvecs and tvecs into rvecs_ord and tvecs_ord
         for(unsigned int i=0; i<rvecs.size(); i++) {
@@ -346,6 +394,8 @@ int main(int argc, char *argv[]) {
         if(showRejected && rejected.size() > 0)
             aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
 
+        if (saveResults) cap.write(imageCopy);
+
         Mat imageResize;
 
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/4,imageCopy.rows/4));
@@ -363,16 +413,23 @@ int main(int argc, char *argv[]) {
         cout << t_lost[1] << endl;
         cout << t_lost[2] << endl;
         cout << t_lost[3] << endl;
+
+	Mat rMat1 = Mat::zeros(3, 3, CV_64F);
+	Rodrigues(rMaster[1], rMat1);
+
+	resultfile << rMat1.at<double>(0,0) << " " << rMat1.at<double>(0,1) << " " << rMat1.at<double>(0,2) << " " << tMaster[1][0] << " " << rMat1.at<double>(1,0) << " " << rMat1.at<double>(1,1) << " " << rMat1.at<double>(1,2) << " " << tMaster[1][1] << " "  << rMat1.at<double>(2,0) << " " << rMat1.at<double>(2,1) << " " << rMat1.at<double>(2,2) << " " << tMaster[1][2] << endl;
+
         cout << "///////////////////////////////////" << endl;
 
-	imwrite(resultname, imageCopy);
 
-	prevImage = currImage.clone();
-	prevFeatures = currFeatures;
-
-        char key = (char)waitKey(1); 
+        char key = (char)waitKey(waitTime); 
         if(key == 27) break;
     }
+    
+    inputVideo.release();
+    if (saveResults) cap.release();
+    
+    resultfile.close();
 
     return 0;
 }
