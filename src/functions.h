@@ -970,6 +970,22 @@ void createHomoTransform(Mat& T, Mat R, Mat t) {
     T.at<double>(2,3) = t.at<double>(2);
 }
 
+void createHomoTransformVec(Mat& T, Vec3d rvec, Vec3d tvec) {
+    Mat rotationMat = Mat::zeros(3, 3, CV_64F); 
+    Rodrigues(rvec, rotationMat);
+    T.at<double>(0,0) = rotationMat.at<double>(0,0);
+    T.at<double>(0,1) = rotationMat.at<double>(0,1);
+    T.at<double>(0,2) = rotationMat.at<double>(0,2);
+    T.at<double>(1,0) = rotationMat.at<double>(1,0);
+    T.at<double>(1,1) = rotationMat.at<double>(1,1);
+    T.at<double>(1,2) = rotationMat.at<double>(1,2);
+    T.at<double>(2,0) = rotationMat.at<double>(2,0);
+    T.at<double>(2,1) = rotationMat.at<double>(2,1);
+    T.at<double>(2,2) = rotationMat.at<double>(2,2);
+    T.at<double>(0,3) = tvec[0];
+    T.at<double>(1,3) = tvec[1];
+    T.at<double>(2,3) = tvec[2];
+}
 
 
 // Brute-force-style homogeneous transformation invertion

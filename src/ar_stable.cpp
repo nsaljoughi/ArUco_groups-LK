@@ -238,31 +238,6 @@ int main(int argc, char *argv[]) {
                 }
 
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)], thr_init)) {
-                    /*
-                    Mat rotationMat = Mat::zeros(3, 3, CV_64F);
-                    Rodrigues(rvecs_ord[i], rotationMat); //convert rodrigues angles into rotation matrix
-                    cout << "Marker is wrong! " << endl;
-                    cout <<  "Rvec matrix: " << endl;
-                    cout << "[" ;
-                    for(int i = 0; i<3; i++) {
-                        for(int j=0; j<3; j++) {
-                            cout << rotationMat.at<double>(i,j) << " ";
-                        }
-                        cout << endl;
-                    }
-                    cout << "]" << endl;
-                    cout << "rMaster matrix: " << endl; 
-                    Mat rotationMatM = Mat::zeros(3, 3, CV_64F);
-                    Rodrigues(rMaster[ceil(i/4)], rotationMatM); //convert rodrigues angles into rotation matrix
-                    cout << "[" ;
-                    for(int i = 0; i<3; i++) {
-                        for(int j=0; j<3; j++) {
-                            cout << rotationMatM.at<double>(i,j) << " ";
-                        }
-                        cout << endl;
-                    }
-                    cout << "]" << endl;
-                    */
                     detect_id[i] = false;
                     continue;
                 }
@@ -270,7 +245,16 @@ int main(int argc, char *argv[]) {
                 aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
-
+/*
+            // If at least one of the markers' group has been initialized, 
+            // start computing visual odometry
+            if(init_id[0]||init_id[4]||init_id[8]) {
+                cout << "Computing the essential matrix E (for now up to a scale...)" << endl; //TODO
+                E = findEssentialMat(currFeatures, prevFeatures, camMatrix, RANSAC, 0.999, 1.0, mask);
+                recoverPose(E, currFeatures, prevFeatures, camMatrix, R, t, mask);
+                H = findHomography(prevFeatures, currFeatures, RANSAC);
+            }
+*/
             // Loop over groups
             for(unsigned int i=0; i<4; i++) {
                 if(!init_id[i*4]) { // if group needs init
@@ -310,28 +294,6 @@ int main(int argc, char *argv[]) {
                 } // if already init
                 else {
                     cout << "GROUP " << i << " is already initialized." << endl;
-                    
-                    cout << "tMaster: " << endl;
-                    cout << tMaster[i][0] << "\n"
-                        << tMaster[i][1] << "\n"
-                        << tMaster[i][2] << endl;
-                    cout << "Last scale acquired = " << scale << endl;
-
-                    cout << "Computing the essential matrix E (for now up to a scale...)" << endl; //TODO
-                    E = findEssentialMat(currFeatures, prevFeatures, camMatrix, RANSAC, 0.999, 1.0, mask);
-                    recoverPose(E, currFeatures, prevFeatures, camMatrix, R, t, mask);
-                    Mat T_homo = Mat::eye(4, 4, CV_64F);
-                    createHomoTransform(T_homo, R, t);
-                    invertHomoTransform(T_homo);
-
-                    H = findHomography(prevFeatures, currFeatures, RANSAC);
-
-                    perspectiveTransform(group_corners, group_corners, H);
-
-                    line(imageCopy, group_corners[0], group_corners[1], Scalar(255, 0, 0), 4);
-                    line(imageCopy, group_corners[1], group_corners[2], Scalar(255, 0, 0), 4);
-                    line(imageCopy, group_corners[2], group_corners[3], Scalar(255, 0, 0), 4);
-                    line(imageCopy, group_corners[3], group_corners[0], Scalar(255, 0, 0), 4);
 
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
                         t_lost[i] += delta_t;
@@ -340,9 +302,6 @@ int main(int argc, char *argv[]) {
                             t_lost[i] = 0;
                             average=false;    
                         }
-                        //else{
-                        //    combineTransVO(rMaster[i], tMaster[i], T_homo, scale);
-                        //}
                     }
                     else{
                         //rMaster[i] = avgRot(computeAvgRot(rvecs_ord, detect_id, i), rMaster[i], alpha_rot, (1 - alpha_rot));
@@ -374,34 +333,66 @@ int main(int argc, char *argv[]) {
                     featureDetection(prevImage, prevFeatures);
                     featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
                 }
+                // If at least one of the markers' group has been initialized, 
+                // start computing visual odometry
+                if(init_id[0]||init_id[4]||init_id[8]) {
+                    cout << "Computing the essential matrix E (for now up to a scale...)" << endl; //TODO
+                    E = findEssentialMat(currFeatures, prevFeatures, camMatrix, RANSAC, 0.999, 1.0, mask);
+                    recoverPose(E, currFeatures, prevFeatures, camMatrix, R, t, mask);
+                    H = findHomography(prevFeatures, currFeatures, RANSAC);
+                }
             }
             for(unsigned int i=0; i<4; i++) {
                 if(init_id[i*4]) {
                     t_lost[i] += delta_t;
+                    vector<Point2f> group_corners_new(4);
+                    vector<Point2f> corners0_undist(4);
+                    vector<Point2f> corners1_undist(4); 
+                    perspectiveTransform(group_corners, group_corners_new, H);
 
-                    cout << "Computing the essential matrix E (for now up to a scale...)" << endl; //TODO
-                    E = findEssentialMat(currFeatures, prevFeatures, camMatrix, RANSAC, 0.999, 1.0, mask);
-                    recoverPose(E, currFeatures, prevFeatures, camMatrix, R, t, mask);
-                    Mat T_homo = Mat::eye(4, 4, CV_64F);
-                    createHomoTransform(T_homo, R, t);
-                    invertHomoTransform(T_homo);
+                    // In OpenCV, no homogeneous coordinates but directly [R|t], hence 3*4
+                    Mat cam0 = Mat::eye(3, 4, CV_64F);
+                    Mat cam1 = Mat::eye(3, 4, CV_64F);
+                    createHomoTransformVec(cam0, rMaster[i], tMaster[i]);
+                    createHomoTransform(cam1, R, t);
+                    Mat group_corners_3d(4, group_corners.size(), CV_64F);
 
-                    H = findHomography(prevFeatures, currFeatures, RANSAC);
+                    // We need to undistort points to triangulate
+                    undistortPoints(group_corners, corners0_undist, camMatrix, distCoeffs);
+                    undistortPoints(group_corners_new, corners1_undist, camMatrix, distCoeffs);
 
-                    perspectiveTransform(group_corners, group_corners, H);
+                    triangulatePoints(cam0, cam1, corners0_undist, corners1_undist, group_corners_3d);
+                    for(size_t i=0; i < 4; i++) {
+                        cout << "[" << endl;
+                        cout << group_corners[i].x << ", " << group_corners[i].y  << endl;
+                        cout << "]" << endl;
+                    }
+                    for(size_t i=0; i < 4; i++) {
+                        cout << "[" << endl;
+                        cout << group_corners_new[i].x << ", " << group_corners_new[i].y << endl;
+                        cout << "]" << endl;
+                    }
+                    // Get euclidean coordinates <x, y, z, w> -> <x/w, y/w, z/w, w/w> 
+                    for(size_t i=0; i < group_corners_3d.rows; i++) {
+                        cout << "[" << endl;
+                        for(size_t j=0; j<group_corners_3d.cols; j++) {
+                            group_corners_3d.at<float>(i,j) /= group_corners_3d.at<float>(i,3); 
+                            cout << group_corners_3d.at<float>(i,j) << endl;
+                        }
+                        cout << "]" << endl;
+                    }
+
+                    group_corners = group_corners_new;
                     line(imageCopy, group_corners[0], group_corners[1], Scalar(255, 0, 0), 4);
                     line(imageCopy, group_corners[1], group_corners[2], Scalar(255, 0, 0), 4);
                     line(imageCopy, group_corners[2], group_corners[3], Scalar(255, 0, 0), 4);
-                    line(imageCopy, group_corners[3], group_corners[0], Scalar(255, 0, 0), 4);
+                    line(imageCopy, group_corners[3], group_corners[0], Scalar(255, 0, 0), 4);                     
 
                     if(t_lost[i] >= thr_lost) {
                         init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                         t_lost[i] = 0;
                         average=false;
                     }
-                    //else{
-                    //    combineTransVO(rMaster[i], tMaster[i], T_homo, scale);
-                    //}
                 }
             }	      
             drawToImg(imageCopy, boxes, init_id, scene); 
