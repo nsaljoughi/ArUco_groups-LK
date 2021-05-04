@@ -30,6 +30,7 @@ static bool readCameraParameters(string filename, Mat &camMatrix, Mat &distCoeff
 }
 
 
+
 static bool readDetectorParameters(string filename, Ptr<aruco::DetectorParameters> &params) {
        	FileStorage fs(filename, FileStorage::READ); 
 	if(!fs.isOpened()) return false;
@@ -57,6 +58,7 @@ static bool readDetectorParameters(string filename, Ptr<aruco::DetectorParameter
 }
 
 
+// Load a point cloud
 static Mat cvcloud_load() { 
 	Mat cloud(1, 7708, CV_64FC3); 
 	ifstream ifs("arrow.ply");
@@ -70,17 +72,18 @@ static Mat cvcloud_load() {
 }
 
 
+// Create a 3D box point cloud with specified proportions
 Mat create_bbox(double x_scale, double y_scale, double z_scale) { 
 	Mat cloud(1, 4, CV_64FC3); 
 	Point3d* bbox = cloud.ptr<cv::Point3d>();
 	
 	bbox[0].x = - 1.0 * (x_scale / 2.0);
-       	bbox[0].y = - 1.0 * (y_scale / 2.0);
+    bbox[0].y = - 1.0 * (y_scale / 2.0);
 	bbox[0].z = z_scale / 2.0; 
 	bbox[1].x = x_scale / 2.0;
-       	bbox[1].y = - 1.0 *(y_scale / 2.0); 
+    bbox[1].y = - 1.0 *(y_scale / 2.0); 
 	bbox[1].z = z_scale / 2.0;
-       	bbox[2].x = x_scale / 2.0; 
+    bbox[2].x = x_scale / 2.0; 
 	bbox[2].y = y_scale / 2.0; 
 	bbox[2].z = z_scale / 2.0;
 	bbox[3].x = - 1.0 * (x_scale / 2.0); 
@@ -91,21 +94,27 @@ Mat create_bbox(double x_scale, double y_scale, double z_scale) {
 }
 
 
+/////// MATH UTILS ////////
+///////////////////////////
+
+
 // Get angle from Rodrigues vector
 double getAngle(Vec3d rvec) { 
 	double theta = sqrt( rvec[0]*rvec[0] + rvec[1]*rvec[1] + rvec[2]*rvec[2] );
     return theta; 
 }
 
+
+// Switch from Rodrigues to euler angles
 Vec3d rodrigues2euler(Vec3d rvec, bool degrees=false) {
-       	Vec3d rvec_euler;
+    Vec3d rvec_euler;
 	double angle;
-       	double x, y, z;
+    double x, y, z;
 
 	angle = getAngle(rvec);
-       	x = rvec[0] / angle;
-       	y = rvec[1] / angle;
-       	z = rvec[2] / angle; 
+    x = rvec[0] / angle;
+    y = rvec[1] / angle;
+    z = rvec[2] / angle; 
 	
 	double s=sin(angle); 
 	double c=cos(angle); 
@@ -115,17 +124,17 @@ Vec3d rodrigues2euler(Vec3d rvec, bool degrees=false) {
 	if ((x*y*t + z*s) > 0.998) { // north pole singularity detected 
 		heading = 2*atan2(x*sin(angle/2), cos(angle/2)); 
 		attitude = M_PI/2;
-	       	bank = 0;
+        bank = 0;
 		rvec_euler[0] = heading;
-	       	rvec_euler[1] = attitude; 
+        rvec_euler[1] = attitude; 
 		rvec_euler[2] = bank;
 		
 		if(degrees) rvec_euler*=(180.0/M_PI);
 		return rvec_euler; 
 	}
-       	if ((x*y*t + z*s) < -0.998) { // south pole singularity detected 
+    if ((x*y*t + z*s) < -0.998) { // south pole singularity detected 
 		heading = -2*atan2(x*sin(angle/2), cos(angle/2));
-	       	attitude = -M_PI/2; 
+        attitude = -M_PI/2; 
 		bank = 0;
 		rvec_euler[0] = heading; 
 		rvec_euler[1] = attitude;
@@ -136,13 +145,13 @@ Vec3d rodrigues2euler(Vec3d rvec, bool degrees=false) {
 	} 
 	heading = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t); 
 	attitude = asin(x * y * t + z * s) ;
-       	bank = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
-    	rvec_euler[0] = heading;
-       	rvec_euler[1] = attitude; 
+    bank = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
+    rvec_euler[0] = heading;
+    rvec_euler[1] = attitude; 
 	rvec_euler[2] = bank;
 	
 	if(degrees) rvec_euler*=(180.0/M_PI);
-    	return rvec_euler;
+    return rvec_euler;
 }
 
 
@@ -168,6 +177,7 @@ Eigen::Vector4f vec2quat_eigen(Vec3d vec) {
 }
 
 
+
 // Transform quaternion into a Rodrigues rotation vector
 Vec3d quat2vec(Vec4d quat) { 
 	Vec3d v;
@@ -187,6 +197,7 @@ Vec3d quat_eigen2vec(Eigen::Vector4f quat) {
 	return v;
 }
 
+
 /// Compute average of two quaternions using eq. (18) of
 //https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20070017872.pdf, that
 //provides a closed-form solution for averaging two quaternions
@@ -198,6 +209,7 @@ Vec4d avgQuat(Vec4d q1, Vec4d q2, double w1 = 1, double w2 = 1) {
        	q3 = q3 / norm; 
 	return q3; 
 }
+
 
 
 // Method to find the average of a set of rotation quaternions using Singular
@@ -253,29 +265,29 @@ Eigen::Vector4f quaternionAverage(std::vector<Eigen::Vector4f> quaternions) {
 // Transform a relative translation into absolute (useful for augmented reality
 // when we have offset wrt marker frame)
 Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
-       	Mat rotationMat = Mat::zeros(3, 3, CV_64F);
-       	Mat transformMat = Mat::eye(4, 4, CV_64F);
+    Mat rotationMat = Mat::zeros(3, 3, CV_64F);
+    Mat transformMat = Mat::eye(4, 4, CV_64F);
 	Rodrigues(rotvec, rotationMat); //convert rodrigues angles into	rotation matrix
 	
 	//build transformation matrix
-    	for (int i=0; i<3; i++) { 
+    for (int i=0; i<3; i++) { 
 		transformMat.at<double>(i,3) = tvec[i];
-	       	for (int j=0; j<3; j++) { 
-			transformMat.at<double>(i,j) = rotationMat.at<double>(i,j);
-	       	}
-       	}
+        for (int j=0; j<3; j++) { 
+            transformMat.at<double>(i,j) = rotationMat.at<double>(i,j);
+        }
+    }
     
 	Vec4d vechomo; //vec in homogeneous coordinates, i.e. <x,y,z,1>
-       	vechomo[0] = vec[0];
-       	vechomo[1] = vec[1]; 
+    vechomo[0] = vec[0];
+    vechomo[1] = vec[1]; 
 	vechomo[2] = vec[2];
-       	vechomo[3] = 1.0;
+    vechomo[3] = 1.0;
     
 	Vec3d vectrans; //output, vector transformed
-       	Mat vectransMat = transformMat*Mat(vechomo);
-       	vectrans[0] = vectransMat.at<double>(0);
-       	vectrans[1] = vectransMat.at<double>(1);
-       	vectrans[2] = vectransMat.at<double>(2);
+    Mat vectransMat = transformMat*Mat(vechomo);
+    vectrans[0] = vectransMat.at<double>(0);
+    vectrans[1] = vectransMat.at<double>(1);
+    vectrans[2] = vectransMat.at<double>(2);
     
 	return vectrans;
 }
@@ -284,35 +296,34 @@ Vec3d transformVec(Vec3d vec, Vec3d rotvec, Vec3d tvec) {
 // Transform a relative point into absolute
 Point3d transformPoint(Point3d vec, Vec3d rotvec, Vec3d tvec) { 
 	Mat rotationMat	= Mat::zeros(3, 3, CV_64F);
-       	Mat transformMat = Mat::eye(4, 4, CV_64F);
+    Mat transformMat = Mat::eye(4, 4, CV_64F);
 	Rodrigues(rotvec, rotationMat); //convert rodrigues angles into rotation matrix
     
 	//build transformation matrix
 	for (int i=0; i<3; i++) { 
 		transformMat.at<double>(i,3) = tvec[i];
-	       	for (int j=0; j<3; j++) {
-		       	transformMat.at<double>(i,j) = rotationMat.at<double>(i,j);
-	       	}
-       	}
+        for (int j=0; j<3; j++) {
+            transformMat.at<double>(i,j) = rotationMat.at<double>(i,j);
+        }
+    }
     
 	Vec4d vechomo; //vec in homogeneous coordinates, i.e. <x,y,z,1> 
 	vechomo[0] = vec.x;
-       	vechomo[1] = vec.y;
-       	vechomo[2] = vec.z;
-       	vechomo[3] = 1.0;
+    vechomo[1] = vec.y;
+    vechomo[2] = vec.z;
+    vechomo[3] = 1.0;
     
 	Point3d vectrans; //output, vector transformed 
 	Mat vectransMat = transformMat*Mat(vechomo);
-       	vectrans.x = vectransMat.at<double>(0);
-       	vectrans.y = vectransMat.at<double>(1);
-       	vectrans.z = vectransMat.at<double>(2);
+    vectrans.x = vectransMat.at<double>(0);
+    vectrans.y = vectransMat.at<double>(1);
+    vectrans.z = vectransMat.at<double>(2);
     	
 	return vectrans;
 }
 
 
 // Avg two poses with weights associated
-
 Vec3d avgRot(Vec3d rvec1, Vec3d rvec2, double weight1, double weight2) { 
 	Vec4d quat1 = vec2quat(rvec1);
        	Vec4d quat2 = vec2quat(rvec2);
@@ -341,6 +352,9 @@ bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
        	}
        	return true; 
 }
+/////////////////////
+/////////////////////
+
 
 
 // Compute combination pose at center of marker group
@@ -359,6 +373,10 @@ Vec3d computeAvgRot(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, i
 	return rvec_avg;
 }
 
+
+
+// Compute the aggregate translation of the markers' group
+// TODO: very specific to our case
 Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, 
 		int group, float markerLength, float markerOffset) {
        	std::vector<Vec3d> tvecs_centered;
@@ -444,36 +462,34 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 
 
 // Check if num markers' poses are consistent
-std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord,
-		std::vector<bool> detect_id, unsigned int num, int group,
-		std::vector<double> thr) {
-       	cout << "Checking markers' consistency for GROUP " << group << endl;
-       	std::vector<bool> checkVec = detect_id;
-       	std::vector<Vec3d> rvecs; 
-	unsigned int items=0;
+std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, unsigned int num, int group, std::vector<double> thr) {
+    cout << "Checking markers' consistency for GROUP " << group << endl;
+    std::vector<bool> checkVec = detect_id;
+    std::vector<Vec3d> rvecs; 
+    unsigned int items=0;
 
-    	for(int i=0; i<4; i++) {
-		rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i])); 
-		Mat rotationMat = Mat::zeros(3, 3, CV_64F);  
-		Rodrigues(rvecs_ord[group*4+i], rotationMat); //convert rodrigues angles into rotation matrix
-	       	cout << "[" ; 
+    for(int i=0; i<4; i++) {
+        rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
+        /*Mat rotationMat = Mat::zeros(3, 3, CV_64F);  
+        Rodrigues(rvecs_ord[group*4+i], rotationMat); //convert rodrigues angles into rotation matrix
+        cout << "[" ; 
 		for(int i = 0; i<3; i++) { 
-			for(int j=0; j<3; j++) { 
+        for(int j=0; j<3; j++) { 
 				cout << rotationMat.at<double>(i,j) << " ";
-		       	}
+                }
 		       	cout << endl;
 	       	}
 	       	cout << "]" << endl;
-		
+		*/
 		if(detect_id[group*4+i]) {
-		       	items += 1;
-	       	}
-       	}
+            items += 1;
+        }
+    }
     
 	if(items < num) { 
 		for(int i=0; i<4; i++) {
-		       	checkVec[group*4+i] = false;
-	       	}
+            checkVec[group*4+i] = false;
+        }
 
 		return checkVec; 
 	}
@@ -544,132 +560,137 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord,
 
 // Given a vector of 2d points, draw a semi-transparent box
 void DrawBox2D(Mat imageCopy, vector<Point2d> box1, int b_ch, int r_ch, int g_ch) {
-	line(imageCopy, box1[0], box1[1], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
-    	line(imageCopy, box1[1], box1[2], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[0], box1[1], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
+    line(imageCopy, box1[1], box1[2], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
 	line(imageCopy, box1[2], box1[3], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
 	line(imageCopy, box1[3], box1[0], Scalar(b_ch,r_ch,g_ch), 2, LINE_8);
      
 	Point face1[1][4];
-    	face1[0][0] = Point(box1[0].x, box1[0].y); face1[0][1] = Point(box1[1].x, box1[1].y);
-       	face1[0][2] = Point(box1[2].x, box1[2].y);
+    face1[0][0] = Point(box1[0].x, box1[0].y); face1[0][1] = Point(box1[1].x, box1[1].y);
+    face1[0][2] = Point(box1[2].x, box1[2].y);
 	face1[0][3] = Point(box1[3].x, box1[3].y);
       
 	const Point* boxppt1[1] = {face1[0]};
-      	int npt[] = {4}; double alpha = 0.3;
+    int npt[] = {4}; double alpha = 0.3;
       
 	Mat overlay1;
        
 	imageCopy.copyTo(overlay1);
-       	fillPoly(overlay1, boxppt1, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
-       	addWeighted(overlay1, alpha, imageCopy, 1-alpha, 0, imageCopy);
+    fillPoly(overlay1, boxppt1, npt, 1, Scalar(b_ch,r_ch,g_ch), LINE_8);
+    addWeighted(overlay1, alpha, imageCopy, 1-alpha, 0, imageCopy);
 }
 
+
+
 // Function to average boxes
+// TODO: very specific to our case
 vector<Point2d> avgBoxes(vector<vector<Point2d>> boxes, vector<double> weights) {
-       	vector<Point2d> avg_box(8); 
+    vector<Point2d> avg_box(8); 
 	avg_box[0].x = 0.0;
-       	avg_box[0].y = 0.0;
+    avg_box[0].y = 0.0;
 	avg_box[1].x = 0.0;
-       	avg_box[1].y = 0.0; 
+    avg_box[1].y = 0.0; 
 	avg_box[2].x = 0.0;
 	avg_box[2].y = 0.0; 
 	avg_box[3].x = 0.0;
-       	avg_box[3].y = 0.0;
+    avg_box[3].y = 0.0;
     
 	for(unsigned int i=0; i<boxes.size(); i++) { 
-		avg_box[0].x += boxes[i][0].x * weights[i]; 
+        avg_box[0].x += boxes[i][0].x * weights[i]; 
 		avg_box[0].y += boxes[i][0].y * weights[i];
-    		avg_box[1].x += boxes[i][1].x * weights[i]; 
+        avg_box[1].x += boxes[i][1].x * weights[i]; 
 		avg_box[1].y += boxes[i][1].y * weights[i];
-	       	avg_box[2].x += boxes[i][2].x * weights[i];
-	       	avg_box[2].y += boxes[i][2].y * weights[i];
-    		avg_box[3].x += boxes[i][3].x * weights[i]; 
+        avg_box[2].x += boxes[i][2].x * weights[i];
+        avg_box[2].y += boxes[i][2].y * weights[i];
+        avg_box[3].x += boxes[i][3].x * weights[i]; 
 		avg_box[3].y +=	boxes[i][3].y * weights[i];
-       	} 
+    } 
 	for(int i=0; i<8; i++) {
-	       	cout << avg_box[i].x << ", " << avg_box[i].y << endl;
-       	}
+        cout << avg_box[i].x << ", " << avg_box[i].y << endl;
+    }
     
 	return avg_box;
 }
 
+
+
 // Function that returns the coordinates of boxes in the scene
+// TODO: very specific to our case
+// TODO: unit is not in meters...!!
 std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d> tMaster, std::vector<bool> init_id, int scene) {
-       	std::vector<Vec3d> avg_points;
-       	Vec3d a0, b0, c0, d0, a1, b1, c1, d1, a3, b3, c3, d3, a_avg, b_avg, c_avg, d_avg;
+    std::vector<Vec3d> avg_points;
+    Vec3d a0, b0, c0, d0, a1, b1, c1, d1, a3, b3, c3, d3, a_avg, b_avg, c_avg, d_avg;
 	Vec3d e0, f0, g0, h0, e1, f1, g1, h1, e3, f3, g3, h3, e_avg, f_avg, g_avg, h_avg;
 	std::vector<Vec3d> a_sum, b_sum, c_sum, d_sum, e_sum, f_sum, g_sum, h_sum;
-
-    	if(scene == 3) { 
-	a0[0] = -1.5 - 0.1; 
-	a0[1] = -(-0.5 + 10.7); 
-	a0[2] = -3;
-	b0[0] = -1.5 - 0.1;
+    
+    if(scene == 3) { 
+        a0[0] = -1.5 - 0.1; 
+        a0[1] = -(-0.5 + 10.7); 
+        a0[2] = -3;
+        b0[0] = -1.5 - 0.1;
        	b0[1] = -(-0.5 + 10.7);
        	b0[2] = -43; 
-	c0[0] = -1.5 - 0.1;
+        c0[0] = -1.5 - 0.1;
        	c0[1] = -(-20 - 0.5 + 10.7); 
-	c0[2] = -23;
+        c0[2] = -23;
        	d0[0] = -1.5 - 0.1;
        	d0[1] = -(20 - 0.5 + 10.7); 
-	d0[2] = -23;
+        d0[2] = -23;
        	e0[0] = -1.5 - 0.1;
-	e0[1] = -(-10.5 - 0.5 + 10.7);
-	e0[2] = -3 - 3;
-	f0[0] = 1.5 - 0.1;
-	f0[1] = -(-10.5 - 0.5 + 10.7); 
-	f0[2] = -3 - 3 - 2*17.0;
-	g0[0] = 1.5 - 0.1;
-	g0[1] = -(10.5 - 0.5 + 10.7);
-	g0[2] = -3 - 3 - 2*17.0;
-	h0[0] = -1.5 - 0.1;
-	h0[1] = -(10.5 - 0.5 + 10.7);
-	h0[2] = -3 - 3;
-	a1[0] = -0.5;
-	a1[1] = -1.5;
-	a1[2] = -3;
-	b1[0] = -0.5;
-	b1[1] = -1.5;
-	b1[2] = -43;
-	c1[0] = -20 - 0.5;
-	c1[1] = -1.5;
-	c1[2] = -23;
-	d1[0] = 20 - 0.5;
-	d1[1] = -1.5;
-	d1[2] = -23;
-	e1[0] = -10.5 - 0.5;
-	e1[1] = -1.5;
-	e1[2] = -3 - 3;
-	f1[0] = -10.5 - 0.5;
-	f1[1] = -1.5;
-	f1[2] = -3 - 3 - 2*17.0;
-	g1[0] = 10.5 - 0.5;
-	g1[1] = -1.5;
-	g1[2] = -3 - 3 - 2*17.0;
-	h1[0] = 10.5 - 0.5;
-	h1[1] = -1.5;
-	h1[2] = -3 - 3;
-
-            
-	a0 = transformVec(a0, rMaster[0], tMaster[0]);
-	b0 = transformVec(b0, rMaster[0], tMaster[0]);
-	c0 = transformVec(c0, rMaster[0], tMaster[0]);
-	d0 = transformVec(d0, rMaster[0], tMaster[0]);
-	e0 = transformVec(e0, rMaster[0], tMaster[0]);
-	f0 = transformVec(f0, rMaster[0], tMaster[0]);
-	g0 = transformVec(g0, rMaster[0], tMaster[0]);
-	h0 = transformVec(h0, rMaster[0], tMaster[0]);   
-	a1 = transformVec(a1, rMaster[1], tMaster[1]);
-	b1 = transformVec(b1, rMaster[1], tMaster[1]);
-	c1 = transformVec(c1, rMaster[1], tMaster[1]);
-	d1 = transformVec(d1, rMaster[1], tMaster[1]);  
-	e1 = transformVec(e1, rMaster[1], tMaster[1]);
-	f1 = transformVec(f1, rMaster[1], tMaster[1]);
-	g1 = transformVec(g1, rMaster[1], tMaster[1]);
-	h1 = transformVec(h1, rMaster[1], tMaster[1]);
-
-
-	if(init_id[0]) {
+        e0[1] = -(-10.5 - 0.5 + 10.7);
+        e0[2] = -3 - 3;
+        f0[0] = 1.5 - 0.1;
+        f0[1] = -(-10.5 - 0.5 + 10.7); 
+        f0[2] = -3 - 3 - 2*17.0;	
+        g0[0] = 1.5 - 0.1;
+        g0[1] = -(10.5 - 0.5 + 10.7);
+        g0[2] = -3 - 3 - 2*17.0;
+        h0[0] = -1.5 - 0.1;
+        h0[1] = -(10.5 - 0.5 + 10.7);
+        h0[2] = -3 - 3;
+        a1[0] = -0.5;
+        a1[1] = -1.5;
+        a1[2] = -3;
+        b1[0] = -0.5;
+        b1[1] = -1.5;
+        b1[2] = -43;
+        c1[0] = -20 - 0.5;
+        c1[1] = -1.5;
+        c1[2] = -23;
+        d1[0] = 20 - 0.5;
+        d1[1] = -1.5;
+        d1[2] = -23;
+        e1[0] = -10.5 - 0.5;
+        e1[1] = -1.5;
+        e1[2] = -3 - 3;
+        f1[0] = -10.5 - 0.5;
+        f1[1] = -1.5;
+        f1[2] = -3 - 3 - 2*17.0;
+        g1[0] = 10.5 - 0.5;
+        g1[1] = -1.5;
+        g1[2] = -3 - 3 - 2*17.0;
+        h1[0] = 10.5 - 0.5;
+        h1[1] = -1.5;
+        h1[2] = -3 - 3;
+    
+        a0 = transformVec(a0, rMaster[0], tMaster[0]);
+        b0 = transformVec(b0, rMaster[0], tMaster[0]);
+        c0 = transformVec(c0, rMaster[0], tMaster[0]);
+        d0 = transformVec(d0, rMaster[0], tMaster[0]);
+        e0 = transformVec(e0, rMaster[0], tMaster[0]);
+        f0 = transformVec(f0, rMaster[0], tMaster[0]);
+        g0 = transformVec(g0, rMaster[0], tMaster[0]);
+        h0 = transformVec(h0, rMaster[0], tMaster[0]);   
+        a1 = transformVec(a1, rMaster[1], tMaster[1]);
+        b1 = transformVec(b1, rMaster[1], tMaster[1]);
+        c1 = transformVec(c1, rMaster[1], tMaster[1]);
+        d1 = transformVec(d1, rMaster[1], tMaster[1]);  
+        e1 = transformVec(e1, rMaster[1], tMaster[1]);
+        f1 = transformVec(f1, rMaster[1], tMaster[1]);
+        g1 = transformVec(g1, rMaster[1], tMaster[1]);
+        h1 = transformVec(h1, rMaster[1], tMaster[1]);
+        
+        if(init_id[0]) {
             a_sum.push_back(a0);
             b_sum.push_back(b0);
             c_sum.push_back(c0);
@@ -699,7 +720,6 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
                 f_avg[i] = 0.0;
                 g_avg[i] = 0.0;
                 h_avg[i] = 0.0;
-
                 for (unsigned int j=0; j<a_sum.size(); j++) {
                     a_avg[i] += a_sum[j][i];
                     b_avg[i] += b_sum[j][i];
@@ -709,7 +729,6 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
                     f_avg[i] += f_sum[j][i];
                     g_avg[i] += g_sum[j][i];
                     h_avg[i] += h_sum[j][i];
-
                 }
                 a_avg[i] /= a_sum.size();
                 b_avg[i] /= b_sum.size();
@@ -719,7 +738,6 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
                 f_avg[i] /= f_sum.size();
                 g_avg[i] /= g_sum.size();
                 h_avg[i] /= h_sum.size();
-
             }
         }
         else {
@@ -737,18 +755,18 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
     }
     else if(scene==1) {
         a0[0] = 0.0;
-	a0[1] = 6.0;
-	a0[2] = -1;
-	b0[0] = 5.0;
-	b0[1] = 6.0;
-	b0[2] = -1;
-	c0[0] = -5.5;
-	c0[1] = 7.0;
-	c0[2] = -6;
+        a0[1] = 6.0;
+        a0[2] = -1;
+        b0[0] = 5.0;
+        b0[1] = 6.0;
+        b0[2] = -1;
+        c0[0] = -5.5;
+        c0[1] = 7.0;
+        c0[2] = -6;
         
         a0 = transformVec(a0, rMaster[1], tMaster[1]);
-	b0 = transformVec(b0, rMaster[1], tMaster[1]);
-	c0 = transformVec(c0, rMaster[1], tMaster[1]);
+        b0 = transformVec(b0, rMaster[1], tMaster[1]);
+        c0 = transformVec(c0, rMaster[1], tMaster[1]);
 
         if(init_id[4]) {
             avg_points.push_back(a0);
@@ -761,8 +779,8 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
     }
     else if(scene==5) {
         a0[0] = 0.0;
-	a0[1] = 2.0;
-	a0[2] = 0.0;        
+        a0[1] = 2.0;
+        a0[2] = 0.0;        
         a0 = transformVec(a0, rMaster[2], tMaster[2]);
         if(init_id[8]) {
             avg_points.push_back(a0);
@@ -774,6 +792,10 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
     return avg_points;
 } 
 
+
+
+// Function to draw boxes on image
+// TODO: very specific to our case
 void drawToImg(Mat img, vector<vector<Point2d>>& boxes, vector<bool>& init_id, int scene) {
 	if (init_id[0] || init_id[4] || init_id[8]) {
 		if (scene==3) {
@@ -800,86 +822,92 @@ void drawToImg(Mat img, vector<vector<Point2d>>& boxes, vector<bool>& init_id, i
 	}
 }
 
+
+
+// Function to average the boxes estimated by different markers
+// TODO: it is very specific to our case
 void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Point2d>>& boxes, vector<bool>& init_id, vector<Vec3d>& avg_points, vector<double>& weights, bool average, int scene) { 
 	vector<vector<Point2d>> boxes1, boxes2, boxes3, boxes4, boxes5, boxes6, boxes7, boxes8;
 
 	if(average==true) {
-            if (scene==3) {
-                boxes1.push_back(boxes[0]);
-                boxes2.push_back(boxes[1]);
-                boxes3.push_back(boxes[2]);
-                boxes4.push_back(boxes[3]);
-		boxes5.push_back(boxes[4]);
-		boxes6.push_back(boxes[5]);
-		boxes7.push_back(boxes[6]);
-		boxes8.push_back(boxes[7]);
-            }
-            else if (scene==1) {
-                boxes1.push_back(boxes[0]);
-                boxes2.push_back(boxes[1]);
-                boxes3.push_back(boxes[2]);
-            }
-            else if (scene==5) {
-                boxes1.push_back(boxes[0]);
-            }
-	    }
-	    else {
-		cout << "EMPTY!!!" << endl;
-	    }
-	    if (init_id[0] || init_id[4] || init_id[8]) {
-            	average = true;
-           	if (scene==3) {
-               		projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, boxes[1]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, boxes[2]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[3], camMatrix, distCoeffs, boxes[3]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[4], camMatrix, distCoeffs, boxes[4]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[5], camMatrix, distCoeffs, boxes[5]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[6], camMatrix, distCoeffs, boxes[6]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[7], camMatrix, distCoeffs, boxes[7]);
-            	}
-            	else if (scene==1) {
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, boxes[1]);
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, boxes[2]);
-           	 }
-            	else if (scene==5) {
-                	projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
-            	}
-	   }
-	   if(!boxes1.empty()) {
-           if (scene==3) {
-		   boxes1.push_back(boxes[0]);
-		   boxes2.push_back(boxes[1]);
-		   boxes3.push_back(boxes[2]);
-		   boxes4.push_back(boxes[3]); 
-		   boxes5.push_back(boxes[4]);
-		   boxes6.push_back(boxes[5]);
-		   boxes7.push_back(boxes[6]);
-		   boxes8.push_back(boxes[7]); 
-		   boxes[0] = avgBoxes(boxes1, weights);
-		   boxes[1] = avgBoxes(boxes2, weights);
-		   boxes[2] = avgBoxes(boxes3, weights);
-		   boxes[3] = avgBoxes(boxes4, weights); 
-		   boxes[4] = avgBoxes(boxes5, weights);
-		   boxes[5] = avgBoxes(boxes6, weights);
-		   boxes[6] = avgBoxes(boxes7, weights);
-		   boxes[7] = avgBoxes(boxes8, weights);
-            }
-            else if (scene==1) {
-		boxes1.push_back(boxes[0]);
-		boxes2.push_back(boxes[1]);
-		boxes3.push_back(boxes[2]); 
-		boxes[0] = avgBoxes(boxes1, weights);
-		boxes[1] = avgBoxes(boxes2, weights);
-		boxes[2] = avgBoxes(boxes3, weights);
-            }
-            else if (scene==5) {
-                boxes1.push_back(boxes[0]);
-                boxes[0] = avgBoxes(boxes1, weights);
-            }
-	    }	
+        if (scene==3) {
+            boxes1.push_back(boxes[0]);
+            boxes2.push_back(boxes[1]);
+            boxes3.push_back(boxes[2]);
+            boxes4.push_back(boxes[3]);
+            boxes5.push_back(boxes[4]);
+            boxes6.push_back(boxes[5]);
+            boxes7.push_back(boxes[6]);
+            boxes8.push_back(boxes[7]);
+        }
+        else if (scene==1) {
+            boxes1.push_back(boxes[0]);
+            boxes2.push_back(boxes[1]);
+            boxes3.push_back(boxes[2]);
+        }
+        else if (scene==5) {
+            boxes1.push_back(boxes[0]);
+        }
+    }
+    else {
+        cout << "EMPTY!!!" << endl;
+    }
+    if (init_id[0] || init_id[4] || init_id[8]) {
+        average = true;
+        if (scene==3) {
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, boxes[1]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, boxes[2]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[3], camMatrix, distCoeffs, boxes[3]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[4], camMatrix, distCoeffs, boxes[4]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[5], camMatrix, distCoeffs, boxes[5]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[6], camMatrix, distCoeffs, boxes[6]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[7], camMatrix, distCoeffs, boxes[7]);
+        }
+        else if (scene==1) {
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[1], camMatrix, distCoeffs, boxes[1]);
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[2], camMatrix, distCoeffs, boxes[2]);
+        }
+        else if (scene==5) {
+            projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
+        }
+    }
+    if(!boxes1.empty()) {
+        if (scene==3) {
+            boxes1.push_back(boxes[0]);
+            boxes2.push_back(boxes[1]);
+            boxes3.push_back(boxes[2]);
+            boxes4.push_back(boxes[3]); 
+            boxes5.push_back(boxes[4]);
+            boxes6.push_back(boxes[5]);
+            boxes7.push_back(boxes[6]);
+            boxes8.push_back(boxes[7]); 
+            boxes[0] = avgBoxes(boxes1, weights);
+            boxes[1] = avgBoxes(boxes2, weights);
+            boxes[2] = avgBoxes(boxes3, weights);
+            boxes[3] = avgBoxes(boxes4, weights); 
+            boxes[4] = avgBoxes(boxes5, weights);
+            boxes[5] = avgBoxes(boxes6, weights);
+            boxes[6] = avgBoxes(boxes7, weights);
+            boxes[7] = avgBoxes(boxes8, weights);
+        }
+        else if (scene==1) {
+            boxes1.push_back(boxes[0]);
+            boxes2.push_back(boxes[1]);
+            boxes3.push_back(boxes[2]); 
+            boxes[0] = avgBoxes(boxes1, weights);
+            boxes[1] = avgBoxes(boxes2, weights);
+            boxes[2] = avgBoxes(boxes3, weights);
+        }
+        else if (scene==5) {
+            boxes1.push_back(boxes[0]);
+            boxes[0] = avgBoxes(boxes1, weights);
+        }
+    }	
 }
+
+
 
 /* Functions for monocular visual odometry */
 // Credits: Avi Singh 2015
@@ -913,10 +941,114 @@ void featureTracking(Mat img_1, Mat img_2, vector<Point2f>& points1, vector<Poin
 }
 
 
-void featureDetection(Mat img_1, vector<Point2f>& points1)	{   //uses FAST as of now, modify parameters as necessary
+
+// Detect FAST features in frame
+void featureDetection(Mat img_1, vector<Point2f>& points1)	{
   vector<KeyPoint> keypoints_1;
   int fast_threshold = 20;
   bool nonmaxSuppression = true;
   FAST(img_1, keypoints_1, fast_threshold, nonmaxSuppression);
   KeyPoint::convert(keypoints_1, points1, vector<int>());
 }
+
+
+
+// Make homogeneous transformation from rotation matrix and translation vector
+// TODO: more elegant to return value on a Mat rather than one that needs to be an identity
+void createHomoTransform(Mat& T, Mat R, Mat t) {
+    T.at<double>(0,0) = R.at<double>(0,0);
+    T.at<double>(0,1) = R.at<double>(0,1);
+    T.at<double>(0,2) = R.at<double>(0,2);
+    T.at<double>(1,0) = R.at<double>(1,0);
+    T.at<double>(1,1) = R.at<double>(1,1);
+    T.at<double>(1,2) = R.at<double>(1,2);
+    T.at<double>(2,0) = R.at<double>(2,0);
+    T.at<double>(2,1) = R.at<double>(2,1);
+    T.at<double>(2,2) = R.at<double>(2,2);
+    T.at<double>(0,3) = t.at<double>(0);
+    T.at<double>(1,3) = t.at<double>(1);
+    T.at<double>(2,3) = t.at<double>(2);
+}
+
+
+
+// Brute-force-style homogeneous transformation invertion
+void invertHomoTransform(Mat& T) {
+    Mat R = Mat::zeros(3, 3, CV_64F);
+    Vec3d t(0.0, 0.0, 0.0);
+    R.at<double>(0,0) = T.at<double>(0,0);
+    R.at<double>(0,1) = T.at<double>(0,1);
+    R.at<double>(0,2) = T.at<double>(0,2);
+    R.at<double>(1,0) = T.at<double>(1,0);
+    R.at<double>(1,1) = T.at<double>(1,1);
+    R.at<double>(1,2) = T.at<double>(1,2);
+    R.at<double>(2,0) = T.at<double>(2,0);
+    R.at<double>(2,1) = T.at<double>(2,1);
+    R.at<double>(2,2) = T.at<double>(2,2);
+    t[0] = T.at<double>(0,3);
+    t[1] = T.at<double>(1,3);
+    t[2] = T.at<double>(2,3);
+    R = R.inv();
+    Mat t_inv = -R*Mat(t);
+    T.at<double>(0,0) = R.at<double>(0,0);
+    T.at<double>(0,1) = R.at<double>(0,1);
+    T.at<double>(0,2) = R.at<double>(0,2);
+    T.at<double>(1,0) = R.at<double>(1,0);
+    T.at<double>(1,1) = R.at<double>(1,1);
+    T.at<double>(1,2) = R.at<double>(1,2);
+    T.at<double>(2,0) = R.at<double>(2,0);
+    T.at<double>(2,1) = R.at<double>(2,1);
+    T.at<double>(2,2) = R.at<double>(2,2);
+    T.at<double>(0,3) = t_inv.at<double>(0,0);
+    T.at<double>(1,3) = t_inv.at<double>(1,0);
+    T.at<double>(2,3) = t_inv.at<double>(2,0);
+}
+
+
+
+// Combines the transformation estimated by visual odometry with
+// the one we already have from previous frames
+void combineTransVO(Vec3d& rotvec, Vec3d& tvec, Mat T, double scale) {
+    Mat rotationMat = Mat::zeros(3, 3, CV_64F);
+    Mat transformMat = Mat::eye(4, 4, CV_64F);
+	Rodrigues(rotvec, rotationMat); //convert rodrigues angles into	rotation matrix
+	
+	//build transformation matrix
+    for (int i=0; i<3; i++) { 
+		transformMat.at<double>(i,3) = tvec[i];
+        for (int j=0; j<3; j++) { 
+            transformMat.at<double>(i,j) = rotationMat.at<double>(i,j);
+        }
+    }
+
+    transformMat = transformMat*T;
+   
+    for (int i=0; i<3; i++) { 
+		tvec[i] = transformMat.at<double>(i,3) * scale;
+        for (int j=0; j<3; j++) { 
+            rotationMat.at<double>(i,j) = transformMat.at<double>(i,j);
+        }
+    }
+    Rodrigues(rotationMat, rotvec);
+}
+
+
+
+// Draw the border of a group of markers
+std::vector<Point2f> drawGroupBorders(Mat img, Vec3d tMaster, Vec3d rMaster, Mat camMatrix, Mat distCoeffs, float markerLength, float markerOffset) {
+    std::vector<Point3f> group_corners(4);
+    std::vector<Point2f> group_corners_2d;
+    float dist = markerLength + 3.0*0.5*markerOffset;
+    group_corners[0] = Point3f(-dist, dist, 0);
+    group_corners[1] = Point3f(-dist, -dist, 0);
+    group_corners[2] = Point3f(dist, -dist, 0);
+    group_corners[3] = Point3f(dist, dist, 0);
+
+    projectPoints(group_corners, rMaster, tMaster, camMatrix, distCoeffs, group_corners_2d);
+    line(img, group_corners_2d[0], group_corners_2d[1], Scalar(0, 255, 0), 4);
+    line(img, group_corners_2d[1], group_corners_2d[2], Scalar(0, 255, 0), 4);
+    line(img, group_corners_2d[2], group_corners_2d[3], Scalar(0, 255, 0), 4);
+    line(img, group_corners_2d[3], group_corners_2d[0], Scalar(0, 255, 0), 4);
+
+    return group_corners_2d;
+} 

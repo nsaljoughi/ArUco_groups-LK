@@ -19,7 +19,7 @@ find_package(Eigen3 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 file(GLOB ar_stab
-	"src/*.cpp"
+	"src/ar_stable.cpp"
 	"src/*.h"
 )
 
