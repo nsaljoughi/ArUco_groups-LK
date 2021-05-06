@@ -8,17 +8,17 @@ using namespace cv;
 
 namespace { const char* about = "Basic marker detection";
             const char* keys  =
-	     "{d        |       | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
-	     "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, " 
-	     "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
-	     "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16}" 
-	     "{c        |	    | Camera intrinsic parameters. Needed for camera pose }"
-	     "{l        |    	| Marker side lenght (in meters). Needed for correct scale in camera pose }"
-	     "{o        |       | Offset between markers (in meters)}"
-	     "{dp       |       | File of marker detector parameters }"
-	     "{r        | false	| show rejected	candidates too}"
-	     "{n        | false | Naive mode (no stabilization)}"
-	     "{u        |       | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
+                "{d        |       | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
+	            "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, " 
+	            "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
+	            "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16}" 
+	            "{c        |	    | Camera intrinsic parameters. Needed for camera pose }"
+	            "{l        |    	| Marker side lenght (in meters). Needed for correct scale in camera pose }"
+	            "{o        |        | Offset between markers (in meters)}"
+	            "{dp       |        | File of marker detector parameters }"
+	            "{r        | false	| show rejected	candidates too}"
+	            "{n        | false  | Naive mode (no stabilization)}"
+	            "{u        |        | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
 }
 
 
@@ -53,22 +53,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    //detectorParams->adaptiveThreshWinSizeMin=3;
-    //detectorParams->adaptiveThreshWinSizeMin=23;
-    //detectorParams->adaptiveThreshWinSizeStep=10;
     detectorParams->adaptiveThreshConstant=0;
-    //detectorParams->minMarkerPerimeterRate=0.03;
-    //detectorParams->maxMarkerPerimeterRate=1.0;
-    //detectorParams->polygonalApproxAccuracyRate=0.05;
-    //detectorParams->minCornerDistanceRate=0.05;
-    //detectorParams->minMarkerDistanceRate=0.05;
-    //detectorParams->minDistanceToBorder=3;
-    //detectorParams->markerBorderBits=1;
-    //detectorParams->minOtsuStdDev=5.0;
-    //detectorParams->perspectiveRemovePixelPerCell=4;
-    //detectorParams->perspectiveRemoveIgnoredMarginPerCell=0.33;
-    //detectorParams->maxErroneousBitsInBorderRate=0.35;
-    //detectorParams->errorCorrectionRate=0.6;
     detectorParams->cornerRefinementMethod=aruco::CORNER_REFINE_CONTOUR;
     detectorParams->cornerRefinementWinSize=5;
     detectorParams->cornerRefinementMaxIterations=30;
@@ -145,7 +130,7 @@ int main(int argc, char *argv[]) {
     Mat prevImage, currImage, imageCopy;
 
     // Visual odometry
-    double scale = 1.0;
+    bool noo = false;
     Mat E, R, t, mask; // estimated camera motion
     Mat H; // homography to project box in next frame
     vector<Point2f> prevFeatures, currFeatures; // features used for tracking
@@ -154,29 +139,31 @@ int main(int argc, char *argv[]) {
 
     ////// ---KEY PART--- //////
     for(int numFrame = 1; numFrame < MAX_FRAME; numFrame++) {
-	sprintf(filename, "/home/nicola/pama_marker/videos/frames/pama5_bis/%06d.jpg", numFrame);
-	sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/pama5_bis/%06d.jpg", numFrame);
+        sprintf(filename, "/home/nicola/pama_marker/videos/frames/pama5_bis/%06d.jpg", numFrame);
+        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/pama5_bis/%06d.jpg", numFrame);
     
-    double tickk = (double)getTickCount();
+        double tickk = (double)getTickCount();
+    
+        Mat currImage_dist  = imread(filename);
+        Mat currImage_c;
+        undistort(currImage_dist, currImage_c, camMatrix, distCoeffs); 
+        cvtColor(currImage_c, currImage, COLOR_BGR2GRAY); // we work with grayscale images
+        vector<uchar> status;
+
+    	// Visula odometry: detect features and track
+	    if(numFrame==1) {
+		    featureDetection(currImage, currFeatures);
+	    }
+	    else {
+		    cout << "# of features detected = " << prevFeatures.size() << endl;
+	    	featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
+	    	if (prevFeatures.size() < MIN_NUM_FEAT) {
+	    		cout << "Too few features remained...redetecting" << endl;
+	    		featureDetection(prevImage, prevFeatures);
+	    		featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
+    		}
+    	}
        
-	Mat currImage_c  = imread(filename);	
-	cvtColor(currImage_c, currImage, COLOR_BGR2GRAY); // we work with grayscale images
-	vector<uchar> status;
-
-	// Visula odometry: detect features and track
-	if(numFrame==1) {
-		featureDetection(currImage, currFeatures);
-	}
-	else {
-		cout << "# of features detected = " << prevFeatures.size() << endl;
-		featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
-		if (prevFeatures.size() < MIN_NUM_FEAT) {
-			cout << "Too few features remained...redetecting" << endl;
-			featureDetection(prevImage, prevFeatures);
-			featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
-		}
-	}
-
         // We have 16 markers
         vector<Vec3d> rvecs_ord(16); // store markers' Euler rotation vectors
         vector<Vec3d> tvecs_ord(16); // store markers' translation vectors
@@ -188,7 +175,6 @@ int main(int argc, char *argv[]) {
         double tick = (double)getTickCount();
         double delta = 0;
 
-	
         vector<int> ids; // markers identified
         vector<vector<Point2f>> corners, rejected;
         vector<Vec3d> rvecs, tvecs; 
@@ -197,8 +183,7 @@ int main(int argc, char *argv[]) {
         aruco::detectMarkers(currImage, dictionary, corners, ids, detectorParams, rejected);
 
         if(estimatePose && ids.size() > 0)
-            aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs, tvecs);
-
+            aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, Mat::zeros(8, 1, CV_64F), rvecs, tvecs);
 
         // Compute detection time
         double currentTime = ((double)getTickCount() - tick) / getTickFrequency();
@@ -206,7 +191,7 @@ int main(int argc, char *argv[]) {
         totalIterations++;
         if(totalIterations % 30 == 0) {
             cout << "Detection Time = " << currentTime * 1000 << " ms "
-                 << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
+                << "(Mean = " << 1000 * totalTime / double(totalIterations) << " ms)" << endl;
         }
 
         // draw results
@@ -217,7 +202,6 @@ int main(int argc, char *argv[]) {
             rvecs_ord[ids[i]-1] = rvecs[i];
             tvecs_ord[ids[i]-1] = tvecs[i];
         }
-
 
         if(ids.size() > 0) {
             aruco::drawDetectedMarkers(imageCopy, corners, ids);
@@ -236,25 +220,22 @@ int main(int argc, char *argv[]) {
                 if(!init_id[i]) {
                     continue;
                 }
-
                 else if(!checkDiffRot(rvecs_ord[i], rMaster[ceil(i/4)], thr_init)) {
                     detect_id[i] = false;
                     continue;
                 }
-                
-                aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
+                aruco::drawAxis(imageCopy, camMatrix, Mat::zeros(8, 1, CV_64F), rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
-/*
             // If at least one of the markers' group has been initialized, 
             // start computing visual odometry
             if(init_id[0]||init_id[4]||init_id[8]) {
-                cout << "Computing the essential matrix E (for now up to a scale...)" << endl; //TODO
+                cout << "Computing the essential matrix E (for now up to a scale...)" << endl;
                 E = findEssentialMat(currFeatures, prevFeatures, camMatrix, RANSAC, 0.999, 1.0, mask);
                 recoverPose(E, currFeatures, prevFeatures, camMatrix, R, t, mask);
                 H = findHomography(prevFeatures, currFeatures, RANSAC);
             }
-*/
+
             // Loop over groups
             for(unsigned int i=0; i<4; i++) {
                 if(!init_id[i*4]) { // if group needs init
@@ -267,7 +248,6 @@ int main(int argc, char *argv[]) {
                     }
 
                     int counter=0;
-
                     for(int j=0; j<4; j++) {
                         if(detect_id[i*4+j]) {
                             counter += 1;
@@ -286,17 +266,78 @@ int main(int argc, char *argv[]) {
                         }
                         else {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
-                        }
+                        }   
                     }
                     else {
                         t_stable[i] = 0;
                     }
-                } // if already init
-                else {
+                } 
+                else { // if already init
                     cout << "GROUP " << i << " is already initialized." << endl;
-
+    
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
+                        cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << endl;
                         t_lost[i] += delta_t;
+                        noo = true; 
+                        double scale = 1.0;
+                        vector<Point2f> group_corners_new(4);
+                        vector<Point2f> corners0_undist(4);
+                        vector<Point2f> corners1_undist(4); 
+                        perspectiveTransform(group_corners, group_corners_new, H);
+
+                        Mat cam0 = Mat::eye(4, 4, CV_64F);
+                        Mat cam1 = Mat::eye(4, 4, CV_64F);
+                        Mat T = Mat::eye(4, 4, CV_64F);
+                        createHomoTransformVec(cam0, rMaster[i], tMaster[i]);
+                        createHomoTransform(T, R, t);
+                        invertHomoTransform(T);
+                        cam1 = T.clone();
+                        cam1 = cam0*cam1;
+                        cam0 = cam0(Range(0,3), Range(0,4));
+                        cam1 = cam1(Range(0,3), Range(0,4));
+                    
+                        Mat group_corners_3d(4, group_corners.size(), CV_64F);
+
+                        corners0_undist=group_corners;
+                        corners1_undist=group_corners_new;
+                        cam0 = camMatrix*cam0;
+                        cam1 = camMatrix*cam1;
+                        triangulatePoints(cam0, cam1, corners0_undist, corners1_undist, group_corners_3d);
+                        for(size_t i=0; i < 4; i++) {
+                            cout << "[" << endl;
+                            cout << group_corners[i].x << ", " << group_corners[i].y  << endl;
+                            cout << "]" << endl;
+                        }
+                        for(size_t i=0; i < 4; i++) {
+                            cout << "[" << endl;
+                            cout << group_corners_new[i].x << ", " << group_corners_new[i].y << endl;
+                            cout << "]" << endl;
+                        }
+                        // Get euclidean coordinates <x, y, z, w> -> <x/w, y/w, z/w, w/w> 
+                        for(int i=0; i < group_corners_3d.cols; i++) {
+                            cout << "[" << endl;
+                            for(int j=0; j<group_corners_3d.rows; j++) {
+                                group_corners_3d.at<float>(j,i) /= group_corners_3d.at<float>(3,i); 
+                                cout << group_corners_3d.at<float>(j,i) << endl;
+                            }
+                            cout << "]" << endl;
+                        }
+
+                        computeScaleVO(group_corners_3d, markerLength, markerOffset, scale);
+
+                        cout << rMaster[i][0] << rMaster[i][1] << rMaster[i][2] << endl;
+                        cout << tMaster[i][0] << tMaster[i][1] << tMaster[i][2] << endl;
+
+                        //combineTransVO(rMaster[i], tMaster[i], T, scale);
+
+                        cout << rMaster[i][0] << rMaster[i][1] << rMaster[i][2] << endl;
+                        cout << tMaster[i][0] << tMaster[i][1] << tMaster[i][2] << endl;
+
+                        group_corners = group_corners_new;
+                        line(imageCopy, group_corners[0], group_corners[1], Scalar(255, 0, 0), 4);
+                        line(imageCopy, group_corners[1], group_corners[2], Scalar(255, 0, 0), 4);
+                        line(imageCopy, group_corners[2], group_corners[3], Scalar(255, 0, 0), 4);
+                        line(imageCopy, group_corners[3], group_corners[0], Scalar(255, 0, 0), 4);     
                         if(t_lost[i] >= thr_lost) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                             t_lost[i] = 0;
@@ -308,23 +349,29 @@ int main(int argc, char *argv[]) {
                         //tMaster[i] = avgTrasl(computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset), tMaster[i], alpha_trasl, (1 - alpha_trasl));
                         //combineTransVO(rMaster[i], tMaster[i], T_homo);
                         rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
-                        tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);                    }
+                        tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);        
+                    }
                 }
             }
-
             
-	    vector<Vec3d> avg_points = computeAvgBoxes(rMaster, tMaster, init_id, scene);
-	    vector<double> weights={0.5,0.5}; //weights for past and current frame
+	        vector<Vec3d> avg_points = computeAvgBoxes(rMaster, tMaster, init_id, scene);
+	        vector<double> weights={0.5,0.5}; //weights for past and current frame
 
-	    combineBoxes(camMatrix, distCoeffs, box_cloud, boxes, init_id, avg_points, weights, average, scene);
+	        combineBoxes(camMatrix, Mat::zeros(8, 1, CV_64F), box_cloud, boxes, init_id, avg_points, weights, average, scene);
 	    
-	    drawToImg(imageCopy, boxes, init_id, scene);
-        if(init_id[4]) group_corners = drawGroupBorders(imageCopy, tMaster[1], rMaster[1], camMatrix, distCoeffs, markerLength, markerOffset);
-	}
+	        drawToImg(imageCopy, boxes, init_id, scene);
+            if(init_id[4] && !noo) {
+                group_corners = drawGroupBorders(imageCopy, tMaster[1], rMaster[1], camMatrix, Mat::zeros(8, 1, CV_64F), markerLength, markerOffset);
+            }
+            noo = false;
+       
+            cout << rMaster[1][0] << rMaster[1][1] << rMaster[1][2] << endl;
+            cout << tMaster[1][0] << tMaster[1][1] << tMaster[1][2] << endl;
+        }
         else {
-           	if(numFrame==1) {
-		        featureDetection(currImage, currFeatures);
-    	    }
+            if(numFrame==1) {
+                featureDetection(currImage, currFeatures);
+            }
             else {
                 cout << "# of features detected = " << prevFeatures.size() << endl;
                 featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
@@ -336,7 +383,7 @@ int main(int argc, char *argv[]) {
                 // If at least one of the markers' group has been initialized, 
                 // start computing visual odometry
                 if(init_id[0]||init_id[4]||init_id[8]) {
-                    cout << "Computing the essential matrix E (for now up to a scale...)" << endl; //TODO
+                    cout << "Computing the essential matrix E (for now up to a scale...)" << endl;
                     E = findEssentialMat(currFeatures, prevFeatures, camMatrix, RANSAC, 0.999, 1.0, mask);
                     recoverPose(E, currFeatures, prevFeatures, camMatrix, R, t, mask);
                     H = findHomography(prevFeatures, currFeatures, RANSAC);
@@ -345,23 +392,32 @@ int main(int argc, char *argv[]) {
             for(unsigned int i=0; i<4; i++) {
                 if(init_id[i*4]) {
                     t_lost[i] += delta_t;
+                
+                    double scale = 1.0;
                     vector<Point2f> group_corners_new(4);
                     vector<Point2f> corners0_undist(4);
                     vector<Point2f> corners1_undist(4); 
                     perspectiveTransform(group_corners, group_corners_new, H);
 
-                    // In OpenCV, no homogeneous coordinates but directly [R|t], hence 3*4
-                    Mat cam0 = Mat::eye(3, 4, CV_64F);
-                    Mat cam1 = Mat::eye(3, 4, CV_64F);
+                    Mat cam0 = Mat::eye(4, 4, CV_64F);
+                    Mat cam1 = Mat::eye(4, 4, CV_64F);
+                    Mat T = Mat::eye(4, 4, CV_64F);
                     createHomoTransformVec(cam0, rMaster[i], tMaster[i]);
-                    createHomoTransform(cam1, R, t);
+                    createHomoTransform(T, R, t);
+                    invertHomoTransform(T);
+                    cam1 = T.clone();
+                    cam1 = cam0*cam1;
+                    cam0 = cam0(Range(0,3), Range(0,4));
+                    cam1 = cam1(Range(0,3), Range(0,4));
+                    
                     Mat group_corners_3d(4, group_corners.size(), CV_64F);
 
-                    // We need to undistort points to triangulate
-                    undistortPoints(group_corners, corners0_undist, camMatrix, distCoeffs);
-                    undistortPoints(group_corners_new, corners1_undist, camMatrix, distCoeffs);
-
+                    corners0_undist=group_corners;
+                    corners1_undist=group_corners_new;
+                    cam0 = camMatrix*cam0;
+                    cam1 = camMatrix*cam1;
                     triangulatePoints(cam0, cam1, corners0_undist, corners1_undist, group_corners_3d);
+
                     for(size_t i=0; i < 4; i++) {
                         cout << "[" << endl;
                         cout << group_corners[i].x << ", " << group_corners[i].y  << endl;
@@ -373,14 +429,24 @@ int main(int argc, char *argv[]) {
                         cout << "]" << endl;
                     }
                     // Get euclidean coordinates <x, y, z, w> -> <x/w, y/w, z/w, w/w> 
-                    for(size_t i=0; i < group_corners_3d.rows; i++) {
+                    for(int i=0; i < group_corners_3d.cols; i++) {
                         cout << "[" << endl;
-                        for(size_t j=0; j<group_corners_3d.cols; j++) {
-                            group_corners_3d.at<float>(i,j) /= group_corners_3d.at<float>(i,3); 
-                            cout << group_corners_3d.at<float>(i,j) << endl;
+                        for(int j=0; j<group_corners_3d.rows; j++) {
+                            group_corners_3d.at<float>(j,i) /= group_corners_3d.at<float>(3,i); 
+                            cout << group_corners_3d.at<float>(j,i) << endl;
                         }
                         cout << "]" << endl;
                     }
+
+                    computeScaleVO(group_corners_3d, markerLength, markerOffset, scale);
+                
+                    cout << rMaster[i][0] << rMaster[i][1] << rMaster[i][2] << endl;
+                    cout << tMaster[i][0] << tMaster[i][1] << tMaster[i][2] << endl;
+
+                    //combineTransVO(rMaster[i], tMaster[i], T, scale);
+
+                    cout << rMaster[i][0] << rMaster[i][1] << rMaster[i][2] << endl;
+                    cout << tMaster[i][0] << tMaster[i][1] << tMaster[i][2] << endl;
 
                     group_corners = group_corners_new;
                     line(imageCopy, group_corners[0], group_corners[1], Scalar(255, 0, 0), 4);
@@ -409,7 +475,6 @@ int main(int argc, char *argv[]) {
         delta = ((double)getTickCount() - tickk) / getTickFrequency();
         delta_t = delta;
 
-
         cout << "Stable time " << t_stable[0] << endl;
         cout << t_stable[1] << endl;
         cout << t_stable[2] << endl;
@@ -430,6 +495,5 @@ int main(int argc, char *argv[]) {
         char key = (char)waitKey(1); 
         if(key == 27) break;
     }
-
     return 0;
 }

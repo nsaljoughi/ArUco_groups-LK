@@ -990,6 +990,12 @@ void createHomoTransformVec(Mat& T, Vec3d rvec, Vec3d tvec) {
 
 // Brute-force-style homogeneous transformation invertion
 void invertHomoTransform(Mat& T) {
+    cout << "Matrix before: " << endl;
+    cout << "[" << T.at<double>(0,0) << ", " << T.at<double>(0,1) << ", " << T.at<double>(0,2) << ", " << T.at<double>(0,3) << "\n"
+        << T.at<double>(1,0) << ", " << T.at<double>(1,1) << ", " << T.at<double>(1,2) << ", " << T.at<double>(1,3) << "\n"
+        << T.at<double>(2,0) << ", " << T.at<double>(2,1) << ", " << T.at<double>(2,2) << ", " << T.at<double>(2,3) << "\n"
+        << T.at<double>(3,0) << ", " << T.at<double>(3,1) << ", " << T.at<double>(3,2) << ", " << T.at<double>(3,3) << "]\n" << endl;
+
     Mat R = Mat::zeros(3, 3, CV_64F);
     Vec3d t(0.0, 0.0, 0.0);
     R.at<double>(0,0) = T.at<double>(0,0);
@@ -1018,13 +1024,21 @@ void invertHomoTransform(Mat& T) {
     T.at<double>(0,3) = t_inv.at<double>(0,0);
     T.at<double>(1,3) = t_inv.at<double>(1,0);
     T.at<double>(2,3) = t_inv.at<double>(2,0);
+
+    cout << "Matrix after: " << endl;
+    cout << "[" << T.at<double>(0,0) << ", " << T.at<double>(0,1) << ", " << T.at<double>(0,2) << ", " << T.at<double>(0,3) << "\n"
+        << T.at<double>(1,0) << ", " << T.at<double>(1,1) << ", " << T.at<double>(1,2) << ", " << T.at<double>(1,3) << "\n"
+        << T.at<double>(2,0) << ", " << T.at<double>(2,1) << ", " << T.at<double>(2,2) << ", " << T.at<double>(2,3) << "\n"
+        << T.at<double>(3,0) << ", " << T.at<double>(3,1) << ", " << T.at<double>(3,2) << ", " << T.at<double>(3,3) << "]\n" << endl;
 }
 
 
 
 // Combines the transformation estimated by visual odometry with
 // the one we already have from previous frames
-void combineTransVO(Vec3d& rotvec, Vec3d& tvec, Mat T, double scale) {
+void combineTransVO(Vec3d& rotvec, Vec3d& tvec, Mat& T, double scale) {
+    if (scale>0.001) {
+
     Mat rotationMat = Mat::zeros(3, 3, CV_64F);
     Mat transformMat = Mat::eye(4, 4, CV_64F);
 	Rodrigues(rotvec, rotationMat); //convert rodrigues angles into	rotation matrix
@@ -1037,6 +1051,18 @@ void combineTransVO(Vec3d& rotvec, Vec3d& tvec, Mat T, double scale) {
         }
     }
 
+    cout << "T: " << endl;
+    cout << "[" << T.at<double>(0,0) << ", " << T.at<double>(0,1) << ", " << T.at<double>(0,2) << ", " << T.at<double>(0,3) << "\n"
+        << T.at<double>(1,0) << ", " << T.at<double>(1,1) << ", " << T.at<double>(1,2) << ", " << T.at<double>(1,3) << "\n"
+        << T.at<double>(2,0) << ", " << T.at<double>(2,1) << ", " << T.at<double>(2,2) << ", " << T.at<double>(2,3) << "\n"
+        << T.at<double>(3,0) << ", " << T.at<double>(3,1) << ", " << T.at<double>(3,2) << ", " << T.at<double>(3,3) << "]\n" << endl;
+
+    cout << "TransformMat: " << endl;
+    cout << "[" << transformMat.at<double>(0,0) << ", " << transformMat.at<double>(0,1) << ", " << transformMat.at<double>(0,2) << ", " << transformMat.at<double>(0,3) << "\n"
+        << transformMat.at<double>(1,0) << ", " << transformMat.at<double>(1,1) << ", " << transformMat.at<double>(1,2) << ", " << transformMat.at<double>(1,3) << "\n"
+        << transformMat.at<double>(2,0) << ", " << transformMat.at<double>(2,1) << ", " << transformMat.at<double>(2,2) << ", " << transformMat.at<double>(2,3) << "\n"
+        << transformMat.at<double>(3,0) << ", " << transformMat.at<double>(3,1) << ", " << transformMat.at<double>(3,2) << ", " << transformMat.at<double>(3,3) << "]\n" << endl;
+
     transformMat = transformMat*T;
    
     for (int i=0; i<3; i++) { 
@@ -1046,6 +1072,7 @@ void combineTransVO(Vec3d& rotvec, Vec3d& tvec, Mat T, double scale) {
         }
     }
     Rodrigues(rotationMat, rotvec);
+    }
 }
 
 
@@ -1067,4 +1094,39 @@ std::vector<Point2f> drawGroupBorders(Mat img, Vec3d tMaster, Vec3d rMaster, Mat
     line(img, group_corners_2d[3], group_corners_2d[0], Scalar(0, 255, 0), 4);
 
     return group_corners_2d;
-} 
+}
+
+
+// Compute scale from 3D corners of markers' group
+void computeScaleVO(Mat& corners, float markerLength, float markerOffset, double scale) {
+    float length = 2.0*markerLength + 3.0*markerOffset;
+    float l01, l12, l23, l30;
+    l01 = sqrt(
+            (corners.at<float>(0,0)-corners.at<float>(0,1))*(corners.at<float>(0,0)-corners.at<float>(0,1))
+            + (corners.at<float>(1,0)-corners.at<float>(1,1))*(corners.at<float>(1,0)-corners.at<float>(1,1))
+            + (corners.at<float>(2,0)-corners.at<float>(2,1))*(corners.at<float>(2,0)-corners.at<float>(2,1))
+            );
+    l12 = sqrt(
+            (corners.at<float>(0,1)-corners.at<float>(0,2))*(corners.at<float>(0,1)-corners.at<float>(0,2))
+            + (corners.at<float>(1,1)-corners.at<float>(1,2))*(corners.at<float>(1,1)-corners.at<float>(1,2))
+            + (corners.at<float>(2,1)-corners.at<float>(2,2))*(corners.at<float>(2,1)-corners.at<float>(2,2))
+            );
+    l23 = sqrt(
+            (corners.at<float>(0,2)-corners.at<float>(0,3))*(corners.at<float>(0,2)-corners.at<float>(0,3))
+            + (corners.at<float>(1,2)-corners.at<float>(1,3))*(corners.at<float>(1,2)-corners.at<float>(1,3))
+            + (corners.at<float>(2,2)-corners.at<float>(2,3))*(corners.at<float>(2,2)-corners.at<float>(2,3))
+            );
+    l30 = sqrt(
+            (corners.at<float>(0,3)-corners.at<float>(0,0))*(corners.at<float>(0,3)-corners.at<float>(0,0))
+            + (corners.at<float>(1,3)-corners.at<float>(1,0))*(corners.at<float>(1,3)-corners.at<float>(1,0))
+            + (corners.at<float>(2,3)-corners.at<float>(2,0))*(corners.at<float>(2,3)-corners.at<float>(2,0))
+            );
+    cout << "l01 = " << l01 << endl;
+    cout << "l12 = " << l12 << endl;
+    cout << "l23 = " << l23 << endl;
+    cout << "l30 = " << l30 << endl;
+    cout << "length = " << length << endl;
+
+    scale = (double)(length/l01 + length/l12 + length/l23 + length/l30)/4.0;
+    cout << "Scale estimated: " << scale << endl;
+}
