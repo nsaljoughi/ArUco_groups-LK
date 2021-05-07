@@ -1130,3 +1130,40 @@ void computeScaleVO(Mat& corners, float markerLength, float markerOffset, double
     scale = (double)(length/l01 + length/l12 + length/l23 + length/l30)/4.0;
     cout << "Scale estimated: " << scale << endl;
 }
+
+
+// Function to compute new markers' group corners from homography
+void getNewGroupCorners(vector<Point2f>& group_corners, Mat H) {
+    vector<Point2f> new_group_corners(4);
+    perspectiveTransform(group_corners, new_group_corners, H);
+    group_corners = new_group_corners;
+}
+
+void getNewBoxes(vector<vector<Point2d>>& boxes, Mat H) {
+   vector<vector<Point2d>> new_boxes(3);
+   for(size_t i=0; i<3; i++) {
+      perspectiveTransform(boxes[i], new_boxes[i], H);
+
+      double l01 = sqrt((new_boxes[i][0].x-new_boxes[i][1].x)*(new_boxes[i][0].x-new_boxes[i][1].x) + 
+              (new_boxes[i][0].y-new_boxes[i][1].y)*(new_boxes[i][0].y-new_boxes[i][1].y));
+      double l12 = sqrt((new_boxes[i][1].x-new_boxes[i][2].x)*(new_boxes[i][1].x-new_boxes[i][2].x) + 
+              (new_boxes[i][1].y-new_boxes[i][2].y)*(new_boxes[i][1].y-new_boxes[i][2].y));
+      double l23 = sqrt((new_boxes[i][2].x-new_boxes[i][3].x)*(new_boxes[i][2].x-new_boxes[i][3].x) + 
+              (new_boxes[i][2].y-new_boxes[i][3].y)*(new_boxes[i][2].y-new_boxes[i][3].y));
+      double l30 = sqrt((new_boxes[i][3].x-new_boxes[i][0].x)*(new_boxes[i][3].x-new_boxes[i][0].x) + 
+              (new_boxes[i][3].y-new_boxes[i][0].y)*(new_boxes[i][3].y-new_boxes[i][0].y));
+      double l = (l01 + l12 + l23 + l30) / 4;
+      Point2d center;
+      center.x = (new_boxes[i][0].x+new_boxes[i][1].x+new_boxes[i][2].x+new_boxes[i][3].x)/4;
+      center.y = (new_boxes[i][0].y+new_boxes[i][1].y+new_boxes[i][2].y+new_boxes[i][3].y)/4;
+      new_boxes[i][0].x = center.x - l/2;
+      new_boxes[i][0].y = center.y - l/2;
+      new_boxes[i][1].x = center.x - l/2;
+      new_boxes[i][1].y = center.y + l/2;
+      new_boxes[i][2].x = center.x + l/2;
+      new_boxes[i][2].y = center.y + l/2;
+      new_boxes[i][3].x = center.x + l/2;
+      new_boxes[i][3].y = center.y - l/2;
+   }
+   boxes = new_boxes;
+} 
