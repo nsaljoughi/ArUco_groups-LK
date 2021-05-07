@@ -26,13 +26,13 @@ static bool readCameraParameters(string filename, Mat &camMatrix, Mat &distCoeff
 	if(!fs.isOpened()) return false; 
 	fs["camera_matrix"] >> camMatrix;
 	fs["distortion_coefficients"] >> distCoeffs;
-       	return true; 
+    return true; 
 }
 
 
 
 static bool readDetectorParameters(string filename, Ptr<aruco::DetectorParameters> &params) {
-       	FileStorage fs(filename, FileStorage::READ); 
+    FileStorage fs(filename, FileStorage::READ); 
 	if(!fs.isOpened()) return false;
 	fs["adaptiveThreshWinSizeMin"] >> params->adaptiveThreshWinSizeMin;
 	fs["adaptiveThreshWinSizeMax"] >> params->adaptiveThreshWinSizeMax;
@@ -48,27 +48,13 @@ static bool readDetectorParameters(string filename, Ptr<aruco::DetectorParameter
 	fs["cornerRefinementWinSize"] >> params->cornerRefinementWinSize;
 	fs["cornerRefinementMaxIterations"] >> params->cornerRefinementMaxIterations;
 	fs["cornerRefinementMinAccuracy"] >> params->cornerRefinementMinAccuracy;
-       	fs["markerBorderBits"] >> params->markerBorderBits;
-       	fs["perspectiveRemovePixelPerCell"] >> params->perspectiveRemovePixelPerCell;
+    fs["markerBorderBits"] >> params->markerBorderBits;
+    fs["perspectiveRemovePixelPerCell"] >> params->perspectiveRemovePixelPerCell;
 	fs["perspectiveRemoveIgnoredMarginPerCell"] >> params->perspectiveRemoveIgnoredMarginPerCell;
 	fs["maxErroneousBitsInBorderRate"] >> params->maxErroneousBitsInBorderRate; 
 	fs["minOtsuStdDev"] >>params->minOtsuStdDev;
-       	fs["errorCorrectionRate"] >> params->errorCorrectionRate;
+    fs["errorCorrectionRate"] >> params->errorCorrectionRate;
 	return true; 
-}
-
-
-// Load a point cloud
-static Mat cvcloud_load() { 
-	Mat cloud(1, 7708, CV_64FC3); 
-	ifstream ifs("arrow.ply");
-	string str; for(size_t i = 0; i < 13; ++i) getline(ifs, str);
-	
-	Point3d* data = cloud.ptr<cv::Point3d>(); 
-	float dummy1, dummy2, dummy3;
-	for(size_t i = 0; i < 7708; ++i) ifs >> data[i].x >> data[i].y >> data[i].z >> dummy1 >> dummy2 >> dummy3;
-    
-	return cloud; 
 }
 
 
@@ -157,23 +143,23 @@ Vec3d rodrigues2euler(Vec3d rvec, bool degrees=false) {
 
 // Transform Rodrigues rotation vector into a quaternion
 Vec4d vec2quat(Vec3d vec) {
-       	Vec4d q; 
+    Vec4d q; 
 	double ang = sqrt( vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2] );
-       	q[0] = vec[0] / ang * sin(ang / 2); 
+    q[0] = vec[0] / ang * sin(ang / 2); 
 	q[1] = vec[1] / ang * sin(ang / 2);
-       	q[2] = vec[2] / ang * sin(ang / 2);
-       	q[3] = cos(ang / 2);
-    	return q;
+    q[2] = vec[2] / ang * sin(ang / 2);
+    q[3] = cos(ang / 2);
+    return q;
 } 
 
 Eigen::Vector4f vec2quat_eigen(Vec3d vec) {
-       	Eigen::Vector4f q;
+    Eigen::Vector4f q;
 	double ang = sqrt( vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2] );
 	q[0] = vec[0] / ang * sin(ang / 2);
-       	q[1] = vec[1] / ang * sin(ang / 2);
-       	q[2] = vec[2] / ang * sin(ang / 2);
-       	q[3] = cos(ang / 2);
-    	return q; 
+    q[1] = vec[1] / ang * sin(ang / 2);
+    q[2] = vec[2] / ang * sin(ang / 2);
+    q[3] = cos(ang / 2);
+    return q; 
 }
 
 
@@ -181,19 +167,19 @@ Eigen::Vector4f vec2quat_eigen(Vec3d vec) {
 // Transform quaternion into a Rodrigues rotation vector
 Vec3d quat2vec(Vec4d quat) { 
 	Vec3d v;
-       	double ang = 2*acos(quat[3]);
-       	v[0] = quat[0] / sqrt(1 - quat[3]*quat[3]) * ang;
-       	v[1] = quat[1] / sqrt(1 - quat[3]*quat[3]) * ang;
-       	v[2] = quat[2] / sqrt(1 - quat[3]*quat[3]) * ang;
-       	return v;
+    double ang = 2*acos(quat[3]);
+    v[0] = quat[0] / sqrt(1 - quat[3]*quat[3]) * ang;
+    v[1] = quat[1] / sqrt(1 - quat[3]*quat[3]) * ang;
+    v[2] = quat[2] / sqrt(1 - quat[3]*quat[3]) * ang;
+    return v;
 }
 
 Vec3d quat_eigen2vec(Eigen::Vector4f quat) { 
 	Vec3d v;
-       	double ang = 2*acos(quat[3]);
-       	v[0] = quat[0] / sqrt(1 - quat[3]*quat[3]) * ang;
-       	v[1] = quat[1] / sqrt(1 - quat[3]*quat[3]) * ang;
-       	v[2] = quat[2] / sqrt(1 - quat[3]*quat[3]) * ang;
+    double ang = 2*acos(quat[3]);
+    v[0] = quat[0] / sqrt(1 - quat[3]*quat[3]) * ang;
+    v[1] = quat[1] / sqrt(1 - quat[3]*quat[3]) * ang;
+    v[2] = quat[2] / sqrt(1 - quat[3]*quat[3]) * ang;
 	return v;
 }
 
@@ -202,11 +188,11 @@ Vec3d quat_eigen2vec(Eigen::Vector4f quat) {
 //https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20070017872.pdf, that
 //provides a closed-form solution for averaging two quaternions
 Vec4d avgQuat(Vec4d q1, Vec4d q2, double w1 = 1, double w2 = 1) {
-       	Vec4d q3;
+    Vec4d q3;
 	double zed = sqrt( (w1-w2)*(w1-w2) + 4*w1*w2*(q1.dot(q2))*(q1.dot(q2)));
-       	q3 = ((w1-w2+zed)*q1 + 2*w2*(q1.dot(q2))*q2);
-       	double norm = sqrt( q3[0]*q3[0] + q3[1]*q3[1] + q3[2]*q3[2] + q3[3]*q3[3] );
-       	q3 = q3 / norm; 
+    q3 = ((w1-w2+zed)*q1 + 2*w2*(q1.dot(q2))*q2);
+    double norm = sqrt( q3[0]*q3[0] + q3[1]*q3[1] + q3[2]*q3[2] + q3[3]*q3[3] );
+    q3 = q3 / norm; 
 	return q3; 
 }
 
@@ -222,39 +208,39 @@ Eigen::Vector4f quaternionAverage(std::vector<Eigen::Vector4f> quaternions) {
 	if (quaternions.size() == 0) { 
 		std::cerr << "Error trying to calculate the average quaternion of an empty set!\n"; 
 		return	Eigen::Vector4f::Zero();
-       	}
-    	// first build a 4x4 matrix which is the elementwise sum of the product of
+    }
+    // first build a 4x4 matrix which is the elementwise sum of the product of
 	// each quaternion with itself
 	Eigen::Matrix4f A = Eigen::Matrix4f::Zero();
-    	for (unsigned long int q=0; q<quaternions.size(); ++q) A += quaternions[q] * quaternions[q].transpose();
+    for (unsigned long int q=0; q<quaternions.size(); ++q) A += quaternions[q] * quaternions[q].transpose();
     
 	// normalise with the number of quaternions
 	A /= quaternions.size();
-    	// Compute the SVD of this 4x4 matrix
+    // Compute the SVD of this 4x4 matrix
 	Eigen::JacobiSVD<Eigen::MatrixXf> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
-       	Eigen::VectorXf singularValues = svd.singularValues(); 
+    Eigen::VectorXf singularValues = svd.singularValues(); 
 	Eigen::MatrixXf U = svd.matrixU();
     
 	// find the eigen vector corresponding to the largest eigen value
 	int largestEigenValueIndex;
-       	float largestEigenValue;
-       	bool first = true;
+    float largestEigenValue;
+    bool first = true;
 	
 	for (int i=0; i<singularValues.rows(); ++i) { 
-	       	if (first) {
+        if (first) {
 			largestEigenValue = singularValues(i);
 			largestEigenValueIndex = i;
 	   		first = false;
 		}
 		else if (singularValues(i) > largestEigenValue) {
-		       	largestEigenValue = singularValues(i);
-			largestEigenValueIndex = i;
-		}
+            largestEigenValue = singularValues(i);
+            largestEigenValueIndex = i;
+        }
 	}
     
 	Eigen::Vector4f average;
-       	average(0) = U(0, largestEigenValueIndex);
-    	average(1) = U(1, largestEigenValueIndex); 
+    average(0) = U(0, largestEigenValueIndex);
+    average(1) = U(1, largestEigenValueIndex); 
 	average(2) = U(2, largestEigenValueIndex); 
 	average(3) = U(3, largestEigenValueIndex);
     
@@ -326,31 +312,31 @@ Point3d transformPoint(Point3d vec, Vec3d rotvec, Vec3d tvec) {
 // Avg two poses with weights associated
 Vec3d avgRot(Vec3d rvec1, Vec3d rvec2, double weight1, double weight2) { 
 	Vec4d quat1 = vec2quat(rvec1);
-       	Vec4d quat2 = vec2quat(rvec2);
-       	Vec4d quat_avg = avgQuat(quat1, quat2, weight1, weight2);
+    Vec4d quat2 = vec2quat(rvec2);
+    Vec4d quat_avg = avgQuat(quat1, quat2, weight1, weight2);
     	
 	return quat2vec(quat_avg);
 }
 
 Vec3d avgTrasl(Vec3d tvec1, Vec3d tvec2, double weight1, double weight2) {
 	Vec3d tvec_avg;
-       	for (int i=0; i<3; i++) { 
+    for (int i=0; i<3; i++) { 
 		tvec_avg[i] = weight1*tvec1[i] + weight2*tvec2[i];
-       	}
-     	return tvec_avg;
+    }
+    return tvec_avg;
 }
 
 
 // Check diff between two rotations in Euler notation
 bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
-       	Vec3d rvec1_eul = rodrigues2euler(rvec1);
-       	Vec3d rvec2_eul = rodrigues2euler(rvec2);
-    	for(int i=0; i<3; i++) { 
+    Vec3d rvec1_eul = rodrigues2euler(rvec1);
+    Vec3d rvec2_eul = rodrigues2euler(rvec2);
+    for(int i=0; i<3; i++) { 
 		if(std::abs(sin(rvec1_eul[i])-sin(rvec2_eul[i])) > thr[i]) { 
 			return false;
-	       	}
-       	}
-       	return true; 
+        }
+    }
+    return true; 
 }
 /////////////////////
 /////////////////////
@@ -360,15 +346,15 @@ bool checkDiffRot(Vec3d rvec1, Vec3d rvec2, std::vector<double> thr) {
 // Compute combination pose at center of marker group
 Vec3d computeAvgRot(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, int group) { 
 	std::vector<Eigen::Vector4f> quat_avg;
-       	Vec3d rvec_avg;
-       	for(unsigned int i=0; i<4; i++) {
-	       	Eigen::Vector4f quat;
-		if(detect_id[group*4+i]) { 
-			quat = vec2quat_eigen(rvecs_ord[group*4+i]);
-			quat_avg.push_back(quat);
-	       	}
-       	}
-       	rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
+    Vec3d rvec_avg;
+    for(unsigned int i=0; i<4; i++) {
+        Eigen::Vector4f quat;
+        if(detect_id[group*4+i]) { 
+            quat = vec2quat_eigen(rvecs_ord[group*4+i]);
+            quat_avg.push_back(quat);
+        }
+    }
+    rvec_avg = quat_eigen2vec(quaternionAverage(quat_avg));
     	
 	return rvec_avg;
 }
@@ -378,48 +364,48 @@ Vec3d computeAvgRot(std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, i
 // Compute the aggregate translation of the markers' group
 // TODO: very specific to our case
 Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord, std::vector<bool> detect_id, 
-		int group, float markerLength, float markerOffset) {
-       	std::vector<Vec3d> tvecs_centered;
-       	Vec3d tvec_avg;
+        int group, float markerLength, float markerOffset) {
+    std::vector<Vec3d> tvecs_centered;
+    Vec3d tvec_avg;
     
 	if(group==0 || group==1 || group==3) { // markers in a square 
 		for(unsigned int i=0; i<4; i++) {
-		       	Vec3d tvec;
-		       	if(detect_id[group*4+i]) {
+            Vec3d tvec;
+            if(detect_id[group*4+i]) {
 				if(i==0) {
-				       	tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
 					tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
-				       	tvec[2] = 0.0;
-				       	tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
-	    				tvecs_centered.push_back(tvec);
-			       	} 
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                } 
 				else if(i==1) {
-    					tvec[0] = markerLength / 2 + markerOffset / 2;
-				       	tvec[1] = markerLength / 2 + markerOffset / 2; 
+                    tvec[0] = markerLength / 2 + markerOffset / 2;
+                    tvec[1] = markerLength / 2 + markerOffset / 2; 
 					tvec[2] = 0.0;
-    					tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
-    					tvecs_centered.push_back(tvec);
-			       	}
-			       	else if(i==2) { 
-					tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2); 
-					tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
-					tvec[2] = 0.0;
-				       	tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
-					tvecs_centered.push_back(tvec);
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
+                }
+                else if(i==2) { 
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2); 
+                    tvec[1] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[2] = 0.0;
+                    tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
+                    tvecs_centered.push_back(tvec);
 				} 
-				else if(i==3) { 
-					tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
-				       	tvec[1] = markerLength / 2 + markerOffset / 2;
+                else if(i==3) { 
+                    tvec[0] = -1.0 * (markerLength / 2 + markerOffset / 2);
+                    tvec[1] = markerLength / 2 + markerOffset / 2;
 					tvec[2] = 0.0; 
 					tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
 					tvecs_centered.push_back(tvec);
 				}
-		       	}
-	       	}
-       	}
-       	else { // markers in line
-		for(unsigned int i=0; i<4; i++) {
-	    		Vec3d tvec;
+            }
+        }
+    }
+    else { // markers in line
+        for(unsigned int i=0; i<4; i++) {
+            Vec3d tvec;
 			if(detect_id[group*4+i]) { 
 				if(i==0) {
 					tvec[0] = 1.5*markerLength + 1.5*markerOffset;
@@ -441,20 +427,20 @@ Vec3d computeAvgTrasl(std::vector<Vec3d> tvecs_ord, std::vector<Vec3d> rvecs_ord
 				}
 				else if(i==3) {	
 					tvec[0] = -1.0*(1.5*markerLength + 1.5*markerOffset);
-				     	tvec[1] = tvec[2] = 0.0;
+                    tvec[1] = tvec[2] = 0.0;
 					tvec = transformVec(tvec, rvecs_ord[group*4+i], tvecs_ord[group*4+i]);
 					tvecs_centered.push_back(tvec);
 				}
-		      	}
-	       	} 
+            }
+        } 
 	}
-    	for (int i=0; i<3; i++) { 
-		tvec_avg[i] = 0.0; 
+    for (int i=0; i<3; i++) { 
+        tvec_avg[i] = 0.0; 
 		for (unsigned int j=0; j<tvecs_centered.size(); j++) { 
 			tvec_avg[i] += tvecs_centered[j][i];
-	       	}
-	       	tvec_avg[i] /= tvecs_centered.size(); 
-	}
+        }
+        tvec_avg[i] /= tvecs_centered.size(); 
+    }
     	
 	return tvec_avg; 
 } 
@@ -469,18 +455,7 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
     unsigned int items=0;
 
     for(int i=0; i<4; i++) {
-        rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));
-        /*Mat rotationMat = Mat::zeros(3, 3, CV_64F);  
-        Rodrigues(rvecs_ord[group*4+i], rotationMat); //convert rodrigues angles into rotation matrix
-        cout << "[" ; 
-		for(int i = 0; i<3; i++) { 
-        for(int j=0; j<3; j++) { 
-				cout << rotationMat.at<double>(i,j) << " ";
-                }
-		       	cout << endl;
-	       	}
-	       	cout << "]" << endl;
-		*/
+        rvecs.push_back(rodrigues2euler(rvecs_ord[group*4+i]));       
 		if(detect_id[group*4+i]) {
             items += 1;
         }
@@ -495,63 +470,63 @@ std::vector<bool> checkPoseConsistent(std::vector<Vec3d> rvecs_ord, std::vector<
 	}
     
 	cout << "Detected markers to compare: " << items << endl;
-    	std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
+    std::vector<std::vector<bool>> checker(rvecs.size(), std::vector<bool>(rvecs.size(), true));
 	
 	for(unsigned int i=0; i<rvecs.size(); i++) {
-	       	if(!detect_id[group*4+i]) {
+        if(!detect_id[group*4+i]) {
 			checker[0][i] = checker[1][i] = checker[2][i] = checker[3][i] = false; 
 			continue;
-	       	}
-	       	for(unsigned int j=0; j<rvecs.size(); j++) { 
+        }
+        for(unsigned int j=0; j<rvecs.size(); j++) { 
 			if(i==j) continue;
 			if(!detect_id[group*4+j]) { 
 				checker[i][j] = false;
 				continue; 
 			}
-	    		for(int k=0; k<3; k++) { 
+            for(int k=0; k<3; k++) { 
 				cout << "Diff between angles: " << std::abs(sin(rvecs[i][k])-sin(rvecs[j][k]))
-				       	<< " > " << thr[k] << "?" << endl;
+                    << " > " << thr[k] << "?" << endl;
 				if(std::abs(sin(rvecs[i][k])-sin(rvecs[j][k])) > thr[k]) {
-				       	cout << "YES!!" << endl;
-				       	checker[i][j] = false;
-	    				break;
-			       	}
-			       	else {
-					cout << "No, OK. " << endl;
-				       	checker[i][j] = true;
-			       	}
-		       	}
-	       	}
-       	}
+                    cout << "YES!!" << endl;
+                    checker[i][j] = false;
+                    break;
+                }
+                else {
+                    cout << "No, OK. " << endl;
+                    checker[i][j] = true;
+                }
+            }
+        }
+    }
     
 	for(unsigned int i=0; i<rvecs.size(); i++) {
-	       	unsigned int trues=0;
-	       	unsigned int falses=0;
-	
-		// count how many markers are consistent with current one
+        unsigned int trues=0;
+        unsigned int falses=0;
+
+        // count how many markers are consistent with current one
 		for(unsigned int j=0; j<rvecs.size(); j++) { 
-			if(i==j) continue;
+            if(i==j) continue;
 			if(!checker[i][j]) { 
 				falses += 1;
-		       	}
-		       	else { 
+            }
+            else { 
 				trues += 1;
-		       	} 
+            } 
 		}
 		// If it agrees with all markers, keep it
 		if(trues >= (num-1)) { 
 			checkVec[group*4+i] = true;
-		       	continue;
-	       	}
-	       	else {
-			checkVec[group*4+i] = false;
-		       	continue;
-	       	} 
+            continue;
+        }
+        else {
+            checkVec[group*4+i] = false;
+            continue;
+        } 
 	}
-    	cout << "Checker: ";
-       	for(unsigned int i=0; i<rvecs.size();i++) {      
-		for(auto&& j:checker[i]) {
-		       	cout << j << " "; } 
+    cout << "Checker: ";
+    for(unsigned int i=0; i<rvecs.size();i++) {      
+        for(auto&& j:checker[i]) {
+            cout << j << " "; } 
 	}
        
 	return checkVec;

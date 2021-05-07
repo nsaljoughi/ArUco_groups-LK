@@ -1,0 +1,12 @@
+REMAINING ISSUES AND TO-DOs
+
+allow code for different scenes
+    group_corners:  vector<Point2f> -> vector<vector<Point2f>> 
+    noo:  bool -> vector<bool>
+    add scene to function args
+
+remove 3D smoothing
+
+remove t_lost threshold and replace with condition if marker is out of the frame (look at mono-vo...)
+
+try out on different scenes and acquisitions

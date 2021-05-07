@@ -16,8 +16,6 @@ namespace { const char* about = "Basic marker detection";
 	            "{l        |    	| Marker side lenght (in meters). Needed for correct scale in camera pose }"
 	            "{o        |        | Offset between markers (in meters)}"
 	            "{dp       |        | File of marker detector parameters }"
-	            "{r        | false	| show rejected	candidates too}"
-	            "{n        | false  | Naive mode (no stabilization)}"
 	            "{u        |        | Use-case / scenario (0, 1, 2, 3, 4, 5)}";
 }
 
@@ -26,22 +24,17 @@ int main(int argc, char *argv[]) {
     CommandLineParser parser(argc, argv, keys);
     parser.about(about);
 
-
     if (argc < 2) {
         parser.printMessage();
         return 0;
     }
 
-
     // Parser
     int dictionaryId = parser.get<int>("d");
-    bool showRejected = parser.has("r");
     bool estimatePose = parser.has("c");
     float markerLength = parser.get<float>("l");
     float markerOffset = parser.get<float>("o");
-    bool naiveMode = parser.get<bool>("n");
     int scene = parser.get<int>("u");
-
 
     // Detector parameters
     Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
@@ -59,11 +52,9 @@ int main(int argc, char *argv[]) {
     detectorParams->cornerRefinementMaxIterations=30;
     detectorParams->cornerRefinementMinAccuracy=0.1;
 
-
     //Select dictionary for markers detection
     Ptr<aruco::Dictionary> dictionary =
         aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-
 
     // Load camera parameters
     Mat camMatrix, distCoeffs;
@@ -76,12 +67,10 @@ int main(int argc, char *argv[]) {
         }
     }
     
-
     // Generate box point cloud
     Mat box_cloud;
     if(scene==3) box_cloud = create_bbox(3.0, 2.0, 1.0);
     else if(scene==1 || scene==5) box_cloud = create_bbox(1.0,1.0,1.0);
-
 
     // Define variables
     double totalTime = 0;
@@ -98,9 +87,6 @@ int main(int argc, char *argv[]) {
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
     int consist_markers = 3;
 
-    // Weights for averaging final poses
-    double alpha_rot = 0.3;
-    double alpha_trasl = 0.3;
     std::vector<double> thr_init(3); // TODO angle threshold for markers consistency in INIT
     std::vector<double> thr_noinit(3); // TODO angle threshold for markers consistency AFTER INIT
     thr_init[0] = (sin(M_PI/12.0));
@@ -109,17 +95,10 @@ int main(int argc, char *argv[]) {
     thr_noinit[0] = (sin(M_PI/12.0));
     thr_noinit[1] = (sin(M_PI/12.0));
     thr_noinit[2] = (sin(M_PI/12.0));
-    if(naiveMode) {
-        thr_init[0] = thr_init[1] = thr_init[2] = thr_noinit[0] = thr_noinit[1] = thr_noinit[2] = 2.0;
-        thr_lost = std::numeric_limits<double>::max();
-        thr_stable = 0.0;
-        consist_markers = 1.0;
-    }
 
     // One master pose for each group
     vector<Vec3d> rMaster(4);
     vector<Vec3d> tMaster(4);
-    vector<Vec3d> tMaster_old(4);
 
     std::vector<bool> init_id(16, false); // check if marker has been seen before
     
@@ -293,8 +272,6 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     else{
-                        //rMaster[i] = avgRot(computeAvgRot(rvecs_ord, detect_id, i), rMaster[i], alpha_rot, (1 - alpha_rot));
-                        //tMaster[i] = avgTrasl(computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset), tMaster[i], alpha_trasl, (1 - alpha_trasl));
                         rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
                         tMaster[i] = computeAvgTrasl(tvecs_ord, rvecs_ord, detect_id, i, markerLength, markerOffset);        
                     }
@@ -356,9 +333,6 @@ int main(int argc, char *argv[]) {
             drawToImg(imageCopy, boxes, init_id, scene); 
         }   
 
-        if(showRejected && rejected.size() > 0)
-            aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
-
         Mat imageResize;
 
         cv::resize(imageCopy, imageResize, Size(imageCopy.cols/4,imageCopy.rows/4));
@@ -381,8 +355,6 @@ int main(int argc, char *argv[]) {
         
         prevImage = currImage.clone();
         prevFeatures = currFeatures;
-
-        tMaster_old = tMaster;
 
         char key = (char)waitKey(1); 
         if(key == 27) break;
