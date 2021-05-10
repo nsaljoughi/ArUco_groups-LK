@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cv;
 
-#define MAX_FRAME 973
+#define MAX_FRAME 450
 #define MIN_NUM_FEAT 1000
 
 namespace { const char* about = "Basic marker detection";
@@ -69,7 +69,8 @@ int main(int argc, char *argv[]) {
     
     // Generate box point cloud
     Mat box_cloud;
-    box_cloud = create_bbox(1.0,1.0,1.0);
+    if(scene==3) box_cloud = create_bbox(3.0, 2.0, 1.0);
+    else if(scene==1 || scene==5) box_cloud = create_bbox(1.0,1.0,1.0);
 
     // Define variables
     double totalTime = 0;
@@ -82,7 +83,7 @@ int main(int argc, char *argv[]) {
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
-    double thr_lost = 600; // TODO threshold in seconds for going into init
+    double thr_lost = 60; // TODO threshold in seconds for going into init
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
     int consist_markers = 3;
 
@@ -108,16 +109,16 @@ int main(int argc, char *argv[]) {
     Mat prevImage, currImage, imageCopy;
 
     // Visual odometry
-    vector<bool> noo(4,false);
+    bool noo = false;
     Mat H; // homography to project box in next frame
     vector<Point2f> prevFeatures, currFeatures; // features used for tracking
-    vector<vector<Point2f>> group_corners(4, vector<Point2f>(4)); // corners of markers' group in 2D
+    std::vector<Point2f> group_corners(4); // corners of markers' group in 2D
 
 
     ////// ---KEY PART--- //////
     for(int numFrame = 1; numFrame < MAX_FRAME; numFrame++) {
-        sprintf(filename, "/home/nicola/pama_marker/videos/frames/pama16/%06d.jpg", numFrame);
-        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/pama16/%06d.jpg", numFrame);
+        sprintf(filename, "/home/nicola/pama_marker/videos/frames/pama5_bis/%06d.jpg", numFrame);
+        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/pama5_bis/%06d.jpg", numFrame);
     
         double tickk = (double)getTickCount();
     
@@ -206,8 +207,8 @@ int main(int argc, char *argv[]) {
 
             // If at least one of the markers' group has been initialized, 
             // start computing visual odometry
-            if(init_id[0]||init_id[4]||init_id[8]||init_id[12]) {
-                cout << "Computing the homography H..." << endl;
+            if(init_id[0]||init_id[4]||init_id[8]) {
+                cout << "Computing the homography H ..." << endl;
                 H = findHomography(prevFeatures, currFeatures, RANSAC);
             }
 
@@ -254,15 +255,20 @@ int main(int argc, char *argv[]) {
                         cout << "After check, none of the detected markers was found consistent!" << endl;
                         t_lost[i] += delta_t;
 
-                        noo[i] = true;
-                        group_corners[i] = getNewGroupCorners(imageCopy, group_corners[i], H);    
+                        noo = true;
+                        getNewGroupCorners(group_corners, H); 
+
+                        line(imageCopy, group_corners[0], group_corners[1], Scalar(255, 0, 0), 4);
+                        line(imageCopy, group_corners[1], group_corners[2], Scalar(255, 0, 0), 4);
+                        line(imageCopy, group_corners[2], group_corners[3], Scalar(255, 0, 0), 4);
+                        line(imageCopy, group_corners[3], group_corners[0], Scalar(255, 0, 0), 4);     
                         
-                        getNewBoxes(boxes, H, scene);
+                        getNewBoxes(boxes, H);
 
                         if(t_lost[i] >= thr_lost) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                             t_lost[i] = 0;
-                            //average=false;    
+                            average=false;    
                         }
                     }
                     else{
@@ -272,19 +278,17 @@ int main(int argc, char *argv[]) {
                 }
             }
             
-            if(!noo[0] && !noo[1] && !noo[2] && !noo[3]) {
+            if(!noo) {
                 vector<Vec3d> avg_points = computeAvgBoxes(rMaster, tMaster, init_id, scene);
                 vector<double> weights={0.5,0.5}; //weights for past and current frame 
                 combineBoxes(camMatrix, Mat::zeros(8, 1, CV_64F), box_cloud, boxes, init_id, avg_points, weights, average, scene); //TODO
             }
 
 	        drawToImg(imageCopy, boxes, init_id, scene);
-            for (int i=0; i<4; i++) {
-                if(init_id[i*4] && !noo[i]) { // TODO
-                    group_corners[i] = drawGroupBorders(imageCopy, tMaster[i], rMaster[i], camMatrix, Mat::zeros(8, 1, CV_64F), markerLength, markerOffset, scene);
-                }
+            if(init_id[4] && !noo) { // TODO
+                group_corners = drawGroupBorders(imageCopy, tMaster[1], rMaster[1], camMatrix, Mat::zeros(8, 1, CV_64F), markerLength, markerOffset);
             }
-            noo[0] = noo[1] = noo[2] = noo[3] = false;
+            noo = false;
         }
         else {
             if(numFrame==1) {
@@ -300,8 +304,8 @@ int main(int argc, char *argv[]) {
                 }
                 // If at least one of the markers' group has been initialized, 
                 // start computing visual odometry
-                if(init_id[0]||init_id[4]||init_id[8]||init_id[12]) {
-                    cout << "Computing the homography H..." << endl;
+                if(init_id[0]||init_id[4]||init_id[8]) {
+                    cout << "Computing the homograpy H ..." << endl;
                     H = findHomography(prevFeatures, currFeatures, RANSAC);
                 }
             }
@@ -310,14 +314,19 @@ int main(int argc, char *argv[]) {
                     cout << "No marker was detected, using homography!" << endl;
                     t_lost[i] += delta_t;
 
-                    group_corners[i] = getNewGroupCorners(imageCopy, group_corners[i], H); 
+                    getNewGroupCorners(group_corners, H); 
 
-                    getNewBoxes(boxes, H, scene);
+                    line(imageCopy, group_corners[0], group_corners[1], Scalar(255, 0, 0), 4);
+                    line(imageCopy, group_corners[1], group_corners[2], Scalar(255, 0, 0), 4);
+                    line(imageCopy, group_corners[2], group_corners[3], Scalar(255, 0, 0), 4);
+                    line(imageCopy, group_corners[3], group_corners[0], Scalar(255, 0, 0), 4);
+
+                    getNewBoxes(boxes, H);
 
                     if(t_lost[i] >= thr_lost) {
                         init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                         t_lost[i] = 0;
-                        //average=false;
+                        average=false;
                     }
                 }
             }	      

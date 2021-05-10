@@ -772,7 +772,7 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
 // Function to draw boxes on image
 // TODO: very specific to our case
 void drawToImg(Mat img, vector<vector<Point2d>>& boxes, vector<bool>& init_id, int scene) {
-	if (init_id[0] || init_id[4] || init_id[8]) {
+	if (init_id[0] || init_id[4] || init_id[8] || init_id[12]) {
 		if (scene==3) {
 			DrawBox2D(img, boxes[0], 60, 20, 220);
 			DrawBox2D(img, boxes[1], 60, 20, 220);
@@ -825,7 +825,7 @@ void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Po
         }
     }
     else {
-        cout << "EMPTY!!!" << endl;
+        cout << "Average was set to false, hence boxes are not being averaged" << endl;
     }
     if (init_id[0] || init_id[4] || init_id[8]) {
         average = true;
@@ -892,38 +892,39 @@ void featureTracking(Mat img_1, Mat img_2, vector<Point2f>& points1, vector<Poin
 
 //this function automatically gets rid of points for which tracking fails
 
-  vector<float> err;					
-  Size winSize=Size(21,21);																								
-  TermCriteria termcrit=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01);
+    //Mat img1_crop = img_1(Range(img_1.rows/4, img_1.rows*3/4), Range(img_1.cols/4, img_1.cols*3/4));
+    //Mat img2_crop = img_2(Range(img_2.rows/4, img_2.rows*3/4), Range(img_2.cols/4, img_2.cols*3/4));
+    vector<float> err;					
+    Size winSize=Size(21,21);																								
+    TermCriteria termcrit=TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01);
 
-  calcOpticalFlowPyrLK(img_1, img_2, points1, points2, status, err, winSize, 3, termcrit, 0, 0.001);
-
-  //getting rid of points for which the KLT tracking failed or those who have gone outside the frame
-  int indexCorrection = 0;
-  for(unsigned int i=0; i<status.size(); i++)
-     {  Point2f pt = points2.at(i- indexCorrection);
-     	if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0))	{
-     		  if((pt.x<0)||(pt.y<0))	{
-     		  	status.at(i) = 0;
-     		  }
-     		  points1.erase (points1.begin() + (i - indexCorrection));
-     		  points2.erase (points2.begin() + (i - indexCorrection));
-     		  indexCorrection++;
-     	}
-
-     }
-
+    calcOpticalFlowPyrLK(img_1, img_2, points1, points2, status, err, winSize, 3, termcrit, 0, 0.001);
+  
+    //getting rid of points for which the KLT tracking failed or those who have gone outside the frame
+    int indexCorrection = 0;
+    for(unsigned int i=0; i<status.size(); i++) {
+        Point2f pt = points2.at(i- indexCorrection);
+        if ((status.at(i) == 0)||(pt.x<0)||(pt.y<0)) {
+            if((pt.x<0)||(pt.y<0)) {
+                status.at(i) = 0;
+            }
+            points1.erase (points1.begin() + (i - indexCorrection));
+            points2.erase (points2.begin() + (i - indexCorrection));
+            indexCorrection++;
+        }
+    }
 }
 
 
 
 // Detect FAST features in frame
-void featureDetection(Mat img_1, vector<Point2f>& points1)	{
-  vector<KeyPoint> keypoints_1;
+void featureDetection(Mat img, vector<Point2f>& points)	{
+  vector<KeyPoint> keypoints;
+  //Mat img_crop = img(Range(img.rows/4, img.rows*3/4), Range(img.cols/4, img.cols*3/4));
   int fast_threshold = 20;
   bool nonmaxSuppression = true;
-  FAST(img_1, keypoints_1, fast_threshold, nonmaxSuppression);
-  KeyPoint::convert(keypoints_1, points1, vector<int>());
+  FAST(img, keypoints, fast_threshold, nonmaxSuppression);
+  KeyPoint::convert(keypoints, points, vector<int>());
 }
 
 
@@ -1053,14 +1054,25 @@ void combineTransVO(Vec3d& rotvec, Vec3d& tvec, Mat& T, double scale) {
 
 
 // Draw the border of a group of markers
-std::vector<Point2f> drawGroupBorders(Mat img, Vec3d tMaster, Vec3d rMaster, Mat camMatrix, Mat distCoeffs, float markerLength, float markerOffset) {
+std::vector<Point2f> drawGroupBorders(Mat img, Vec3d tMaster, Vec3d rMaster, Mat camMatrix, Mat distCoeffs, float markerLength, float markerOffset, int scene) {
     std::vector<Point3f> group_corners(4);
     std::vector<Point2f> group_corners_2d;
-    float dist = markerLength + 3.0*0.5*markerOffset;
-    group_corners[0] = Point3f(-dist, dist, 0);
-    group_corners[1] = Point3f(-dist, -dist, 0);
-    group_corners[2] = Point3f(dist, -dist, 0);
-    group_corners[3] = Point3f(dist, dist, 0);
+
+    if(scene==5) {
+        float h = 0.5*markerLength + markerOffset;
+        float w = 2.0*markerLength + 5.0*0.5*markerOffset;
+        group_corners[0] = Point3f(-w, h, 0);
+        group_corners[1] = Point3f(-w, -h, 0);
+        group_corners[2] = Point3f(w, -h, 0);
+        group_corners[3] = Point3f(w, h, 0);
+    }
+    else if(scene==1 || scene==3) {
+        float dist = markerLength + 3.0*0.5*markerOffset;
+        group_corners[0] = Point3f(-dist, dist, 0);
+        group_corners[1] = Point3f(-dist, -dist, 0);
+        group_corners[2] = Point3f(dist, -dist, 0);
+        group_corners[3] = Point3f(dist, dist, 0);
+    }
 
     projectPoints(group_corners, rMaster, tMaster, camMatrix, distCoeffs, group_corners_2d);
     line(img, group_corners_2d[0], group_corners_2d[1], Scalar(0, 255, 0), 4);
@@ -1108,17 +1120,28 @@ void computeScaleVO(Mat& corners, float markerLength, float markerOffset, double
 
 
 // Function to compute new markers' group corners from homography
-void getNewGroupCorners(vector<Point2f>& group_corners, Mat H) {
+vector<Point2f> getNewGroupCorners(Mat img, vector<Point2f> group_corners, Mat H) {
     vector<Point2f> new_group_corners(4);
+
     perspectiveTransform(group_corners, new_group_corners, H);
-    group_corners = new_group_corners;
+    
+    line(img, new_group_corners[0], new_group_corners[1], Scalar(255, 0, 0), 4);
+    line(img, new_group_corners[1], new_group_corners[2], Scalar(255, 0, 0), 4);
+    line(img, new_group_corners[2], new_group_corners[3], Scalar(255, 0, 0), 4);
+    line(img, new_group_corners[3], new_group_corners[0], Scalar(255, 0, 0), 4);
+
+    return new_group_corners;
 }
 
-void getNewBoxes(vector<vector<Point2d>>& boxes, Mat H) {
-   vector<vector<Point2d>> new_boxes(3);
-   for(size_t i=0; i<3; i++) {
-      perspectiveTransform(boxes[i], new_boxes[i], H);
+void getNewBoxes(vector<vector<Point2d>>& boxes, Mat H, int scene) {
+   unsigned int num_boxes;
+   if(scene==1) num_boxes = 3;
+   else if(scene==3) num_boxes = 8;
+   else if(scene==5) num_boxes = 1;
+   vector<vector<Point2d>> new_boxes(num_boxes);
 
+   for(size_t i=0; i<num_boxes; i++) {
+      perspectiveTransform(boxes[i], new_boxes[i], H);
       double l01 = sqrt((new_boxes[i][0].x-new_boxes[i][1].x)*(new_boxes[i][0].x-new_boxes[i][1].x) + 
               (new_boxes[i][0].y-new_boxes[i][1].y)*(new_boxes[i][0].y-new_boxes[i][1].y));
       double l12 = sqrt((new_boxes[i][1].x-new_boxes[i][2].x)*(new_boxes[i][1].x-new_boxes[i][2].x) + 
@@ -1140,5 +1163,6 @@ void getNewBoxes(vector<vector<Point2d>>& boxes, Mat H) {
       new_boxes[i][3].x = center.x + l/2;
       new_boxes[i][3].y = center.y - l/2;
    }
+
    boxes = new_boxes;
 } 
