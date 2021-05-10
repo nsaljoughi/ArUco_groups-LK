@@ -222,7 +222,7 @@ Eigen::Vector4f quaternionAverage(std::vector<Eigen::Vector4f> quaternions) {
 	Eigen::MatrixXf U = svd.matrixU();
     
 	// find the eigen vector corresponding to the largest eigen value
-	int largestEigenValueIndex;
+	int largestEigenValueIndex = 0;
     float largestEigenValue;
     bool first = true;
 	
@@ -739,11 +739,11 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
         c0[1] = 7.0;
         c0[2] = -6;
         
-        a0 = transformVec(a0, rMaster[1], tMaster[1]);
-        b0 = transformVec(b0, rMaster[1], tMaster[1]);
-        c0 = transformVec(c0, rMaster[1], tMaster[1]);
+        a0 = transformVec(a0, rMaster[0], tMaster[0]);
+        b0 = transformVec(b0, rMaster[0], tMaster[0]);
+        c0 = transformVec(c0, rMaster[0], tMaster[0]);
 
-        if(init_id[4]) {
+        if(init_id[0]) {
             avg_points.push_back(a0);
             avg_points.push_back(b0);
             avg_points.push_back(c0);
@@ -801,10 +801,10 @@ void drawToImg(Mat img, vector<vector<Point2d>>& boxes, vector<bool>& init_id, i
 
 // Function to average the boxes estimated by different markers
 // TODO: it is very specific to our case
-void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Point2d>>& boxes, vector<bool>& init_id, vector<Vec3d>& avg_points, vector<double>& weights, bool average, int scene) { 
+void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Point2d>>& boxes, vector<bool>& init_id, vector<Vec3d>& avg_points, vector<double>& weights, bool& average, int scene) { 
 	vector<vector<Point2d>> boxes1, boxes2, boxes3, boxes4, boxes5, boxes6, boxes7, boxes8;
 
-	if(average==true) {
+	if(average==true && !boxes[0].empty() ) {
         if (scene==3) {
             boxes1.push_back(boxes[0]);
             boxes2.push_back(boxes[1]);
@@ -816,6 +816,7 @@ void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Po
             boxes8.push_back(boxes[7]);
         }
         else if (scene==1) {
+            cout << boxes[0][0].x << boxes[0][0].y << endl;
             boxes1.push_back(boxes[0]);
             boxes2.push_back(boxes[1]);
             boxes3.push_back(boxes[2]);
@@ -1134,7 +1135,7 @@ vector<Point2f> getNewGroupCorners(Mat img, vector<Point2f> group_corners, Mat H
 }
 
 void getNewBoxes(vector<vector<Point2d>>& boxes, Mat H, int scene) {
-   unsigned int num_boxes;
+   unsigned int num_boxes = 1;
    if(scene==1) num_boxes = 3;
    else if(scene==3) num_boxes = 8;
    else if(scene==5) num_boxes = 1;
@@ -1165,4 +1166,17 @@ void getNewBoxes(vector<vector<Point2d>>& boxes, Mat H, int scene) {
    }
 
    boxes = new_boxes;
-} 
+}
+
+
+// Function to check whether marker has gone out of sight
+bool markersOutsideFrame(Mat img, vector<Point2f> group_corners) {
+    for(unsigned int i=0; i<group_corners.size(); i++) {
+        cout << group_corners[i].x << ", " << group_corners[i].y << endl;
+        if(group_corners[i].x < 0 || group_corners[i].y < 0 || group_corners[i].x > (float)img.cols || group_corners[i].y > (float)img.rows) {
+            cout << "Marker has gone outside of the image frame!!" << endl;
+            return true;
+        }
+    }
+    return false;
+}

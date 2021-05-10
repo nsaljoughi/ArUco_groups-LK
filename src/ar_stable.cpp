@@ -82,7 +82,6 @@ int main(int argc, char *argv[]) {
     // We have four big markers
     std::vector<double>  t_lost(4, 0); // count seconds from last time marker was seen
     std::vector<double>  t_stable(4, 0); // count seconds from moment markers are consistent
-    double thr_lost = 600; // TODO threshold in seconds for going into init
     double thr_stable = 0.5; // TODO threshold in seconds for acquiring master pose
     int consist_markers = 3;
 
@@ -116,8 +115,8 @@ int main(int argc, char *argv[]) {
 
     ////// ---KEY PART--- //////
     for(int numFrame = 1; numFrame < MAX_FRAME; numFrame++) {
-        sprintf(filename, "/home/nicola/pama_marker/videos/frames/pama16/%06d.jpg", numFrame);
-        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/pama16/%06d.jpg", numFrame);
+        sprintf(filename, "/home/nicola/pama_marker/videos/frames/vid9/%06d.jpg", numFrame);
+        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/vid9/%06d.jpg", numFrame);
     
         double tickk = (double)getTickCount();
     
@@ -259,11 +258,11 @@ int main(int argc, char *argv[]) {
                         
                         getNewBoxes(boxes, H, scene);
 
-                        if(t_lost[i] >= thr_lost) {
+                       if(markersOutsideFrame(imageCopy, group_corners[i])) {
                             init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
-                            t_lost[i] = 0;
-                            //average=false;    
-                        }
+                            t_lost[i] = 0; 
+                       }
+                       average = false;
                     }
                     else{
                         rMaster[i] = computeAvgRot( rvecs_ord, detect_id, i);
@@ -274,7 +273,7 @@ int main(int argc, char *argv[]) {
             
             if(!noo[0] && !noo[1] && !noo[2] && !noo[3]) {
                 vector<Vec3d> avg_points = computeAvgBoxes(rMaster, tMaster, init_id, scene);
-                vector<double> weights={0.5,0.5}; //weights for past and current frame 
+                vector<double> weights={0.2,0.8}; //weights for past and current frame
                 combineBoxes(camMatrix, Mat::zeros(8, 1, CV_64F), box_cloud, boxes, init_id, avg_points, weights, average, scene); //TODO
             }
 
@@ -314,11 +313,11 @@ int main(int argc, char *argv[]) {
 
                     getNewBoxes(boxes, H, scene);
 
-                    if(t_lost[i] >= thr_lost) {
+                    if(markersOutsideFrame(imageCopy, group_corners[i])) {
                         init_id[i*4] = init_id[i*4+1] = init_id[i*4+2] = init_id[i*4+3] = false;
                         t_lost[i] = 0;
-                        //average=false;
                     }
+                    average = false;
                 }
             }	      
             drawToImg(imageCopy, boxes, init_id, scene); 
