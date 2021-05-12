@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <!--here we are importing arjs library -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <body style="margin : 0px; overflow: hidden;">
+        <img src="Downloads/pattern-6x6_1000-1.png" alt="My test image" >
+        <a-scene embedded arjs>
+            <a-marker-camera preset="custom" type="pattern" src="Downloads/pattern-6x6_1000-1.patt"> <!-- here we should put out custom marker -->
+                <a-entity
+                    position="0 0 0"
+                    scale="0.05 0.05 0.05"
+                    gltf-model="https://arjs-cors-proxy.herokuapp.com/https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"
+                    >
+                </a-entity>
+            </a-marker-camera>
+            <a-entity camera></a-entity>
+        </a-scene>
+    </body>
+</html>
