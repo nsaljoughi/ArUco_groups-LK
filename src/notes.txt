@@ -1,6 +1,3 @@
 REMAINING ISSUES AND TO-DOs
 
-
-remove t_lost threshold and replace with condition if marker is out of the frame (look at mono-vo...)
-
-try out on different scenes and acquisitions
+track features only for markers' group!

@@ -664,7 +664,7 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
         f1 = transformVec(f1, rMaster[1], tMaster[1]);
         g1 = transformVec(g1, rMaster[1], tMaster[1]);
         h1 = transformVec(h1, rMaster[1], tMaster[1]);
-        
+        /*
         if(init_id[0]) {
             a_sum.push_back(a0);
             b_sum.push_back(b0);
@@ -675,6 +675,7 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
             g_sum.push_back(g0);
             h_sum.push_back(h0);
         }
+        */
         if(init_id[4]) {
             a_sum.push_back(a1);
             b_sum.push_back(b1);
@@ -729,14 +730,14 @@ std::vector<Vec3d> computeAvgBoxes(std::vector<Vec3d> rMaster, std::vector<Vec3d
 
     }
     else if(scene==1) {
-        a0[0] = 0.0;
+        a0[0] = -0.1;//0.0;
         a0[1] = 6.0;
         a0[2] = -1;
-        b0[0] = 5.0;
+        b0[0] = 4.75;//5.0;
         b0[1] = 6.0;
         b0[2] = -1;
-        c0[0] = -5.5;
-        c0[1] = 7.0;
+        c0[0] = -6.5;//-5.5;
+        c0[1] = 4.5;//7.0;
         c0[2] = -6;
         
         a0 = transformVec(a0, rMaster[0], tMaster[0]);
@@ -775,18 +776,18 @@ void drawToImg(Mat img, vector<vector<Point2d>>& boxes, vector<bool>& init_id, i
 	if (init_id[0] || init_id[4] || init_id[8] || init_id[12]) {
 		if (scene==3) {
 			DrawBox2D(img, boxes[0], 60, 20, 220);
-			DrawBox2D(img, boxes[1], 60, 20, 220);
-			DrawBox2D(img, boxes[2], 60, 20, 220);
-			DrawBox2D(img, boxes[3], 60, 20, 220);
-			DrawBox2D(img, boxes[4], 60, 20, 220);
-			DrawBox2D(img, boxes[5], 60, 20, 220);
-			DrawBox2D(img, boxes[6], 60, 20, 220);
-			DrawBox2D(img, boxes[7], 60, 20, 220);
+			DrawBox2D(img, boxes[1], 102, 0, 204);
+			DrawBox2D(img, boxes[2], 0, 128, 255);
+			DrawBox2D(img, boxes[3], 0, 255, 255);
+			DrawBox2D(img, boxes[4], 0, 204, 204);
+			DrawBox2D(img, boxes[5], 255, 255, 0);
+			DrawBox2D(img, boxes[6], 204, 0, 102);
+			DrawBox2D(img, boxes[7], 255, 0, 255);
 		}
 		else if (scene==1) {
 			DrawBox2D(img, boxes[0], 60, 20, 220);
-			DrawBox2D(img, boxes[1], 60, 20, 220);
-			DrawBox2D(img, boxes[2], 60, 20, 220);
+			DrawBox2D(img, boxes[1], 0, 220, 0);
+			DrawBox2D(img, boxes[2], 220, 0, 0);
 		}
 		else if (scene==5) {
 			DrawBox2D(img, boxes[0], 60, 20, 220);
@@ -828,7 +829,7 @@ void combineBoxes(Mat camMatrix, Mat distCoeffs, Mat box_cloud, vector<vector<Po
     else {
         cout << "Average was set to false, hence boxes are not being averaged" << endl;
     }
-    if (init_id[0] || init_id[4] || init_id[8]) {
+    if (init_id[0] || init_id[4] || init_id[8] || init_id[12]) {
         average = true;
         if (scene==3) {
             projectPoints(box_cloud, Vec3d::zeros(), avg_points[0], camMatrix, distCoeffs, boxes[0]);
@@ -1076,10 +1077,10 @@ std::vector<Point2f> drawGroupBorders(Mat img, Vec3d tMaster, Vec3d rMaster, Mat
     }
 
     projectPoints(group_corners, rMaster, tMaster, camMatrix, distCoeffs, group_corners_2d);
-    line(img, group_corners_2d[0], group_corners_2d[1], Scalar(0, 255, 0), 4);
-    line(img, group_corners_2d[1], group_corners_2d[2], Scalar(0, 255, 0), 4);
-    line(img, group_corners_2d[2], group_corners_2d[3], Scalar(0, 255, 0), 4);
-    line(img, group_corners_2d[3], group_corners_2d[0], Scalar(0, 255, 0), 4);
+    //line(img, group_corners_2d[0], group_corners_2d[1], Scalar(0, 255, 0), 4);
+    //line(img, group_corners_2d[1], group_corners_2d[2], Scalar(0, 255, 0), 4);
+    //line(img, group_corners_2d[2], group_corners_2d[3], Scalar(0, 255, 0), 4);
+    //line(img, group_corners_2d[3], group_corners_2d[0], Scalar(0, 255, 0), 4);
 
     return group_corners_2d;
 }
@@ -1126,10 +1127,10 @@ vector<Point2f> getNewGroupCorners(Mat img, vector<Point2f> group_corners, Mat H
 
     perspectiveTransform(group_corners, new_group_corners, H);
     
-    line(img, new_group_corners[0], new_group_corners[1], Scalar(255, 0, 0), 4);
-    line(img, new_group_corners[1], new_group_corners[2], Scalar(255, 0, 0), 4);
-    line(img, new_group_corners[2], new_group_corners[3], Scalar(255, 0, 0), 4);
-    line(img, new_group_corners[3], new_group_corners[0], Scalar(255, 0, 0), 4);
+    //line(img, new_group_corners[0], new_group_corners[1], Scalar(255, 0, 0), 4);
+    //line(img, new_group_corners[1], new_group_corners[2], Scalar(255, 0, 0), 4);
+    //line(img, new_group_corners[2], new_group_corners[3], Scalar(255, 0, 0), 4);
+    //line(img, new_group_corners[3], new_group_corners[0], Scalar(255, 0, 0), 4);
 
     return new_group_corners;
 }

@@ -109,25 +109,36 @@ int main(int argc, char *argv[]) {
     // Visual odometry
     vector<bool> noo(4,false);
     Mat H; // homography to project box in next frame
-    vector<vector<Point2f>> prevFeatures(4);
-    vector<vector<Point2f>> currFeatures(4); // features used for tracking
+    vector<Point2f> prevFeatures, currFeatures; // features used for tracking
     vector<vector<Point2f>> group_corners(4, vector<Point2f>(4)); // corners of markers' group in 2D
-
 
 
     ////// ---KEY PART--- //////
     for(int numFrame = 1; numFrame < MAX_FRAME; numFrame++) {
-        sprintf(filename, "/home/nicola/pama_marker/videos/frames/vid8/%06d.jpg", numFrame);
-        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/vid8/%06d.jpg", numFrame);
+        sprintf(filename, "/home/nicola/pama_marker/videos/frames/vid6/%06d.jpg", numFrame);
+        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/vid6/%06d.jpg", numFrame);
     
         double tickk = (double)getTickCount();
     
         //Mat currImage_dist  = imread(filename);
         Mat currImage_c = imread(filename);
-        Mat imageCrop;
         //undistort(currImage_dist, currImage_c, camMatrix, distCoeffs); 
         cvtColor(currImage_c, currImage, COLOR_BGR2GRAY); // we work with grayscale images
         vector<uchar> status;
+
+    	// Visula odometry: detect features and track
+	    if(numFrame==1) {
+		    featureDetection(currImage, currFeatures);
+	    }
+	    else {
+		    cout << "# of features detected = " << prevFeatures.size() << endl;
+	    	featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
+	    	if (prevFeatures.size() < MIN_NUM_FEAT) {
+	    		cout << "Too few features remained...redetecting" << endl;
+	    		featureDetection(prevImage, prevFeatures);
+	    		featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
+    		}
+    	}
        
         // We have 16 markers
         vector<Vec3d> rvecs_ord(16); // store markers' Euler rotation vectors
@@ -192,6 +203,13 @@ int main(int argc, char *argv[]) {
                 aruco::drawAxis(imageCopy, camMatrix, Mat::zeros(8, 1, CV_64F), rvecs_ord[i], tvecs_ord[i], markerLength * 0.5f);
             }
 
+            // If at least one of the markers' group has been initialized, 
+            // start computing visual odometry
+            if(init_id[0]||init_id[4]||init_id[8]||init_id[12]) {
+                cout << "Computing the homography H..." << endl;
+                H = findHomography(prevFeatures, currFeatures, RANSAC);
+            }
+
             // Loop over groups
             for(unsigned int i=0; i<4; i++) {
                 if(!init_id[i*4]) { // if group needs init
@@ -230,45 +248,13 @@ int main(int argc, char *argv[]) {
                 } 
                 else { // if already init
                     cout << "GROUP " << i << " is already initialized." << endl;
-
-                    if(prevFeatures[i].empty()) { //if the group has just been initialized, detect features
-                        cout << "First detection..." << endl;
-                        featureDetection(currImage, currFeatures[i]);
-                        continue;
-                    }
-                    else {
-                        cout << "# of features detected = " << prevFeatures[i].size() << endl;
-                        featureTracking(prevImage, currImage, prevFeatures[i], currFeatures[i], status);
-                        if (prevFeatures[i].size() < MIN_NUM_FEAT) {
-                            cout << "Too few features remained...redetecting" << endl;
-                            featureDetection(prevImage, prevFeatures[i]);
-                            featureTracking(prevImage, currImage, prevFeatures[i], currFeatures[i], status);
-                        }
-                        cout << "Computing the homography H..." << endl;
-                        H = findHomography(prevFeatures[i], currFeatures[i], RANSAC);
-                    }       
     
                     if(!detect_id[i*4] && !detect_id[i*4+1] && !detect_id[i*4+2] && !detect_id[i*4+3]) {
                         cout << "After check, none of the detected markers was found consistent!" << endl;
                         t_lost[i] += delta_t;
 
                         noo[i] = true;
-                        group_corners[i] = getNewGroupCorners(imageCopy, group_corners[i], H);
-
-
-
-                        Point corners[1][4];
-                        for(int j=0; j<4; j++) {
-                            corners[0][j] = Point((int)group_corners[i][j].x, (int)group_corners[i][j].y);
-                        }
-                        const Point* corner_list[1] = { corners[0] };
-                        int numpoints = 4;
-                        Mat mask(imageCopy.size(), CV_8UC3, Scalar(0, 0, 0));
-                        fillPoly(mask, corner_list, &numpoints, 1, Scalar(255, 255, 255), 8);
-                        
-                        bitwise_and(imageCopy, mask, imageCrop);
-
-                     
+                        group_corners[i] = getNewGroupCorners(imageCopy, group_corners[i], H);    
                         
                         getNewBoxes(boxes, H, scene);
 
@@ -300,26 +286,28 @@ int main(int argc, char *argv[]) {
             noo[0] = noo[1] = noo[2] = noo[3] = false;
         }
         else {
+            if(numFrame==1) {
+                featureDetection(currImage, currFeatures);
+            }
+            else {
+                cout << "# of features detected = " << prevFeatures.size() << endl;
+                featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
+                if (prevFeatures.size() < MIN_NUM_FEAT) {
+                    cout << "Too few features remained...redetecting" << endl;
+                    featureDetection(prevImage, prevFeatures);
+                    featureTracking(prevImage, currImage, prevFeatures, currFeatures, status);
+                }
+                // If at least one of the markers' group has been initialized, 
+                // start computing visual odometry
+                if(init_id[0]||init_id[4]||init_id[8]||init_id[12]) {
+                    cout << "Computing the homography H..." << endl;
+                    H = findHomography(prevFeatures, currFeatures, RANSAC);
+                }
+            }
             for(unsigned int i=0; i<4; i++) {
                 if(init_id[i*4]) {
                     cout << "No marker was detected, using homography!" << endl;
                     t_lost[i] += delta_t;
-                   
-                    if(prevFeatures[i].empty()) { //if the group has just been initialized, detect features
-                        featureDetection(currImage, currFeatures[i]);
-                        continue;
-                    }
-                    else {
-                        cout << "# of features detected = " << prevFeatures[i].size() << endl;
-                        featureTracking(prevImage, currImage, prevFeatures[i], currFeatures[i], status);
-                        if (prevFeatures[i].size() < MIN_NUM_FEAT) {
-                            cout << "Too few features remained...redetecting" << endl;
-                            featureDetection(prevImage, prevFeatures[i]);
-                            featureTracking(prevImage, currImage, prevFeatures[i], currFeatures[i], status);
-                        }
-                        cout << "Computing the homography H..." << endl;
-                        H = findHomography(prevFeatures[i], currFeatures[i], RANSAC);
-                    }   
 
                     group_corners[i] = getNewGroupCorners(imageCopy, group_corners[i], H); 
 
