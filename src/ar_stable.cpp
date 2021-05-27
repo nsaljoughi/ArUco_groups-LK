@@ -117,8 +117,8 @@ int main(int argc, char *argv[]) {
 
     ////// ---KEY PART--- //////
     for(int numFrame = 1; numFrame < MAX_FRAME; numFrame++) {
-        sprintf(filename, "/home/nicola/pama_marker/videos/frames/vid8/%06d.jpg", numFrame);
-        sprintf(resultname, "/home/nicola/pama_marker/videos/out_frames/vid8/%06d.jpg", numFrame);
+        sprintf(filename, "/home/nicola/git/pama_marker/videos/frames/vid8/%06d.jpg", numFrame);
+        sprintf(resultname, "/home/nicola/git/pama_marker/videos/out_frames/vid8/%06d.jpg", numFrame);
     
         double tickk = (double)getTickCount();
     

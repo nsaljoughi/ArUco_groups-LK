@@ -1,3 +1,0 @@
-REMAINING ISSUES AND TO-DOs
-
-track features only for markers' group!
