@@ -24,5 +24,7 @@ make -j8
 ```
 ./ar_stable -c=2160x3840.yml -l=0.54 -o=0.04 -d=11 -u=1
 ```
+![alt text](./videos/vi8_out.gif)
+
 ## Graph of the control logic
 ![plot](./graphs/scheme1.jpg)
