@@ -7,9 +7,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 CMAKE_POLICY(SET CMP0072 NEW)
 
-set("OpenCV_DIR" "/home/nicola/Packages/opencv/build/")
-set("EIGEN3_INCLUDE_DIR" "/home/nicola/pama_marker/eigen")
-set("CMAKE_MODULE_PATH" "/home/nicola/pama_marker/eigen/cmake")
+set("OpenCV_DIR" "/path/to/opencv/build/")
+set("EIGEN3_INCLUDE_DIR" "/path/to/eigen")
+set("CMAKE_MODULE_PATH" "/path/to/eigen/cmake")
 
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
